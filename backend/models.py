@@ -5,7 +5,7 @@ from database import Base
 
 from datetime import datetime
 
-#Project Table (id, name, created_at)
+# Project table (id, name, created_at)
 class Project(Base):
     __tablename__ = "projects"
     
@@ -13,11 +13,11 @@ class Project(Base):
     name = Column(String, index=True) 
     created_at = Column(DateTime, default=datetime.now, nullable=False)
     
-    #utile per poter accedere alle immagini tramite project.images, solo una comodità python
+    # Allows access to images via project.images, just a Python convenience.
     images = relationship("Image", back_populates="project", cascade="all, delete-orphan")
     
 
-#Image Table (id, project_id(FK), fileName, filePath, created_at)
+# Image table (id, project_id(FK), fileName, filePath, created_at)
 class Image(Base):
     __tablename__ = "images"
     
@@ -27,5 +27,5 @@ class Image(Base):
     filePath = Column(String, nullable=False) 
     created_at = Column(DateTime, default=datetime.now, nullable=False)
     
-    #utile per poter accedere al progetto a cui è associata tramite image.project, solo una comodità python
+    # Allows access to the related project via image.project, just a Python convenience.
     project = relationship("Project", back_populates="images")

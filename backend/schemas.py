@@ -16,7 +16,7 @@ class Project(BaseModel):
     name: str
     created_at: datetime
     
-    #Per leggere direttamente da database
+    # Read directly from database objects
     model_config = ConfigDict(from_attributes = True)
     
 class Image(BaseModel):
@@ -26,5 +26,5 @@ class Image(BaseModel):
     filePath: str
     created_at: datetime
     
-    #Per leggere direttamente da database
+    # Read directly from database objects
     model_config=ConfigDict(from_attributes=True)
