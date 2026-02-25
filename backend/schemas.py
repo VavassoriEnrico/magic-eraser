@@ -1,11 +1,30 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-class ItemCreate(BaseModel):
-    name: str
+from datetime import datetime
 
-class Item(BaseModel):
+
+class ProjectCreate(BaseModel):
+    name : str
+    
+class ImageCreate(BaseModel):
+    fileName: str
+    filePath: str
+
+
+class Project(BaseModel):
     id: int
     name: str
-
-    class Config:
-        orm_mode = True
+    created_at: datetime
+    
+    #Per leggere direttamente da database
+    model_config = ConfigDict(from_attributes = True)
+    
+class Image(BaseModel):
+    id: int
+    project_id: int
+    fileName: str
+    filePath: str
+    created_at: datetime
+    
+    #Per leggere direttamente da database
+    model_config=ConfigDict(from_attributes=True)
