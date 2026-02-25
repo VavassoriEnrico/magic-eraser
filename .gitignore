@@ -10,7 +10,7 @@ backend/venv/
 # Environment variables
 .env
 
-# Uploads (quando inizierai a salvare file)
+# Uploads (files uploaded by users)
 uploads/
 
 # macOS
