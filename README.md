@@ -1,4 +1,4 @@
-# Magic Eraser Backend (for now)
+# Magic Eraser Backend (setup & test)
 
 Minimal setup to run and test the API locally. Up to now (25 feb 2026) there is no UI nor docker configuration.
 
