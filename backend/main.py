@@ -1,17 +1,16 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 
 import models
-import schemas
-from database import engine, SessionLocal
+from database import engine
+from routers import images, projects
 
-# crea tabelle automaticamente
+# create tables automatically
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# CORS per React
+# CORS for React
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,25 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency DB
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+app.include_router(projects.router)
+app.include_router(images.router)
 
-@app.post("/items", response_model=schemas.Item)
-def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
-    db_item = models.Item(name=item.name)
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-@app.get("/items", response_model=list[schemas.Item])
-def read_items(db: Session = Depends(get_db)):
-    return db.query(models.Item).all()
 
 @app.get("/")
 def root():
