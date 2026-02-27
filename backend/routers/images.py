@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import models
+import schemas
 from dependencies import get_db
 
 router = APIRouter(prefix="/images", tags=["images"])
@@ -15,3 +16,8 @@ def delete_image(image_id: int, db: Session = Depends(get_db)):
     db.delete(image)
     db.commit()
     return {"message": "Image deleted"}
+
+#list images
+@router.get("", response_model=list[schemas.Image])
+def read_images(db: Session = Depends(get_db)):
+    return db.query(models.Image).all()
