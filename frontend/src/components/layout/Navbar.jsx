@@ -3,12 +3,18 @@ import { IconButton, useColorMode } from "@chakra-ui/react";
 export default function Navbar({ currentPath, onNavigate }) {
   const { colorMode, toggleColorMode } = useColorMode();
 
+  //  TEXT LABELS
+  const titleLabel = "Magic eraser";
+  const homeLabel = "Home";
+  const galleryLabel = "Gallery";
+  const profileLabel = "Profile";
+
   return (
     <header className="app-navbar">
       <div className="app-navbar__inner">
         <a href="/" className="app-navbar__brand" onClick={(event) => onLinkClick(event, "/", onNavigate)}>
           <span className="app-navbar__logo">◈</span>
-          <span>Magic Eraser</span>
+          <span>{titleLabel}</span>
         </a>
 
         <nav className="app-navbar__nav" aria-label="Main navigation">
@@ -17,14 +23,14 @@ export default function Navbar({ currentPath, onNavigate }) {
             className={navClass(currentPath === "/")}
             onClick={(event) => onLinkClick(event, "/", onNavigate)}
           >
-            Home
+            {homeLabel}
           </a>
           <a
             href="/gallery"
             className={navClass(currentPath === "/gallery")}
             onClick={(event) => onLinkClick(event, "/gallery", onNavigate)}
           >
-            Gallery
+            {galleryLabel}
           </a>
         </nav>
 
@@ -42,7 +48,7 @@ export default function Navbar({ currentPath, onNavigate }) {
             className="app-navbar__profile"
             onClick={(event) => onLinkClick(event, "/profile", onNavigate)}
           >
-            <span>Profile</span>
+            <span>{profileLabel}</span>
             <span className="app-navbar__avatar" aria-hidden="true" />
           </a>
         </div>
