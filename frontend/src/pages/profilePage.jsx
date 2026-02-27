@@ -7,9 +7,9 @@ import {
   SimpleGrid,
   Text,
   VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 
-//3 favorite images by default, is just to show where favorites will be
 const favorites = [
   { id: 1, bg: "linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%)" },
   { id: 2, bg: "linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)" },
@@ -17,25 +17,26 @@ const favorites = [
 ];
 
 export default function ProfilePage() {
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
+  const mutedColor = useColorModeValue("gray.700", "whiteAlpha.800");
+  const panelBorder = useColorModeValue("blackAlpha.300", "whiteAlpha.200");
+  const inputBg = useColorModeValue("whiteAlpha.900", "whiteAlpha.100");
+  const inputBorder = useColorModeValue("gray.300", "whiteAlpha.200");
+
   return (
-    <Box color="white">
-      <Heading as="h1" size="2xl" mb={8} fontWeight="medium" color="whiteAlpha.900">
+    <Box color={textColor}>
+      <Heading as="h1" size="2xl" mb={8} fontWeight="medium" color={textColor}>
         Profile
       </Heading>
 
-      <Grid
-        templateColumns={{ base: "1fr", lg: "220px 1.2fr 1fr" }}
-        gap={8}
-        alignItems="start"
-      >
+      <Grid templateColumns={{ base: "1fr", lg: "220px 1.2fr 1fr" }} gap={8} alignItems="start">
         <VStack align="stretch" spacing={4}>
-          {/* Box where user's photo will be*/}
           <Box
             h="210px"
             borderRadius="md"
             bg="linear-gradient(180deg,rgb(0, 68, 214) 0%, #246b2d 100%)"
             border="1px solid"
-            borderColor="whiteAlpha.200"
+            borderColor={panelBorder}
             position="relative"
             overflow="hidden"
           >
@@ -68,32 +69,25 @@ export default function ProfilePage() {
             />
           </Box>
 
-          {/* Logout button*/}
-          <Button
-            alignSelf="start"
-            bg="#B00000"
-            color="white"
-            _hover={{ bg: "#8f0000" }}
-            px={6}
-          >
+          <Button alignSelf="start" bg="#B00000" color="white" _hover={{ bg: "#8f0000" }} px={6}>
             Logout
           </Button>
         </VStack>
 
         <VStack align="stretch" spacing={3}>
-          <FieldBlock label="Username"/>
+          <FieldBlock label="Username" textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
 
           <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
-            <FieldBlock label="Name"/>
-            <FieldBlock label="Surname"/>
+            <FieldBlock label="Name" textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
+            <FieldBlock label="Surname" textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
           </Grid>
 
-          <FieldBlock label="Email address"/>
-          <FieldBlock label="Password"type="password" />
+          <FieldBlock label="Email address" textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
+          <FieldBlock label="Password" type="password" textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
         </VStack>
 
         <Box>
-          <Text mb={3} fontSize="lg" color="whiteAlpha.900">
+          <Text mb={3} fontSize="lg" color={textColor}>
             Favorite images
           </Text>
           <SimpleGrid columns={3} gap={3}>
@@ -104,32 +98,34 @@ export default function ProfilePage() {
                 borderRadius="sm"
                 bg={item.bg}
                 border="1px solid"
-                borderColor="whiteAlpha.200"
+                borderColor={panelBorder}
                 boxShadow="0 6px 18px rgba(0,0,0,0.25)"
               />
             ))}
           </SimpleGrid>
+          <Text mt={3} fontSize="sm" color={mutedColor}>
+            Your favorite edits will show up here.
+          </Text>
         </Box>
       </Grid>
-
     </Box>
   );
 }
 
-function FieldBlock({ label, defaultValue, type = "text" }) {
+function FieldBlock({ label, defaultValue, type = "text", textColor, inputBg, inputBorder }) {
   return (
     <VStack align="stretch" spacing={1}>
-      <Text fontSize="sm" color="whiteAlpha.900">
+      <Text fontSize="sm" color={textColor}>
         {label}
       </Text>
       <Input
         type={type}
         defaultValue={defaultValue}
         size="sm"
-        bg="whiteAlpha.100"
-        borderColor="whiteAlpha.200"
-        color="white"
-        _hover={{ borderColor: "whiteAlpha.300" }}
+        bg={inputBg}
+        borderColor={inputBorder}
+        color={textColor}
+        _hover={{ borderColor: inputBorder }}
         _focusVisible={{
           borderColor: "cyan.300",
           boxShadow: "0 0 0 1px rgba(103,232,249,0.7)",

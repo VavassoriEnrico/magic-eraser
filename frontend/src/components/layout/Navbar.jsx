@@ -1,6 +1,9 @@
+import { IconButton, useColorMode } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
+  const { colorMode, toggleColorMode } = useColorMode();
+
   return (
     <header className="app-navbar">
       <div className="app-navbar__inner">
@@ -18,10 +21,20 @@ export default function Navbar() {
           </NavLink>
         </nav>
 
-        <NavLink to="/profile" className="app-navbar__profile">
-          <span>Profile</span>
-          <span className="app-navbar__avatar" aria-hidden="true" />
-        </NavLink>
+        <div className="app-navbar__actions">
+          <IconButton
+            size="sm"
+            variant="outline"
+            onClick={toggleColorMode}
+            className="app-navbar__theme-btn"
+            aria-label={colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            icon={<span aria-hidden="true">{colorMode === "dark" ? "☀" : "🌙"}</span>}
+          />
+          <NavLink to="/profile" className="app-navbar__profile">
+            <span>Profile</span>
+            <span className="app-navbar__avatar" aria-hidden="true" />
+          </NavLink>
+        </div>
       </div>
     </header>
   );

@@ -67,7 +67,7 @@ From project root:
 
 ```bash
 cd frontend
-cp .env.example .env
+cp .env
 npm install
 npm run dev
 ```
