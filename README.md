@@ -1,89 +1,45 @@
-# Magic Eraser (backend + minimal React UI)
+# Magic Eraser
 
-Minimal setup to run and test the API locally, plus a minimal React UI (HeroUI) to verify backend and database communication.
+Run the full project (PostgreSQL + FastAPI backend + React frontend) with Docker Compose.
 
 ## Prerequisites
 
-- Python 3.12+
-- PostgreSQL running locally (or reachable from your machine)
-- `pip`
+- Docker
+- Docker Compose plugin (`docker compose` command)
 
-## 1) Create and activate virtual environment
+## Start everything
+
+From project root:\
+If it's the first time:
+```bash
+docker compose up --build
+```
+
+If you already built it before:
+```bash
+docker compose up --d
+```
+
+Services:
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+- Swagger: `http://localhost:8000/docs`
+- PostgreSQL: `localhost:5432` (user: `simpleuser`, password: `password`, db: `db`)
+
+## Stop everything
 
 ```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
+docker compose down
 ```
 
-## 2) Install dependencies
+## Stop and delete volumes (full reset)
 
 ```bash
-pip install fastapi uvicorn sqlalchemy python-dotenv psycopg2-binary python-multipart
+docker compose down -v
 ```
 
-## 3) Configure environment
+## Notes
 
-Create `backend/.env`:
-
-```env
-DATABASE_URL=postgresql+psycopg2://simpleuser:password@localhost:5432/db
-```
-
-Notes:
-- Keep 'simpleuser', 'password' and 'db' as they are now or choose you custom names (I suggest to keep them as they are).
-
-## 4) Run the API
-
-From `backend/`:
-
-```bash
-uvicorn main:app --reload
-```
-
-Server will be available at:
-- `http://127.0.0.1:8000`
-- Swagger UI: `http://127.0.0.1:8000/docs`
-
-## 5) Quick test
-
-Create a project:
-
-```bash
-curl -X POST "http://127.0.0.1:8000/projects" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"test project"}'
-```
-
-List projects:
-
-```bash
-curl "http://127.0.0.1:8000/projects"
-```
-
-## 6) Run minimal frontend UI (React + HeroUI)
-
-From project root:
-
-```bash
-cd frontend
-cp .env
-npm install
-npm run dev
-```
-
-Frontend will be available at:
-- `http://127.0.0.1:5173`
-
-If backend runs on a different URL/port, update `frontend/.env`:
-
-```env
-VITE_API_URL=http://127.0.0.1:8000
-```
-
-## 7) Test flow from UI
-
-1. Create a project from the `Projects` panel.
-2. Select a project and upload an image from your computer from `Images`.
-3. Refresh to verify persistence from database.
-4. Delete images/projects to verify delete endpoints.
+- Database data is persisted in the `postgres_data` Docker volume.
+- Uploaded images are persisted in the `backend_uploads` Docker volume.
+- Frontend is built with `VITE_API_URL=http://localhost:8000`.
