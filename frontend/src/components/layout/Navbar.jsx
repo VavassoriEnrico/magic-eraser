@@ -1,24 +1,31 @@
 import { IconButton, useColorMode } from "@chakra-ui/react";
-import { NavLink } from "react-router-dom";
 
-export default function Navbar() {
+export default function Navbar({ currentPath, onNavigate }) {
   const { colorMode, toggleColorMode } = useColorMode();
 
   return (
     <header className="app-navbar">
       <div className="app-navbar__inner">
-        <NavLink to="/" className="app-navbar__brand">
+        <a href="/" className="app-navbar__brand" onClick={(event) => onLinkClick(event, "/", onNavigate)}>
           <span className="app-navbar__logo">◈</span>
           <span>Magic Eraser</span>
-        </NavLink>
+        </a>
 
         <nav className="app-navbar__nav" aria-label="Main navigation">
-          <NavLink to="/" className={({ isActive }) => navClass(isActive)}>
+          <a
+            href="/"
+            className={navClass(currentPath === "/")}
+            onClick={(event) => onLinkClick(event, "/", onNavigate)}
+          >
             Home
-          </NavLink>
-          <NavLink to="/gallery" className={({ isActive }) => navClass(isActive)}>
+          </a>
+          <a
+            href="/gallery"
+            className={navClass(currentPath === "/gallery")}
+            onClick={(event) => onLinkClick(event, "/gallery", onNavigate)}
+          >
             Gallery
-          </NavLink>
+          </a>
         </nav>
 
         <div className="app-navbar__actions">
@@ -30,10 +37,14 @@ export default function Navbar() {
             aria-label={colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             icon={<span aria-hidden="true">{colorMode === "dark" ? "☀" : "🌙"}</span>}
           />
-          <NavLink to="/profile" className="app-navbar__profile">
+          <a
+            href="/profile"
+            className="app-navbar__profile"
+            onClick={(event) => onLinkClick(event, "/profile", onNavigate)}
+          >
             <span>Profile</span>
             <span className="app-navbar__avatar" aria-hidden="true" />
-          </NavLink>
+          </a>
         </div>
       </div>
     </header>
@@ -42,4 +53,9 @@ export default function Navbar() {
 
 function navClass(isActive) {
   return `app-navbar__link${isActive ? " is-active" : ""}`;
+}
+
+function onLinkClick(event, path, onNavigate) {
+  event.preventDefault();
+  onNavigate(path);
 }
