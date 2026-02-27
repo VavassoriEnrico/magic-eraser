@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  Badge,
+  Box,
   Button,
   Card,
   CardBody,
   CardHeader,
-  Chip,
+  Container,
   Divider,
+  Flex,
+  FormControl,
+  FormLabel,
+  Grid,
   Input,
   Spinner,
-} from "@heroui/react";
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 
 import { api } from "./api";
 
@@ -166,147 +174,164 @@ export default function App() {
   }
 
   return (
-    <main className="app-shell">
-      <section className="app-container">
-        <Card className="api-card">
-          <CardBody className="api-card-body">
-            <p>
-              Backend API: <code>{api.baseUrl}</code>
-            </p>
-            <Button size="sm" variant="flat" onPress={loadProjects} isLoading={loadingProjects}>
-              Refresh
-            </Button>
+    <Box className="app-shell">
+      <Container maxW="1100px" className="app-container">
+        <Card variant="outline">
+          <CardBody>
+            <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
+              <Text>
+                Backend API: <code>{api.baseUrl}</code>
+              </Text>
+              <Button size="sm" variant="outline" onClick={loadProjects} isLoading={loadingProjects}>
+                Refresh
+              </Button>
+            </Flex>
           </CardBody>
         </Card>
 
-        {error ? <Chip color="danger">{error}</Chip> : null}
-        {message ? <Chip color="success">{message}</Chip> : null}
+        {error ? <Badge colorScheme="red">{error}</Badge> : null}
+        {message ? <Badge colorScheme="green">{message}</Badge> : null}
 
-        <div className="layout-grid">
+        <Grid className="layout-grid" templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={4}>
           <Card>
-            <CardHeader className="card-header">Projects</CardHeader>
+            <CardHeader>
+              <Text className="card-header">Projects</Text>
+            </CardHeader>
             <Divider />
-            <CardBody className="stack">
-              <form onSubmit={onCreateProject} className="stack">
-                <Input
-                  label="Project name"
-                  value={projectName}
-                  onValueChange={setProjectName}
-                  placeholder="my test project"
-                  isRequired
-                />
-                <Button type="submit" color="primary" isLoading={submitting}>
-                  Create project
-                </Button>
-              </form>
-
-              <Divider />
-
-              {loadingProjects ? (
-                <Spinner label="Loading projects..." />
-              ) : projects.length === 0 ? (
-                <p className="muted">No projects yet.</p>
-              ) : (
-                <div className="stack">
-                  {projects.map((project) => {
-                    const isSelected = String(project.id) === String(selectedProjectId);
-                    return (
-                      <Card key={project.id} shadow="sm" className="project-row">
-                        <CardBody className="project-row-body">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedProjectId(String(project.id))}
-                            className={`project-select ${isSelected ? "active" : ""}`}
-                          >
-                            <strong>#{project.id}</strong> {project.name}
-                          </button>
-                          <Button
-                            color="danger"
-                            variant="light"
-                            size="sm"
-                            onPress={() => onDeleteProject(project.id)}
-                            isDisabled={submitting}
-                          >
-                            Delete
-                          </Button>
-                        </CardBody>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardHeader className="card-header">Images</CardHeader>
-            <Divider />
-            <CardBody className="stack">
-              <p className="muted">
-                Selected project:{" "}
-                {selectedProject ? <strong>#{selectedProject.id}</strong> : "none"}
-              </p>
-
-              <form onSubmit={onCreateImage} className="stack">
-                <label className="file-upload">
-                  <span>Choose file</span>
-                  <input
-                    type="file"
-                    onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
-                    disabled={!selectedProjectId}
+            <CardBody>
+              <Stack className="stack">
+                <form onSubmit={onCreateProject} className="stack">
+                  <Input
+                    value={projectName}
+                    onChange={(event) => setProjectName(event.target.value)}
+                    placeholder="my test project"
                     required
                   />
-                </label>
-                <p className="muted small">
-                  {selectedFile ? selectedFile.name : "No file selected"}
-                </p>
-                <Button
-                  type="submit"
-                  color="primary"
-                  isDisabled={!selectedProjectId || !selectedFile}
-                  isLoading={submitting}
-                >
-                  Upload image
-                </Button>
-              </form>
+                  <Button type="submit" colorScheme="blue" isLoading={submitting}>
+                    Create project
+                  </Button>
+                </form>
 
-              <Divider />
+                <Divider />
 
-              {loadingImages ? (
-                <Spinner label="Loading images..." />
-              ) : !selectedProjectId ? (
-                <p className="muted">Create/select a project first.</p>
-              ) : images.length === 0 ? (
-                <p className="muted">No images for this project.</p>
-              ) : (
-                <div className="stack">
-                  {images.map((image) => (
-                    <Card key={image.id} shadow="sm">
-                      <CardBody className="image-row">
-                        <div>
-                          <p>
-                            <strong>#{image.id}</strong> {image.fileName}
-                          </p>
-                          <p className="muted small">{image.filePath}</p>
-                        </div>
-                        <Button
-                          color="danger"
-                          variant="light"
-                          size="sm"
-                          onPress={() => onDeleteImage(image.id)}
-                          isDisabled={submitting}
-                        >
-                          Delete
-                        </Button>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                {loadingProjects ? (
+                  <Stack align="center" py={3}>
+                    <Spinner />
+                    <Text className="muted">Loading projects...</Text>
+                  </Stack>
+                ) : projects.length === 0 ? (
+                  <Text className="muted">No projects yet.</Text>
+                ) : (
+                  <Stack className="stack">
+                    {projects.map((project) => {
+                      const isSelected = String(project.id) === String(selectedProjectId);
+                      return (
+                        <Card key={project.id} size="sm" variant="outline" className="project-row">
+                          <CardBody>
+                            <Flex justify="space-between" align="center" gap={4} className="project-row-body">
+                              <Box
+                                type="button"
+                                onClick={() => setSelectedProjectId(String(project.id))}
+                                as="button"
+                                className={`project-select ${isSelected ? "active" : ""}`}
+                              >
+                                <strong>#{project.id}</strong> {project.name}
+                              </Box>
+                              <Button
+                                colorScheme="red"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onDeleteProject(project.id)}
+                                isDisabled={submitting}
+                              >
+                                Delete
+                              </Button>
+                            </Flex>
+                          </CardBody>
+                        </Card>
+                      );
+                    })}
+                  </Stack>
+                )}
+              </Stack>
             </CardBody>
           </Card>
-        </div>
-      </section>
-    </main>
+
+          <Card>
+            <CardHeader>
+              <Text className="card-header">Images</Text>
+            </CardHeader>
+            <Divider />
+            <CardBody>
+              <Stack className="stack">
+                <Text className="muted">
+                  Selected project: {selectedProject ? <strong>#{selectedProject.id}</strong> : "none"}
+                </Text>
+
+                <form onSubmit={onCreateImage} className="stack">
+                  <FormControl className="file-upload">
+                    <FormLabel mb={1}>Choose file</FormLabel>
+                    <input
+                      type="file"
+                      onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
+                      disabled={!selectedProjectId}
+                      required
+                    />
+                  </FormControl>
+                  <Text className="muted small">{selectedFile ? selectedFile.name : "No file selected"}</Text>
+                  <Button
+                    type="submit"
+                    colorScheme="blue"
+                    isDisabled={!selectedProjectId || !selectedFile}
+                    isLoading={submitting}
+                  >
+                    Upload image
+                  </Button>
+                </form>
+
+                <Divider />
+
+                {loadingImages ? (
+                  <Stack align="center" py={3}>
+                    <Spinner />
+                    <Text className="muted">Loading images...</Text>
+                  </Stack>
+                ) : !selectedProjectId ? (
+                  <Text className="muted">Create/select a project first.</Text>
+                ) : images.length === 0 ? (
+                  <Text className="muted">No images for this project.</Text>
+                ) : (
+                  <Stack className="stack">
+                    {images.map((image) => (
+                      <Card key={image.id} size="sm" variant="outline">
+                        <CardBody>
+                          <Flex justify="space-between" align="center" gap={4} className="image-row">
+                            <Box>
+                              <Text>
+                                <strong>#{image.id}</strong> {image.fileName}
+                              </Text>
+                              <Text className="muted small">{image.filePath}</Text>
+                            </Box>
+                            <Button
+                              colorScheme="red"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onDeleteImage(image.id)}
+                              isDisabled={submitting}
+                            >
+                              Delete
+                            </Button>
+                          </Flex>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </Stack>
+                )}
+              </Stack>
+            </CardBody>
+          </Card>
+        </Grid>
+      </Container>
+    </Box>
   );
 }
