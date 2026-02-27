@@ -18,7 +18,9 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 
-import { api } from "../api";
+import { API_BASE_URL } from "../api/client";
+import { getProjects, createProject, deleteProject } from "../api/projects";
+import { getProjectImages, uploadImage, deleteImage } from "../api/images";
 
 export default function HomePage() {
   const [projects, setProjects] = useState([]);
@@ -55,7 +57,7 @@ export default function HomePage() {
     setLoadingProjects(true);
     setError("");
     try {
-      const data = await api.getProjects();
+      const data = await getProjects();
       setProjects(data || []);
 
       if (data?.length && !selectedProjectId) {
@@ -82,7 +84,7 @@ export default function HomePage() {
     setLoadingImages(true);
     setError("");
     try {
-      const data = await api.getProjectImages(projectId);
+      const data = await getProjectImages(projectId);
       setImages(data || []);
     } catch (err) {
       setError(`Error loading images: ${err.message}`);
@@ -112,7 +114,7 @@ export default function HomePage() {
     setMessage("");
 
     try {
-      const created = await api.createProject(projectName.trim());
+      const created = await createProject(projectName.trim());
       setProjectName("");
       setMessage(`Project created: #${created.id} ${created.name}`);
       await loadProjects();
@@ -130,7 +132,7 @@ export default function HomePage() {
     setMessage("");
 
     try {
-      await api.deleteProject(projectId);
+      await deleteProject(projectId);
       setMessage(`Project #${projectId} deleted`);
 
       const nextProjects = projects.filter((project) => project.id !== projectId);
@@ -156,7 +158,7 @@ export default function HomePage() {
     setMessage("");
 
     try {
-      const created = await api.uploadImage(selectedProjectId, selectedFile);
+      const created = await uploadImage(selectedProjectId, selectedFile);
       setSelectedFile(null);
       event.target.reset();
       setMessage(`Image created: #${created.id} (${created.fileName})`);
@@ -174,7 +176,7 @@ export default function HomePage() {
     setMessage("");
 
     try {
-      await api.deleteImage(imageId);
+      await deleteImage(imageId);
       setMessage(`Image #${imageId} deleted`);
       setImages((prev) => prev.filter((image) => image.id !== imageId));
     } catch (err) {
@@ -190,7 +192,7 @@ export default function HomePage() {
         <CardBody>
           <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
             <Text>
-              Backend API: <code>{api.baseUrl}</code>
+              Backend API: <code>{API_BASE_URL}</code>
             </Text>
             <Button size="sm" variant="outline" onClick={loadProjects} isLoading={loadingProjects}>
               Refresh
