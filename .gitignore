@@ -12,6 +12,7 @@ backend/venv/
 
 # Uploads (files uploaded by users)
 uploads/
+backend/uploads/
 
 # macOS
 .DS_Store

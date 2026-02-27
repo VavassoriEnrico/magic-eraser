@@ -1,6 +1,6 @@
-# Magic Eraser Backend (setup & test)
+# Magic Eraser (backend + minimal React UI)
 
-Minimal setup to run and test the API locally. Up to now (25 feb 2026) there is no UI nor docker configuration.
+Minimal setup to run and test the API locally, plus a minimal React UI (HeroUI) to verify backend and database communication.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ source venv/bin/activate
 ## 2) Install dependencies
 
 ```bash
-pip install fastapi uvicorn sqlalchemy python-dotenv psycopg2-binary
+pip install fastapi uvicorn sqlalchemy python-dotenv psycopg2-binary python-multipart
 ```
 
 ## 3) Configure environment
@@ -60,3 +60,30 @@ List projects:
 ```bash
 curl "http://127.0.0.1:8000/projects"
 ```
+
+## 6) Run minimal frontend UI (React + HeroUI)
+
+From project root:
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Frontend will be available at:
+- `http://127.0.0.1:5173`
+
+If backend runs on a different URL/port, update `frontend/.env`:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+## 7) Test flow from UI
+
+1. Create a project from the `Projects` panel.
+2. Select a project and upload an image from your computer from `Images`.
+3. Refresh to verify persistence from database.
+4. Delete images/projects to verify delete endpoints.
