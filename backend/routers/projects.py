@@ -84,10 +84,12 @@ def upload_image(
     with stored_file.open("wb") as destination:
         shutil.copyfileobj(file.file, destination)
 
+    public_path = f"/uploads/project_{project_id}/{stored_name}"
+
     db_image = models.Image(
         project_id=project_id,
         fileName=safe_name,
-        filePath=str(stored_file),
+        filePath=public_path,
     )
     db.add(db_image)
     db.commit()
