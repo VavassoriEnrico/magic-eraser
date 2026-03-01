@@ -17,7 +17,7 @@ docker compose up --build
 
 If you already built it before:
 ```bash
-docker compose up --d
+docker compose up -d
 ```
 
 Services:
