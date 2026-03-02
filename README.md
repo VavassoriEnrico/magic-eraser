@@ -8,6 +8,7 @@ Run the full project (PostgreSQL + FastAPI backend + React frontend) with Docker
 - Docker Compose plugin (`docker compose` command)
 
 ## Start everything
+### No hot-reload
 
 From project root:\
 If it's the first time:
@@ -19,12 +20,37 @@ If you already built it before:
 ```bash
 docker compose up -d
 ```
+### Hot-reload
+
+From project root:\
+If it's the first time:
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+If you already built it before:
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
 
 Services:
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:8000`
 - Swagger: `http://localhost:8000/docs`
 - PostgreSQL: `localhost:5432` (user: `simpleuser`, password: `password`, db: `db`)
+
+
+In this mode:
+- Frontend runs with Vite dev server on `http://localhost:5173`
+- Backend runs with Uvicorn `--reload` on `http://localhost:8000`
+- DB remains in Docker as usual
+
+Stop dev mode:
+
+```bash
+docker compose -f docker-compose.dev.yml down
+```
 
 ## Stop everything
 
