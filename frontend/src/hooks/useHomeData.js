@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { deleteImage, getProjectImages, uploadImage } from "../api/images";
+import { createImage, deleteImage, getProjectImages, uploadImage } from "../api/images";
 import { createProject, deleteProject, getProjects } from "../api/projects";
 
 export function useHomeData() {
@@ -200,6 +200,60 @@ export function useHomeData() {
     setMessage(`Edit feature TO IMPLEMENT: image #${imageId} in project #${projectId}`);
   }, []);
 
+  const onDuplicateImage = useCallback(
+    async (image, projectId) => {
+      setSubmitting(true);
+      setError("");
+      setMessage("");
+
+      try {
+        await createImage(projectId, {
+          fileName: image.fileName ? `${image.fileName} (copy)` : "image-copy",
+          filePath: image.filePath,
+        });
+        await loadImagesForProject(projectId);
+        setMessage(`Image duplicated in project #${projectId}`);
+      } catch (err) {
+        setError(`Error duplicating image: ${err.message}`);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [loadImagesForProject]
+  );
+
+  const onMoveImage = useCallback(
+    async (image, sourceProjectId, targetProjectId) => {
+      if (!targetProjectId) {
+        setError("Select a target project");
+        return;
+      }
+      if (String(targetProjectId) === String(sourceProjectId)) {
+        setError("Target project must be different");
+        return;
+      }
+
+      setSubmitting(true);
+      setError("");
+      setMessage("");
+
+      try {
+        await createImage(targetProjectId, {
+          fileName: image.fileName || "moved-image",
+          filePath: image.filePath,
+        });
+        await deleteImage(image.id);
+        await Promise.all([loadImagesForProject(sourceProjectId), loadImagesForProject(targetProjectId)]);
+        setMessage(`Image moved to project #${targetProjectId}`);
+      } catch (err) {
+        setError(`Error moving image: ${err.message}`);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [loadImagesForProject]
+  );
+
   return {
     projects,
     selectedProjectId,
@@ -222,11 +276,10 @@ export function useHomeData() {
     onCreateImage,
     onDeleteImage,
     onEditImage,
+    onDuplicateImage,
+    onMoveImage,
   };
 }
-
-
-
 
 
 

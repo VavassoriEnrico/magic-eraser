@@ -5,6 +5,18 @@ import {
   Button,
   HStack,
   Input,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  IconButton,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Select,
   Spinner,
   Stack,
@@ -40,6 +52,8 @@ export default function HomePage() {
     onCreateImage,
     onDeleteImage,
     onEditImage,
+    onDuplicateImage,
+    onMoveImage,
   } = useHomeData();
 
   const [uploadFiles, setUploadFiles] = useState([]);
@@ -47,6 +61,8 @@ export default function HomePage() {
   const [isDragOverUpload, setIsDragOverUpload] = useState(false);
   const [openedImage, setOpenedImage] = useState(null);
   const [previewScrollStateByProject, setPreviewScrollStateByProject] = useState({});
+  const [moveDialogImage, setMoveDialogImage] = useState(null);
+  const [moveTargetProjectId, setMoveTargetProjectId] = useState("");
 
   const pageText = useColorModeValue("gray.800", "white");
   const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
@@ -138,6 +154,23 @@ export default function HomePage() {
 
   function onCloseImagePopup() {
     setOpenedImage(null);
+  }
+
+  function openMoveDialog(image, sourceProjectId) {
+    const firstTarget = projects.find((p) => String(p.id) !== String(sourceProjectId));
+    setMoveDialogImage({ image, sourceProjectId });
+    setMoveTargetProjectId(firstTarget ? String(firstTarget.id) : "");
+  }
+
+  function closeMoveDialog() {
+    setMoveDialogImage(null);
+    setMoveTargetProjectId("");
+  }
+
+  async function confirmMoveImage() {
+    if (!moveDialogImage || !moveTargetProjectId) return;
+    await onMoveImage(moveDialogImage.image, moveDialogImage.sourceProjectId, Number(moveTargetProjectId));
+    closeMoveDialog();
   }
 
   function onDropUpload(event) {
@@ -245,6 +278,21 @@ export default function HomePage() {
                       >
                         Delete
                       </Button>
+                      <Menu placement="bottom-end">
+                        <MenuButton
+                          as={IconButton}
+                          size="xs"
+                          aria-label="Image actions"
+                          icon={<span style={{ fontWeight: 700 }}>⋯</span>}
+                          variant="solid"
+                          colorScheme="gray"
+                          onClick={(event) => event.stopPropagation()}
+                        />
+                        <MenuList onClick={(event) => event.stopPropagation()}>
+                          <MenuItem onClick={() => openMoveDialog(image, project.id)}>Move</MenuItem>
+                          <MenuItem onClick={() => onDuplicateImage(image, project.id)}>Duplicate</MenuItem>
+                        </MenuList>
+                      </Menu>
                     </HStack>
                   </Box>
                 ) : null}
@@ -715,6 +763,44 @@ export default function HomePage() {
           </Box>
         </Box>
       ) : null}
+
+      <Modal isOpen={!!moveDialogImage} onClose={closeMoveDialog} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Move image</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text fontSize="sm" mb={2}>
+              Select destination project
+            </Text>
+            <Select
+              value={moveTargetProjectId}
+              onChange={(event) => setMoveTargetProjectId(event.target.value)}
+            >
+              {projects
+                .filter((project) => String(project.id) !== String(moveDialogImage?.sourceProjectId))
+                .map((project) => (
+                  <option key={project.id} value={String(project.id)}>
+                    {project.name}
+                  </option>
+                ))}
+            </Select>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={closeMoveDialog}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={confirmMoveImage}
+              isDisabled={!moveTargetProjectId}
+              isLoading={submitting}
+            >
+              Move
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Stack>
   );
 }
