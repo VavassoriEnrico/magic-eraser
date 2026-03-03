@@ -14,29 +14,39 @@ import {
 } from "@chakra-ui/react";
 
 import { API_BASE_URL } from "../api/client";
-import { getProjects, createProject, deleteProject } from "../api/projects";
-import { getProjectImages, uploadImage, deleteImage } from "../api/images";
+import { useHomeData } from "../hooks/useHomeData";
+import { formatRelativeTime, getProjectLastActivity } from "../utils/date";
+import { toImageUrl } from "../utils/images";
 
 export default function HomePage() {
-  const [projects, setProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
-  const [uploadProjectId, setUploadProjectId] = useState("");
-  const [expandedProjectId, setExpandedProjectId] = useState("");
-  const [projectImagesMap, setProjectImagesMap] = useState({});
+  const {
+    projects,
+    uploadProjectId,
+    expandedProjectId,
+    projectImagesMap,
+    projectName,
+    loadingProjects,
+    loadingImagesByProject,
+    submitting,
+    error,
+    message,
+    setSelectedProjectId,
+    setUploadProjectId,
+    setExpandedProjectId,
+    setProjectName,
+    loadProjects,
+    onCreateProject,
+    onDeleteProject,
+    onCreateImage,
+    onDeleteImage,
+    onEditImage,
+  } = useHomeData();
 
-  const [projectName, setProjectName] = useState("");
   const [uploadFiles, setUploadFiles] = useState([]);
   const [uploadPreviewUrls, setUploadPreviewUrls] = useState([]);
   const [isDragOverUpload, setIsDragOverUpload] = useState(false);
   const [openedImage, setOpenedImage] = useState(null);
   const [previewScrollStateByProject, setPreviewScrollStateByProject] = useState({});
-
-  const [loadingProjects, setLoadingProjects] = useState(false);
-  const [loadingImagesByProject, setLoadingImagesByProject] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
 
   const pageText = useColorModeValue("gray.800", "white");
   const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
@@ -45,11 +55,7 @@ export default function HomePage() {
   const panelBorder = useColorModeValue("gray.200", "whiteAlpha.200");
   const inputBg = useColorModeValue("white", "whiteAlpha.100");
   const inputBorder = useColorModeValue("gray.300", "whiteAlpha.300");
-  const rowBg = useColorModeValue("gray.50", "blackAlpha.200");
-  const fileBg = useColorModeValue("gray.100", "whiteAlpha.300");
-  const fileColor = useColorModeValue("gray.800", "white");
   const thumbBg = useColorModeValue("gray.200", "blackAlpha.400");
-  const expandedBg = useColorModeValue("blue.50", "blue.900");
   const imagesPanelBg = useColorModeValue("gray.50", "whiteAlpha.50");
   const imagesPanelBorder = useColorModeValue("gray.200", "whiteAlpha.300");
   const uploadBarBg = useColorModeValue("white", "whiteAlpha.100");
@@ -75,205 +81,17 @@ export default function HomePage() {
   const uploadImageButtonLabel = "Upload image";
   const loadingImagesLabel = "Loading images...";
   const noImagesForProjectLabel = "No images in this project.";
-  const createSuccessProjectLabel = "Project created";
-  const deleteSuccessProjectLabel = "Project deleted";
-  const uploadSuccessImageLabel = "Image uploaded";
-  const deleteSuccessImageLabel = "Image deleted";
-  const errorLoadProjectsLabel = "Error loading projects";
-  const errorLoadImagesLabel = "Error loading images";
-  const errorCreateProjectLabel = "Error creating project";
-  const errorDeleteProjectLabel = "Error deleting project";
-  const errorUploadImageLabel = "Error uploading image";
-  const errorDeleteImageLabel = "Error deleting image";
   const previewScrollLeftLabel = "◀";
   const previewScrollRightLabel = "▶";
   const dragAndDropLabel = "Drag and drop";
   const orLabel = "OR";
   const uploadProjectLabel = "Project for upload";
   const noProjectsUploadLabel = "Create a project first to upload images.";
-  const uploadTermsLabel = "By uploading an image you agree to our Terms of Use and Privacy Policy.";
-  const uploadFormatsLabel = "Supported formats: png jpg jpeg webp bmp";
   const uploadInProgressLabel = "Uploading...";
   const uploadPreviewLabel = "Images preview";
 
   const imageStripRefs = useRef({});
   const uploadInputRef = useRef(null);
-
-  async function loadImagesForProject(projectId) {
-    if (!projectId) return [];
-
-    setLoadingImagesByProject((prev) => ({ ...prev, [projectId]: true }));
-    try {
-      const data = await getProjectImages(projectId);
-      setProjectImagesMap((prev) => ({ ...prev, [projectId]: data || [] }));
-      return data || [];
-    } catch (err) {
-      setError(`${errorLoadImagesLabel}: ${err.message}`);
-      return [];
-    } finally {
-      setLoadingImagesByProject((prev) => ({ ...prev, [projectId]: false }));
-    }
-  }
-
-  async function loadProjects() {
-    setLoadingProjects(true);
-    setError("");
-
-    try {
-      const data = await getProjects();
-      const nextProjects = data || [];
-      setProjects(nextProjects);
-
-      if (nextProjects.length) {
-        const firstId = String(nextProjects[0].id);
-        const currentId = nextProjects.some((p) => String(p.id) === String(selectedProjectId))
-          ? String(selectedProjectId)
-          : firstId;
-        setSelectedProjectId(currentId);
-        setUploadProjectId((prev) =>
-          nextProjects.some((p) => String(p.id) === String(prev)) ? String(prev) : firstId
-        );
-
-        const currentExpanded = nextProjects.some((p) => String(p.id) === String(expandedProjectId))
-          ? String(expandedProjectId)
-          : "";
-        setExpandedProjectId(currentExpanded);
-
-        await Promise.all(nextProjects.map((project) => loadImagesForProject(project.id)));
-      } else {
-        setSelectedProjectId("");
-        setUploadProjectId("");
-        setExpandedProjectId("");
-        setProjectImagesMap({});
-      }
-    } catch (err) {
-      setError(`${errorLoadProjectsLabel}: ${err.message}`);
-    } finally {
-      setLoadingProjects(false);
-    }
-  }
-
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  async function onCreateProject(event) {
-    event.preventDefault();
-    if (!projectName.trim()) return;
-
-    setSubmitting(true);
-    setError("");
-    setMessage("");
-
-    try {
-      const created = await createProject(projectName.trim());
-      setProjectName("");
-      setMessage(`${createSuccessProjectLabel}: #${created.id} ${created.name}`);
-      await loadProjects();
-      setSelectedProjectId(String(created.id));
-      setExpandedProjectId(String(created.id));
-    } catch (err) {
-      setError(`${errorCreateProjectLabel}: ${err.message}`);
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function onDeleteProject(projectId) {
-    setSubmitting(true);
-    setError("");
-    setMessage("");
-
-    try {
-      await deleteProject(projectId);
-      setMessage(`${deleteSuccessProjectLabel}: #${projectId}`);
-
-      const nextProjects = projects.filter((project) => project.id !== projectId);
-      setProjects(nextProjects);
-
-      setProjectImagesMap((prev) => {
-        const next = { ...prev };
-        delete next[projectId];
-        return next;
-      });
-
-      if (String(selectedProjectId) === String(projectId)) {
-        setSelectedProjectId(nextProjects[0]?.id ? String(nextProjects[0].id) : "");
-      }
-      if (String(uploadProjectId) === String(projectId)) {
-        setUploadProjectId(nextProjects[0]?.id ? String(nextProjects[0].id) : "");
-      }
-
-      if (String(expandedProjectId) === String(projectId)) {
-        setExpandedProjectId("");
-      }
-    } catch (err) {
-      setError(`${errorDeleteProjectLabel}: ${err.message}`);
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function onCreateImage(event) {
-    event.preventDefault();
-    if (!uploadProjectId || uploadFiles.length === 0) return;
-
-    setSubmitting(true);
-    setError("");
-    setMessage("");
-
-    let successCount = 0;
-    let firstUploadError = "";
-
-    try {
-      for (const file of uploadFiles) {
-        try {
-          await uploadImage(uploadProjectId, file);
-          successCount += 1;
-        } catch (err) {
-          if (!firstUploadError) {
-            firstUploadError = err.message;
-          }
-        }
-      }
-
-      if (successCount > 0) {
-        await loadImagesForProject(uploadProjectId);
-        setMessage(`${uploadSuccessImageLabel}: ${successCount}/${uploadFiles.length}`);
-      }
-
-      if (firstUploadError) {
-        setError(`${errorUploadImageLabel}: ${firstUploadError}`);
-      }
-    } finally {
-      clearUploadFiles();
-      setSubmitting(false);
-    }
-  }
-
-  async function onDeleteImage(imageId, projectId) {
-    setSubmitting(true);
-    setError("");
-    setMessage("");
-
-    try {
-      await deleteImage(imageId);
-      setMessage(`${deleteSuccessImageLabel}: #${imageId}`);
-      setProjectImagesMap((prev) => ({
-        ...prev,
-        [projectId]: (prev[projectId] || []).filter((image) => image.id !== imageId),
-      }));
-    } catch (err) {
-      setError(`${errorDeleteImageLabel}: ${err.message}`);
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  function onEditImage(imageId, projectId) {
-    setError("");
-    setMessage(`Edit feature TO IMPLEMENT: image #${imageId} in project #${projectId}`);
-  }
 
   function onToggleProject(projectId) {
     const next = String(expandedProjectId) === String(projectId) ? "" : String(projectId);
@@ -702,7 +520,7 @@ export default function HomePage() {
             {imagesLabel}
           </Text>
 
-          <form onSubmit={onCreateImage}>
+          <form onSubmit={(event) => onCreateImage(event, uploadFiles, clearUploadFiles)}>
             <VStack align="stretch" spacing={4}>
               <input
                 ref={uploadInputRef}
@@ -899,49 +717,4 @@ export default function HomePage() {
       ) : null}
     </Stack>
   );
-}
-
-function formatRelativeTime(dateInput) {
-  if (!dateInput) return "unknown";
-
-  const parsed = new Date(dateInput);
-  if (Number.isNaN(parsed.getTime())) return "unknown";
-
-  const now = Date.now();
-  const diffMs = now - parsed.getTime();
-  const minuteMs = 60 * 1000;
-  const hourMs = 60 * minuteMs;
-  const dayMs = 24 * hourMs;
-
-  if (diffMs < minuteMs) return "just now";
-  if (diffMs < hourMs) return `${Math.floor(diffMs / minuteMs)} min ago`;
-  if (diffMs < dayMs) return `${Math.floor(diffMs / hourMs)} h ago`;
-  return `${Math.floor(diffMs / dayMs)} d ago`;
-}
-
-function getProjectLastActivity(project, images) {
-  if (!images || images.length === 0) {
-    return project?.created_at;
-  }
-
-  const sortedByDate = [...images].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
-
-  return sortedByDate[0]?.created_at || project?.created_at;
-}
-
-function toImageUrl(filePath) {
-  if (!filePath) return "";
-
-  if (filePath.startsWith("/uploads/")) {
-    return `${API_BASE_URL}${filePath}`;
-  }
-
-  const uploadsIndex = filePath.indexOf("/uploads/");
-  if (uploadsIndex !== -1) {
-    return `${API_BASE_URL}${filePath.slice(uploadsIndex)}`;
-  }
-
-  return filePath;
 }
