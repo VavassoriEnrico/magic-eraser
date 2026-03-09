@@ -12,6 +12,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True) 
     created_at = Column(DateTime, default=datetime.now, nullable=False)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
     
     # Allows access to images via project.images, just a Python convenience.
     images = relationship("Image", back_populates="project", cascade="all, delete-orphan")

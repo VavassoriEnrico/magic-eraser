@@ -5,6 +5,7 @@ import {
   Button,
   HStack,
   Input,
+  Link,
   Menu,
   MenuButton,
   MenuItem,
@@ -29,6 +30,8 @@ import { API_BASE_URL } from "../api/client";
 import { useHomeData } from "../hooks/useHomeData";
 import { formatRelativeTime, getProjectLastActivity } from "../utils/date";
 import { toImageUrl } from "../utils/images";
+//import { BiArrowFromBottom } from "../components/icons/Icons";
+import { BiArrowFromBottom } from "react-icons/bi";
 
 export default function HomePage() {
   const {
@@ -49,6 +52,7 @@ export default function HomePage() {
     loadProjects,
     onCreateProject,
     onDeleteProject,
+    onRenameProject,
     onCreateImage,
     onDeleteImage,
     onEditImage,
@@ -63,6 +67,9 @@ export default function HomePage() {
   const [previewScrollStateByProject, setPreviewScrollStateByProject] = useState({});
   const [moveDialogImage, setMoveDialogImage] = useState(null);
   const [moveTargetProjectId, setMoveTargetProjectId] = useState("");
+  const [editingProjectId, setEditingProjectId] = useState("");
+  const [editingProjectName, setEditingProjectName] = useState("");
+  const [deleteProjectTarget, setDeleteProjectTarget] = useState(null);
 
   const pageText = useColorModeValue("gray.800", "white");
   const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
@@ -79,11 +86,12 @@ export default function HomePage() {
   const dropZoneBg = useColorModeValue("gray.50", "blackAlpha.200");
   const dropZoneBorder = useColorModeValue("gray.300", "whiteAlpha.400");
   const dropZoneBorderActive = useColorModeValue("blue.400", "blue.300");
+  const homeDescriptionColor = useColorModeValue("black", "white");
 
   // TEXT LABELS
   const workspaceLabel = "Workspace";
   const homeTitleLabel = "Home";
-  const homeDescriptionLabel = "Create projects, upload images, and edit them!.";
+  const homeDescriptionLabel = "Create projects, upload images, and edit them";
   const backendApiLabel = "Backend API";
   const refreshLabel = "Refresh";
   const projectsLabel = "Projects";
@@ -93,6 +101,7 @@ export default function HomePage() {
   const loadingProjectsLabel = "Loading projects...";
   const noProjectsLabel = "No projects created yet.";
   const deleteLabel = "Delete";
+  const editLabel = "Edit";
   const noFileSelectedLabel = "No file selected";
   const uploadImageButtonLabel = "Upload image";
   const loadingImagesLabel = "Loading images...";
@@ -191,6 +200,38 @@ export default function HomePage() {
     setIsDragOverUpload(false);
   }
 
+  function startInlineProjectEdit(project) {
+    setEditingProjectId(String(project.id));
+    setEditingProjectName(project.name || "");
+  }
+
+  function cancelInlineProjectEdit() {
+    setEditingProjectId("");
+    setEditingProjectName("");
+  }
+
+  async function saveInlineProjectEdit(projectId) {
+    if (!projectId) return;
+    const success = await onRenameProject(projectId, editingProjectName);
+    if (success) {
+      cancelInlineProjectEdit();
+    }
+  }
+
+  function openDeleteProjectDialog(project) {
+    setDeleteProjectTarget(project);
+  }
+
+  function closeDeleteProjectDialog() {
+    setDeleteProjectTarget(null);
+  }
+
+  async function confirmDeleteProject() {
+    if (!deleteProjectTarget) return;
+    await onDeleteProject(deleteProjectTarget.id);
+    closeDeleteProjectDialog();
+  }
+
   function renderProjectPreview(project, projectImages, isExpanded, previewState, compact = false) {
     if (!projectImages.length) return null;
 
@@ -229,11 +270,11 @@ export default function HomePage() {
                 sx={
                   isExpanded
                     ? {
-                        "&:hover .image-actions-overlay": {
-                          opacity: 1,
-                          pointerEvents: "auto",
-                        },
-                      }
+                      "&:hover .image-actions-overlay": {
+                        opacity: 1,
+                        pointerEvents: "auto",
+                      },
+                    }
                     : undefined
                 }
               >
@@ -393,14 +434,14 @@ export default function HomePage() {
   return (
     <Stack spacing={6} color={pageText} minH="calc(100vh - 140px)">
       <Box>
-        <Text color={sectionLabel} fontSize="sm" letterSpacing="0.12em" textTransform="uppercase">
-          {workspaceLabel}
-        </Text>
-        <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em">
-          {homeTitleLabel}
-        </Text>
-        <Text color={subtleText} mt={1}>
+        <Text fontSize={{ base: "2xl", md: "4xl" }}
+          mt={8} mb={8}
+          fontFamily="'Inter', sans-serif"
+          color={homeDescriptionColor}
+          fontWeight="bold"
+          align="center">
           {homeDescriptionLabel}
+
         </Text>
       </Box>
 
@@ -416,7 +457,10 @@ export default function HomePage() {
         bg={panelBg}
       >
         <Text color={subtleText}>
-          {backendApiLabel}: <code>{API_BASE_URL}</code>
+          {backendApiLabel}:{" "}
+          <Link href={API_BASE_URL + "/docs"} isExternal color="blue.400" textDecoration="underline">
+            {API_BASE_URL}
+          </Link>
         </Text>
         <Button size="sm" variant="outline" onClick={loadProjects} loading={loadingProjects}>
           {refreshLabel}
@@ -477,6 +521,7 @@ export default function HomePage() {
             <VStack align="stretch" spacing={4}>
               {projects.map((project) => {
                 const isExpanded = String(project.id) === String(expandedProjectId);
+                const isEditing = String(project.id) === String(editingProjectId);
                 const projectImages = projectImagesMap[project.id] || [];
                 const projectLoading = loadingImagesByProject[project.id];
                 const previewState = previewScrollStateByProject[project.id] || {
@@ -500,18 +545,98 @@ export default function HomePage() {
                         <Box flexShrink={0}>
                           {isExpanded ? (
                             <HStack gap={3} align="baseline" flexWrap="wrap">
-                              <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
-                                {project.name}
-                              </Text>
+                              {isEditing ? (
+                                <VStack align="start" spacing={2} onClick={(event) => event.stopPropagation()}>
+                                  <Input
+                                    value={editingProjectName}
+                                    onChange={(event) => setEditingProjectName(event.target.value)}
+                                    variant="filled"
+                                    fontWeight="semibold"
+                                    fontSize="2xl"
+                                    lineHeight="1.2"
+                                    px={2}
+                                    py={1}
+                                    border="1px solid"
+                                    borderColor={inputBorder}
+                                    bg={inputBg}
+                                    _hover={{ bg: inputBg }}
+                                    _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
+                                    minW="260px"
+                                  />
+                                  <HStack gap={2}>
+                                    <Button
+                                      size="sm"
+                                      colorScheme="blue"
+                                      onClick={() => saveInlineProjectEdit(project.id)}
+                                      isDisabled={!editingProjectName.trim()}
+                                      isLoading={submitting}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={cancelInlineProjectEdit}
+                                      isDisabled={submitting}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </HStack>
+                                </VStack>
+                              ) : (
+                                <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
+                                  {project.name}
+                                </Text>
+                              )}
                               <Text color={subtleText} fontSize="sm">
                                 Last update: {formatRelativeTime(getProjectLastActivity(project, projectImages))}
                               </Text>
                             </HStack>
                           ) : (
-                          <Box>
-                            <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
-                              {project.name}
-                            </Text>
+                            <Box>
+                              {isEditing ? (
+                                <VStack align="start" spacing={2} onClick={(event) => event.stopPropagation()}>
+                                  <Input
+                                    value={editingProjectName}
+                                    onChange={(event) => setEditingProjectName(event.target.value)}
+                                    variant="filled"
+                                    fontWeight="semibold"
+                                    fontSize="2xl"
+                                    lineHeight="1.2"
+                                    px={2}
+                                    py={1}
+                                    border="1px solid"
+                                    borderColor={inputBorder}
+                                    bg={inputBg}
+                                    _hover={{ bg: inputBg }}
+                                    _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
+                                    minW="260px"
+                                  />
+                                  <HStack gap={2}>
+                                    <Button
+                                      size="sm"
+                                      colorScheme="blue"
+                                      onClick={() => saveInlineProjectEdit(project.id)}
+                                      isDisabled={!editingProjectName.trim()}
+                                      isLoading={submitting}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={cancelInlineProjectEdit}
+                                      isDisabled={submitting}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </HStack>
+                                </VStack>
+                              ) : (
+                                <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
+                                  {project.name}
+                                </Text>
+                              )}
                               <Text color={subtleText} fontSize="sm" mt={1}>
                                 Last update: {formatRelativeTime(getProjectLastActivity(project, projectImages))}
                               </Text>
@@ -523,18 +648,22 @@ export default function HomePage() {
                           : null}
                       </HStack>
 
-                      <Button
-                        colorPalette="red"
-                        variant="ghost"
-                        size="sm"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onDeleteProject(project.id);
-                        }}
-                        disabled={submitting}
-                      >
-                        {deleteLabel}
-                      </Button>
+                      <Menu placement="bottom-end">
+                        <MenuButton
+                          as={IconButton}
+                          size="sm"
+                          aria-label="Project actions"
+                          icon={<span style={{ fontWeight: 700 }}>⋯</span>}
+                          variant="ghost"
+                          onClick={(event) => event.stopPropagation()}
+                          isDisabled={submitting}
+                        />
+                        <MenuList onClick={(event) => event.stopPropagation()}>
+                          <MenuItem onClick={() => startInlineProjectEdit(project)}>{editLabel}</MenuItem>
+                          <MenuItem onClick={() => openDeleteProjectDialog(project)}>{deleteLabel}</MenuItem>
+                        </MenuList>
+                      </Menu>
+
                     </HStack>
 
                     {projectLoading ? (
@@ -594,9 +723,11 @@ export default function HomePage() {
                   onDragLeave={onDragLeaveUpload}
                   transition="border-color 0.2s ease, background-color 0.2s ease"
                 >
-                  <Text fontSize="56px" lineHeight="1" mb={4} color={subtleText}>
-                    ↥
-                  </Text>
+                  <BiArrowFromBottom
+                    size={56}
+                    style={{ display: "block", margin: "0 auto 12px auto" }}
+                    color="currentColor"
+                  />
                   <Text fontSize="lg" fontWeight="medium" mb={2}>
                     {dragAndDropLabel}
                   </Text>
@@ -763,6 +894,25 @@ export default function HomePage() {
           </Box>
         </Box>
       ) : null}
+
+      <Modal isOpen={!!deleteProjectTarget} onClose={closeDeleteProjectDialog} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Delete project</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>Are you sure?</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={closeDeleteProjectDialog}>
+              No
+            </Button>
+            <Button colorScheme="red" onClick={confirmDeleteProject} isLoading={submitting}>
+              Yes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       <Modal isOpen={!!moveDialogImage} onClose={closeMoveDialog} isCentered>
         <ModalOverlay />

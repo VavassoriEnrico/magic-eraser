@@ -1,4 +1,7 @@
 import { IconButton, useColorMode } from "@chakra-ui/react";
+import { BiSolidSun, BiSolidMoon } from "react-icons/bi";
+
+
 
 export default function Navbar({ currentPath, onNavigate }) {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -41,7 +44,7 @@ export default function Navbar({ currentPath, onNavigate }) {
             onClick={toggleColorMode}
             className="app-navbar__theme-btn"
             aria-label={colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            icon={<span aria-hidden="true">{colorMode === "dark" ? "☀" : "🌙"}</span>}
+            icon={<span aria-hidden="true">{colorMode === "dark" ? <BiSolidSun /> : <BiSolidMoon />}</span>}
           />
           <a
             href="/profile"

@@ -14,3 +14,10 @@ export function createProject(name) {
 export function deleteProject(projectId) {
   return request(`/projects/${projectId}`, { method: "DELETE" });
 }
+
+export function updateProject(projectId, name) {
+  return request(`/projects/${projectId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+}

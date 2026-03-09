@@ -37,7 +37,7 @@ body {
 }
 
 .app-shell__content {
-  max-width: 1120px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 28px 20px 48px;
 }
@@ -52,7 +52,7 @@ body {
 }
 
 .app-navbar__inner {
-  max-width: 1120px;
+  max-width: 1500px;
   margin: 0 auto;
   min-height: 64px;
   padding: 0 20px;

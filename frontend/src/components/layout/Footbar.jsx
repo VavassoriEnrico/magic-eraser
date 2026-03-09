@@ -26,7 +26,7 @@ export default function Footbar() {
           </Text>
         </HStack>
 
-        <SimpleGrid columns={{ base: 2, md: 3 }} maxW="960px" mx="auto" w="100%">
+        <SimpleGrid columns={{ base: 2, md: 3 }} maxW="1500px" mx="auto" w="100%">
           <FooterColumn title="Content" muted={muted} titleColor={title} link1="Test1" link2="Test2" link3="Test3"/>
           <FooterColumn title="Tool" muted={muted} titleColor={title}  link1="Test4" link2="Test5" link3="Test6"/>
           <FooterColumn title="Help" muted={muted} titleColor={title}  link1="Test7" link2="Test8" link3="Test9"/>

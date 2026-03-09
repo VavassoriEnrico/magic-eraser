@@ -1,7 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { createImage, deleteImage, getProjectImages, uploadImage } from "../api/images";
-import { createProject, deleteProject, getProjects } from "../api/projects";
+import { createProject, deleteProject, getProjects, updateProject } from "../api/projects";
+
+function toMillis(dateInput) {
+  if (!dateInput) return 0;
+  const parsed = new Date(dateInput);
+  const time = parsed.getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function sortProjectsByLastUpdate(projectList) {
+  return [...(projectList || [])].sort((a, b) => {
+    const bTime = Math.max(toMillis(b?.updated_at), toMillis(b?.created_at));
+    const aTime = Math.max(toMillis(a?.updated_at), toMillis(a?.created_at));
+    return bTime - aTime;
+  });
+}
 
 export function useHomeData() {
   const [projects, setProjects] = useState([]);
@@ -41,7 +56,7 @@ export function useHomeData() {
 
     try {
       const data = await getProjects();
-      const nextProjects = data || [];
+      const nextProjects = sortProjectsByLastUpdate(data || []);
       setProjects(nextProjects);
 
       if (nextProjects.length) {
@@ -110,7 +125,8 @@ export function useHomeData() {
         setMessage(`Project deleted: #${projectId}`);
 
         const nextProjects = projects.filter((project) => project.id !== projectId);
-        setProjects(nextProjects);
+        const orderedProjects = sortProjectsByLastUpdate(nextProjects);
+        setProjects(orderedProjects);
 
         setProjectImagesMap((prev) => {
           const next = { ...prev };
@@ -119,10 +135,10 @@ export function useHomeData() {
         });
 
         if (String(selectedProjectId) === String(projectId)) {
-          setSelectedProjectId(nextProjects[0]?.id ? String(nextProjects[0].id) : "");
+          setSelectedProjectId(orderedProjects[0]?.id ? String(orderedProjects[0].id) : "");
         }
         if (String(uploadProjectId) === String(projectId)) {
-          setUploadProjectId(nextProjects[0]?.id ? String(nextProjects[0].id) : "");
+          setUploadProjectId(orderedProjects[0]?.id ? String(orderedProjects[0].id) : "");
         }
         if (String(expandedProjectId) === String(projectId)) {
           setExpandedProjectId("");
@@ -135,6 +151,38 @@ export function useHomeData() {
     },
     [expandedProjectId, projects, selectedProjectId, uploadProjectId]
   );
+
+  const onRenameProject = useCallback(async (projectId, nextName) => {
+    const trimmedName = (nextName || "").trim();
+    if (!trimmedName) {
+      setError("Project name cannot be empty");
+      return false;
+    }
+
+    setSubmitting(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const updated = await updateProject(projectId, trimmedName);
+      setProjects((prev) =>
+        sortProjectsByLastUpdate(
+          prev.map((project) =>
+            String(project.id) === String(projectId)
+              ? { ...project, name: updated.name, updated_at: updated.updated_at }
+              : project
+          )
+        )
+      );
+      setMessage(`Project updated: #${projectId} ${updated.name}`);
+      return true;
+    } catch (err) {
+      setError(`Error updating project: ${err.message}`);
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  }, []);
 
   const onCreateImage = useCallback(
     async (event, uploadFiles, clearUploadFiles) => {
@@ -162,6 +210,15 @@ export function useHomeData() {
 
         if (successCount > 0) {
           await loadImagesForProject(uploadProjectId);
+          setProjects((prev) =>
+            sortProjectsByLastUpdate(
+              prev.map((project) =>
+                String(project.id) === String(uploadProjectId)
+                  ? { ...project, updated_at: new Date().toISOString() }
+                  : project
+              )
+            )
+          );
           setMessage(`Image uploaded: ${successCount}/${uploadFiles.length}`);
         }
 
@@ -188,6 +245,15 @@ export function useHomeData() {
         ...prev,
         [projectId]: (prev[projectId] || []).filter((image) => image.id !== imageId),
       }));
+      setProjects((prev) =>
+        sortProjectsByLastUpdate(
+          prev.map((project) =>
+            String(project.id) === String(projectId)
+              ? { ...project, updated_at: new Date().toISOString() }
+              : project
+          )
+        )
+      );
     } catch (err) {
       setError(`Error deleting image: ${err.message}`);
     } finally {
@@ -212,6 +278,15 @@ export function useHomeData() {
           filePath: image.filePath,
         });
         await loadImagesForProject(projectId);
+        setProjects((prev) =>
+          sortProjectsByLastUpdate(
+            prev.map((project) =>
+              String(project.id) === String(projectId)
+                ? { ...project, updated_at: new Date().toISOString() }
+                : project
+            )
+          )
+        );
         setMessage(`Image duplicated in project #${projectId}`);
       } catch (err) {
         setError(`Error duplicating image: ${err.message}`);
@@ -244,6 +319,16 @@ export function useHomeData() {
         });
         await deleteImage(image.id);
         await Promise.all([loadImagesForProject(sourceProjectId), loadImagesForProject(targetProjectId)]);
+        const nowIso = new Date().toISOString();
+        setProjects((prev) =>
+          sortProjectsByLastUpdate(
+            prev.map((project) =>
+              String(project.id) === String(sourceProjectId) || String(project.id) === String(targetProjectId)
+                ? { ...project, updated_at: nowIso }
+                : project
+            )
+          )
+        );
         setMessage(`Image moved to project #${targetProjectId}`);
       } catch (err) {
         setError(`Error moving image: ${err.message}`);
@@ -273,6 +358,7 @@ export function useHomeData() {
     loadProjects,
     onCreateProject,
     onDeleteProject,
+    onRenameProject,
     onCreateImage,
     onDeleteImage,
     onEditImage,
@@ -280,9 +366,5 @@ export function useHomeData() {
     onMoveImage,
   };
 }
-
-
-
-
 
 

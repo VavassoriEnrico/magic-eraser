@@ -26,15 +26,17 @@ export function formatRelativeTime(dateInput) {
 }
 
 export function getProjectLastActivity(project, images) {
-  if (!images || images.length === 0) {
-    return project?.created_at;
+  const candidateDates = [project?.updated_at, project?.created_at];
+
+  if (images && images.length > 0) {
+    images.forEach((image) => candidateDates.push(image?.created_at));
   }
 
-  const sortedByDate = [...images].sort((a, b) => {
-    const bTime = parseApiDate(b.created_at)?.getTime() || 0;
-    const aTime = parseApiDate(a.created_at)?.getTime() || 0;
-    return bTime - aTime;
-  });
+  const newest = candidateDates.reduce((latest, current) => {
+    const latestTime = parseApiDate(latest)?.getTime() || 0;
+    const currentTime = parseApiDate(current)?.getTime() || 0;
+    return currentTime > latestTime ? current : latest;
+  }, null);
 
-  return sortedByDate[0]?.created_at || project?.created_at;
+  return newest || project?.created_at;
 }
