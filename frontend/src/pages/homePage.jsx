@@ -3,14 +3,14 @@ import {
   Badge,
   Box,
   Button,
+  ButtonGroup,
   HStack,
   Input,
   Link,
   Menu,
   MenuButton,
-  MenuItem,
   MenuList,
-  IconButton,
+  Portal,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -69,7 +69,7 @@ export default function HomePage() {
   const [moveTargetProjectId, setMoveTargetProjectId] = useState("");
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingProjectName, setEditingProjectName] = useState("");
-  const [deleteProjectTarget, setDeleteProjectTarget] = useState(null);
+  const [deleteConfirmProjectId, setDeleteConfirmProjectId] = useState("");
 
   const pageText = useColorModeValue("gray.800", "white");
   const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
@@ -218,18 +218,10 @@ export default function HomePage() {
     }
   }
 
-  function openDeleteProjectDialog(project) {
-    setDeleteProjectTarget(project);
-  }
-
-  function closeDeleteProjectDialog() {
-    setDeleteProjectTarget(null);
-  }
-
-  async function confirmDeleteProject() {
-    if (!deleteProjectTarget) return;
-    await onDeleteProject(deleteProjectTarget.id);
-    closeDeleteProjectDialog();
+  async function confirmDeleteProject(projectId) {
+    if (!projectId) return;
+    await onDeleteProject(projectId);
+    setDeleteConfirmProjectId("");
   }
 
   function renderProjectPreview(project, projectImages, isExpanded, previewState, compact = false) {
@@ -298,41 +290,40 @@ export default function HomePage() {
                     p={2}
                   >
                     <HStack gap={2}>
-                      <Button
-                        size="xs"
-                        colorPalette="blue"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onEditImage(image.id, project.id);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="xs"
-                        colorPalette="red"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onDeleteImage(image.id, project.id);
-                        }}
-                        disabled={submitting}
-                      >
-                        Delete
-                      </Button>
-                      <Menu placement="bottom-end">
+                      <Menu placement="bottom-end" onClose={() => setDeleteConfirmProjectId("")}>
                         <MenuButton
-                          as={IconButton}
+                          as={Button}
                           size="xs"
-                          aria-label="Image actions"
-                          icon={<span style={{ fontWeight: 700 }}>⋯</span>}
-                          variant="solid"
-                          colorScheme="gray"
+                          variant="outline"
+                          aria-label="Image menu"
                           onClick={(event) => event.stopPropagation()}
-                        />
-                        <MenuList onClick={(event) => event.stopPropagation()}>
-                          <MenuItem onClick={() => openMoveDialog(image, project.id)}>Move</MenuItem>
-                          <MenuItem onClick={() => onDuplicateImage(image, project.id)}>Duplicate</MenuItem>
-                        </MenuList>
+                        >
+                          ⋯
+                        </MenuButton>
+                        <Portal>
+                          <MenuList
+                            onClick={(event) => event.stopPropagation()}
+                            p={1}
+                            minW="unset"
+                            w="fit-content"
+                          >
+                            <ButtonGroup size="xs" variant="outline">
+                              <Button onClick={() => onEditImage(image.id, project.id)}>Edit</Button>
+                              <Button
+                                colorScheme="red"
+                                onClick={() => onDeleteImage(image.id, project.id)}
+                                isDisabled={submitting}
+                              >
+                                Delete
+                              </Button>
+                            </ButtonGroup>
+                            <Box h={1} />
+                            <ButtonGroup size="xs" variant="outline">
+                              <Button onClick={() => openMoveDialog(image, project.id)}>Move</Button>
+                              <Button onClick={() => onDuplicateImage(image, project.id)}>Duplicate</Button>
+                            </ButtonGroup>
+                          </MenuList>
+                        </Portal>
                       </Menu>
                     </HStack>
                   </Box>
@@ -648,20 +639,63 @@ export default function HomePage() {
                           : null}
                       </HStack>
 
-                      <Menu placement="bottom-end">
+                      <Menu placement="bottom-end" onClose={() => setDeleteConfirmProjectId("")}>
+                        {/*
+                          Keep the delete confirmation compact inside the same menu
+                          instead of opening a full-screen modal.
+                        */}
                         <MenuButton
-                          as={IconButton}
+                          as={Button}
                           size="sm"
-                          aria-label="Project actions"
-                          icon={<span style={{ fontWeight: 700 }}>⋯</span>}
-                          variant="ghost"
+                          variant="outline"
+                          aria-label="Project menu"
                           onClick={(event) => event.stopPropagation()}
                           isDisabled={submitting}
-                        />
-                        <MenuList onClick={(event) => event.stopPropagation()}>
-                          <MenuItem onClick={() => startInlineProjectEdit(project)}>{editLabel}</MenuItem>
-                          <MenuItem onClick={() => openDeleteProjectDialog(project)}>{deleteLabel}</MenuItem>
-                        </MenuList>
+                        >
+                          ⋯
+                        </MenuButton>
+                        <Portal>
+                          <MenuList
+                            onClick={(event) => event.stopPropagation()}
+                            p={1}
+                            minW="unset"
+                            w="fit-content"
+                          >
+                            <Box px={1} py={1}>
+                              <ButtonGroup size="sm" variant="outline">
+                                <Button onClick={() => startInlineProjectEdit(project)}>{editLabel}</Button>
+                                <Button
+                                  colorScheme="red"
+                                  onClick={() => setDeleteConfirmProjectId(String(project.id))}
+                                >
+                                  {deleteLabel}
+                                </Button>
+                              </ButtonGroup>
+                            </Box>
+                            {String(deleteConfirmProjectId) === String(project.id) ? (
+                              <Box px={3} py={2} borderTop="1px solid" borderColor={panelBorder}>
+                                <Text fontSize="xs" color={subtleText} mb={2}>
+                                  Are you sure?
+                                </Text>
+                                <ButtonGroup size="xs" variant="outline">
+                                  <Button
+                                    colorScheme="red"
+                                    onClick={() => confirmDeleteProject(project.id)}
+                                    isLoading={submitting}
+                                  >
+                                    Yes
+                                  </Button>
+                                  <Button
+                                    onClick={() => setDeleteConfirmProjectId("")}
+                                    isDisabled={submitting}
+                                  >
+                                    No
+                                  </Button>
+                                </ButtonGroup>
+                              </Box>
+                            ) : null}
+                          </MenuList>
+                        </Portal>
                       </Menu>
 
                     </HStack>
@@ -894,25 +928,6 @@ export default function HomePage() {
           </Box>
         </Box>
       ) : null}
-
-      <Modal isOpen={!!deleteProjectTarget} onClose={closeDeleteProjectDialog} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Delete project</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text>Are you sure?</Text>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={closeDeleteProjectDialog}>
-              No
-            </Button>
-            <Button colorScheme="red" onClick={confirmDeleteProject} isLoading={submitting}>
-              Yes
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
 
       <Modal isOpen={!!moveDialogImage} onClose={closeMoveDialog} isCentered>
         <ModalOverlay />
