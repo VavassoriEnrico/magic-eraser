@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createImage, deleteImage, getProjectImages, uploadImage } from "../api/images";
 import { createProject, deleteProject, getProjects, updateProject } from "../api/projects";
 
-function toMillis(dateInput) {
+function convertToMilliseconds(dateInput) {
   if (!dateInput) return 0;
   const parsed = new Date(dateInput);
   const time = parsed.getTime();
@@ -12,8 +12,8 @@ function toMillis(dateInput) {
 
 function sortProjectsByLastUpdate(projectList) {
   return [...(projectList || [])].sort((a, b) => {
-    const bTime = Math.max(toMillis(b?.updated_at), toMillis(b?.created_at));
-    const aTime = Math.max(toMillis(a?.updated_at), toMillis(a?.created_at));
+    const bTime = Math.max(convertToMilliseconds(b?.updated_at), convertToMilliseconds(b?.created_at));
+    const aTime = Math.max(convertToMilliseconds(a?.updated_at), convertToMilliseconds(a?.created_at));
     return bTime - aTime;
   });
 }

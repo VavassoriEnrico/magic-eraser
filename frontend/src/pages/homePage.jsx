@@ -89,31 +89,48 @@ export default function HomePage() {
   const homeDescriptionColor = useColorModeValue("black", "white");
 
   // TEXT LABELS
-  const workspaceLabel = "Workspace";
-  const homeTitleLabel = "Home";
   const homeDescriptionLabel = "Create projects, upload images, and edit them";
-  const backendApiLabel = "Backend API";
-  const refreshLabel = "Refresh";
+
+  //project
   const projectsLabel = "Projects";
-  const imagesLabel = "Images";
   const createProjectPlaceholderLabel = "Project name...";
   const createProjectButtonLabel = "Create project";
   const loadingProjectsLabel = "Loading projects...";
   const noProjectsLabel = "No projects created yet.";
-  const deleteLabel = "Delete";
-  const editLabel = "Edit";
-  const noFileSelectedLabel = "No file selected";
+  const uploadProjectLabel = "Project for upload";
+  const noProjectsUploadLabel = "Create a project first to upload images.";
+  const selectDestinationLabel = "Select destination project";
+
+  //images
+  const imagesLabel = "Images";
   const uploadImageButtonLabel = "Upload image";
-  const loadingImagesLabel = "Loading images...";
   const noImagesForProjectLabel = "No images in this project.";
+  const uploadPreviewLabel = "Images preview";
+  const moveImageLabel = "Move image";
+  const loadingImagesLabel = "Loading images...";
+
+  //general
+  const workspaceLabel = "Workspace";
+  const homeTitleLabel = "Home";
+  const backendApiLabel = "Backend API";
+  const refreshLabel = "Refresh";
+  const deleteLabel = "Delete";
+  const cancelLabel = "Cancel";
+  const editLabel = "Edit";
+  const saveLabel = "Save";
+  const noFileSelectedLabel = "No file selected";
   const previewScrollLeftLabel = "◀";
   const previewScrollRightLabel = "▶";
   const dragAndDropLabel = "Drag and drop";
   const orLabel = "OR";
-  const uploadProjectLabel = "Project for upload";
-  const noProjectsUploadLabel = "Create a project first to upload images.";
   const uploadInProgressLabel = "Uploading...";
-  const uploadPreviewLabel = "Images preview";
+  const lastUpdateLabel = "Last update:";
+  const areYouSureLabel = "Are you sure?";
+  const yesLabel = "Yes";
+  const noLabel = "No";
+  const moveLabel = "Move";
+  
+  
 
   const imageStripRefs = useRef({});
   const uploadInputRef = useRef(null);
@@ -314,7 +331,7 @@ export default function HomePage() {
                                 onClick={() => onDeleteImage(image.id, project.id)}
                                 isDisabled={submitting}
                               >
-                                Delete
+                                {deleteLabel}
                               </Button>
                             </ButtonGroup>
                             <Box h={1} />
@@ -562,7 +579,7 @@ export default function HomePage() {
                                       isDisabled={!editingProjectName.trim()}
                                       isLoading={submitting}
                                     >
-                                      Save
+                                      {saveLabel}
                                     </Button>
                                     <Button
                                       size="sm"
@@ -570,7 +587,7 @@ export default function HomePage() {
                                       onClick={cancelInlineProjectEdit}
                                       isDisabled={submitting}
                                     >
-                                      Cancel
+                                      {cancelLabel}
                                     </Button>
                                   </HStack>
                                 </VStack>
@@ -580,7 +597,7 @@ export default function HomePage() {
                                 </Text>
                               )}
                               <Text color={subtleText} fontSize="sm">
-                                Last update: {formatRelativeTime(getProjectLastActivity(project, projectImages))}
+                                {lastUpdateLabel} {formatRelativeTime(getProjectLastActivity(project, projectImages))}
                               </Text>
                             </HStack>
                           ) : (
@@ -611,7 +628,7 @@ export default function HomePage() {
                                       isDisabled={!editingProjectName.trim()}
                                       isLoading={submitting}
                                     >
-                                      Save
+                                      {saveLabel}
                                     </Button>
                                     <Button
                                       size="sm"
@@ -629,7 +646,7 @@ export default function HomePage() {
                                 </Text>
                               )}
                               <Text color={subtleText} fontSize="sm" mt={1}>
-                                Last update: {formatRelativeTime(getProjectLastActivity(project, projectImages))}
+                                {lastUpdateLabel} {formatRelativeTime(getProjectLastActivity(project, projectImages))}
                               </Text>
                             </Box>
                           )}
@@ -675,7 +692,7 @@ export default function HomePage() {
                             {String(deleteConfirmProjectId) === String(project.id) ? (
                               <Box px={3} py={2} borderTop="1px solid" borderColor={panelBorder}>
                                 <Text fontSize="xs" color={subtleText} mb={2}>
-                                  Are you sure?
+                                  {areYouSureLabel}
                                 </Text>
                                 <ButtonGroup size="xs" variant="outline">
                                   <Button
@@ -683,13 +700,13 @@ export default function HomePage() {
                                     onClick={() => confirmDeleteProject(project.id)}
                                     isLoading={submitting}
                                   >
-                                    Yes
+                                    {yesLabel}
                                   </Button>
                                   <Button
                                     onClick={() => setDeleteConfirmProjectId("")}
                                     isDisabled={submitting}
                                   >
-                                    No
+                                    {noLabel}
                                   </Button>
                                 </ButtonGroup>
                               </Box>
@@ -932,11 +949,11 @@ export default function HomePage() {
       <Modal isOpen={!!moveDialogImage} onClose={closeMoveDialog} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Move image</ModalHeader>
+          <ModalHeader>{moveImageLabel}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text fontSize="sm" mb={2}>
-              Select destination project
+              {selectDestinationLabel}
             </Text>
             <Select
               value={moveTargetProjectId}
@@ -953,7 +970,7 @@ export default function HomePage() {
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={closeMoveDialog}>
-              Cancel
+              {cancelLabel}
             </Button>
             <Button
               colorScheme="blue"
@@ -961,7 +978,7 @@ export default function HomePage() {
               isDisabled={!moveTargetProjectId}
               isLoading={submitting}
             >
-              Move
+              {moveLabel}
             </Button>
           </ModalFooter>
         </ModalContent>
