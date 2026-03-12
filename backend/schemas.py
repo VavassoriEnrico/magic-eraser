@@ -5,6 +5,9 @@ from datetime import datetime
 
 class ProjectCreate(BaseModel):
     name : str
+
+class ProjectUpdate(BaseModel):
+    name: str
     
 class ImageCreate(BaseModel):
     fileName: str
@@ -15,6 +18,7 @@ class Project(BaseModel):
     id: int
     name: str
     created_at: datetime
+    updated_at: datetime | None = None
     
     # Read directly from database objects
     model_config = ConfigDict(from_attributes = True)

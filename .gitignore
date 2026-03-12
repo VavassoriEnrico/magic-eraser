@@ -7,11 +7,17 @@ __pycache__/
 venv/
 backend/venv/
 
+# Node / frontend dependencies & build
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
 # Environment variables
 .env
 
 # Uploads (files uploaded by users)
 uploads/
+backend/uploads/
 
 # macOS
 .DS_Store

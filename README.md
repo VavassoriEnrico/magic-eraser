@@ -1,62 +1,71 @@
-# Magic Eraser Backend (setup & test)
+# Magic Eraser
 
-Minimal setup to run and test the API locally. Up to now (25 feb 2026) there is no UI nor docker configuration.
+Run the full project (PostgreSQL + FastAPI backend + React frontend) with Docker Compose.
 
 ## Prerequisites
 
-- Python 3.12+
-- PostgreSQL running locally (or reachable from your machine)
-- `pip`
+- Docker
+- Docker Compose plugin (`docker compose` command)
 
-## 1) Create and activate virtual environment
+## Start everything
+### No hot-reload
+
+From project root:\
+If it's the first time:
+```bash
+docker compose up --build
+```
+
+If you already built it before:
+```bash
+docker compose up -d
+```
+### Hot-reload
+
+From project root:\
+If it's the first time:
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+If you already built it before:
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+
+Services:
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+- Swagger: `http://localhost:8000/docs`
+- PostgreSQL: `localhost:5432` (user: `simpleuser`, password: `password`, db: `db`)
+
+
+In this mode:
+- Frontend runs with Vite dev server on `http://localhost:5173`
+- Backend runs with Uvicorn `--reload` on `http://localhost:8000`
+- DB remains in Docker as usual
+
+Stop dev mode:
 
 ```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
+docker compose -f docker-compose.dev.yml down
 ```
 
-## 2) Install dependencies
+## Stop everything
 
 ```bash
-pip install fastapi uvicorn sqlalchemy python-dotenv psycopg2-binary
+docker compose down
 ```
 
-## 3) Configure environment
-
-Create `backend/.env`:
-
-```env
-DATABASE_URL=postgresql+psycopg2://simpleuser:password@localhost:5432/db
-```
-
-Notes:
-- Keep 'simpleuser', 'password' and 'db' as they are now or choose you custom names (I suggest to keep them as they are).
-
-## 4) Run the API
-
-From `backend/`:
+## Stop and delete volumes (full reset)
 
 ```bash
-uvicorn main:app --reload
+docker compose down -v
 ```
 
-Server will be available at:
-- `http://127.0.0.1:8000`
-- Swagger UI: `http://127.0.0.1:8000/docs`
+## Notes
 
-## 5) Quick test
-
-Create a project:
-
-```bash
-curl -X POST "http://127.0.0.1:8000/projects" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"test project"}'
-```
-
-List projects:
-
-```bash
-curl "http://127.0.0.1:8000/projects"
-```
+- Database data is persisted in the `postgres_data` Docker volume.
+- Uploaded images are persisted in the `backend_uploads` Docker volume.
+- Frontend is built with `VITE_API_URL=http://localhost:8000`.

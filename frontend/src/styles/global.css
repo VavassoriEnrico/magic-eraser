@@ -1,0 +1,146 @@
+:root {
+  --bg: #bcc4ce;
+  --line: rgba(15, 23, 42, 0.14);
+  --text: #111827;
+  --muted: #475569;
+  --navbar-bg: rgba(238, 242, 247, 0.86);
+  --avatar-grad: linear-gradient(135deg, #91caff, #366ad9);
+}
+
+body.chakra-ui-dark {
+  --bg: #020b12;
+
+  --line: rgba(255, 255, 255, 0.14);
+  --text: #f2f4f7;
+  --muted: #98a2b3;
+  --navbar-bg: rgba(2, 11, 18, 0.86);
+  --avatar-grad: linear-gradient(135deg, #d4ff3f, #5cb85c);
+}
+
+html,
+body,
+#root,
+.app-shell {
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-grad), var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+#root,
+.app-shell {
+  background: var(--bg-grad), var(--bg);
+}
+
+.app-shell__content {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+}
+
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--navbar-bg);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.app-navbar__inner {
+  max-width: 1500px;
+  margin: 0 auto;
+  min-height: 64px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-navbar__brand {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.app-navbar__logo {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.app-navbar__nav {
+  display: inline-flex;
+  gap: 28px;
+  justify-self: center;
+}
+
+.app-navbar__link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 120ms ease;
+}
+
+.app-navbar__link:hover {
+  color: var(--text);
+}
+
+.app-navbar__link.is-active {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.app-navbar__actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-navbar__theme-btn {
+  border-color: var(--line) !important;
+}
+
+.app-navbar__profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.app-navbar__profile:hover {
+  color: var(--text);
+}
+
+.app-navbar__avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--avatar-grad);
+  box-shadow: 0 0 0 2px var(--line);
+}
+
+@media (max-width: 900px) {
+  .app-navbar__inner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding: 10px 16px;
+  }
+
+  .app-navbar__brand,
+  .app-navbar__actions,
+  .app-navbar__nav {
+    justify-self: center;
+  }
+}
