@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { createImage, deleteImage, getProjectImages, uploadImage } from "../api/images";
+import { deleteImage, getProjectImages, uploadImage } from "../api/images";
 import { createProject, deleteProject, getProjects, updateProject } from "../api/projects";
 
 function convertToMilliseconds(dateInput) {
@@ -16,6 +16,18 @@ function sortProjectsByLastUpdate(projectList) {
     const aTime = Math.max(convertToMilliseconds(a?.updated_at), convertToMilliseconds(a?.created_at));
     return bTime - aTime;
   });
+}
+
+async function cloneImageToProject(image, projectId) {
+  const response = await fetch(image.filePath);
+  if (!response.ok) {
+    throw new Error(`Unable to read source image (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const filename = image.fileName || "image-copy";
+  const file = new File([blob], filename, { type: blob.type || "application/octet-stream" });
+  await uploadImage(projectId, file);
 }
 
 export function useHomeData() {
@@ -273,10 +285,7 @@ export function useHomeData() {
       setMessage("");
 
       try {
-        await createImage(projectId, {
-          fileName: image.fileName ? `${image.fileName} (copy)` : "image-copy",
-          filePath: image.filePath,
-        });
+        await cloneImageToProject(image, projectId);
         await loadImagesForProject(projectId);
         setProjects((prev) =>
           sortProjectsByLastUpdate(
@@ -313,10 +322,7 @@ export function useHomeData() {
       setMessage("");
 
       try {
-        await createImage(targetProjectId, {
-          fileName: image.fileName || "moved-image",
-          filePath: image.filePath,
-        });
+        await cloneImageToProject(image, targetProjectId);
         await deleteImage(image.id);
         await Promise.all([loadImagesForProject(sourceProjectId), loadImagesForProject(targetProjectId)]);
         const nowIso = new Date().toISOString();
@@ -366,5 +372,4 @@ export function useHomeData() {
     onMoveImage,
   };
 }
-
 
