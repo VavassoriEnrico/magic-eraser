@@ -3,11 +3,6 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
-class ImageCreate(BaseModel):
-    fileName: str
-    filePath: str
-
-
 class ImageRead(BaseModel):
     id: int
     project_id: int

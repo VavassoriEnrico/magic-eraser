@@ -4,13 +4,6 @@ export function getProjectImages(projectId) {
   return request(`/projects/${projectId}/images`);
 }
 
-export function createImage(projectId, payload) {
-  return request(`/projects/${projectId}/images`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
 export function uploadImage(projectId, file) {
   const formData = new FormData();
   formData.append("file", file);

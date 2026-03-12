@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.repositories import image_repository, project_repository
-from app.schemas import ImageCreate
 
 
 def create_project(db: Session, name: str):
@@ -38,16 +37,6 @@ def update_project_name(db: Session, project_id: int, name: str):
         raise HTTPException(status_code=400, detail="project name cannot be empty")
 
     return project_repository.update_name(db, project, next_name)
-
-
-def add_image(db: Session, project_id: int, payload: ImageCreate):
-    project = get_project(db, project_id)
-    image = image_repository.create(
-        db, project_id=project_id, file_name=payload.fileName, file_path=payload.filePath
-    )
-    project_repository.touch(db, project)
-    db.commit()
-    return image
 
 
 def upload_image(db: Session, project_id: int, file: UploadFile):

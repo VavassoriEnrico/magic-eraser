@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.schemas import ImageCreate, ImageRead, ProjectCreate, ProjectRead, ProjectUpdate
+from app.schemas import ImageRead, ProjectCreate, ProjectRead, ProjectUpdate
 from app.services import project_service
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -33,12 +33,7 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
 def update_project(project_id: int, payload: ProjectUpdate, db: Session = Depends(get_db)):
     return project_service.update_project_name(db, project_id, payload.name)
 
-#add image to project using project_id and image as payload (str: fileName, str: filePath)
-@router.post("/{project_id}/images", response_model=ImageRead)
-def add_image(project_id: int, image: ImageCreate, db: Session = Depends(get_db)):
-    return project_service.add_image(db, project_id, image)
-
-
+#upload image to project using project_id and file as payload (UploadFile), the difference 
 @router.post("/{project_id}/images/upload", response_model=ImageRead)
 def upload_image(
     project_id: int,
@@ -47,7 +42,7 @@ def upload_image(
 ):
     return project_service.upload_image(db, project_id, file)
 
-
+#list all images of a project using its id
 @router.get("/{project_id}/images", response_model=list[ImageRead])
 def read_project_images(project_id: int, db: Session = Depends(get_db)):
     return project_service.list_project_images(db, project_id)
