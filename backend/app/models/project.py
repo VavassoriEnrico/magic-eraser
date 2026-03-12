@@ -5,6 +5,8 @@ from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
+#definition of the project entity
+# it has a one to many relationship with the image entity
 
 class Project(Base):
     __tablename__ = "projects"

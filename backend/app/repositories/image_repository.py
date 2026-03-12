@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 
 from app.models import Image
 
+#contains the repository for the image entity, 
+#it is used to interact with the database and perform CRUD operations on the image table.
 
 def create(db: Session, project_id: int, file_name: str, file_path: str) -> Image:
     image = Image(project_id=project_id, fileName=file_name, filePath=file_path)

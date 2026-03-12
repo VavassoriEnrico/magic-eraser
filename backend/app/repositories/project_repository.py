@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 from app.models import Project
 
+#contains the repository for the project entity, 
+#it is used to interact with the database and perform CRUD operations on the project table.
 
 def create(db: Session, name: str) -> Project:
     project = Project(name=name)

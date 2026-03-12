@@ -5,6 +5,9 @@ from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
+#definition the image entity. 
+# many to one relationship with project
+# properties: id, project_id, fileName, filePath, created_at
 
 class Image(Base):
     __tablename__ = "images"

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+#single point to access to settings. This is useful to avoid having to import os and dotenv in every file that needs to access the settings.
 class Settings:
     def __init__(self) -> None:
         self.database_url = os.getenv("DATABASE_URL")
