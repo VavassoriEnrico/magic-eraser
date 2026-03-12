@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Badge,
   Box,
-  Heading,
   HStack,
   Spinner,
   Stack,
@@ -21,8 +20,8 @@ export default function GalleryPage() {
   const [error, setError] = useState("");
 
   const pageText = useColorModeValue("gray.800", "white");
+  const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
   const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const labelText = useColorModeValue("gray.500", "whiteAlpha.600");
   const panelBg = useColorModeValue("white", "whiteAlpha.50");
   const panelBorder = useColorModeValue("gray.200", "whiteAlpha.200");
   const dividerColor = useColorModeValue("gray.200", "whiteAlpha.200");
@@ -30,11 +29,12 @@ export default function GalleryPage() {
   const scrollTrack = useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.08)");
 
   // TEXT LABELS
+  const workspaceLabel = "Workspace";
   const loadingGalleryLabel = "Loading gallery...";
   const galleryLabel = "Gallery";
+  const galleryDescriptionLabel = "Images are grouped by project.";
   const projectsLabel = "Projects";
   const imagesLabel = "Images";
-  const groupedByProjectLabel = "Images are grouped by project.";
   const noProjectsLabel = "There are no projects available yet.";
   const loadErrorLabel = "Error loading gallery";
   const projectLabel = "Project";
@@ -87,10 +87,13 @@ export default function GalleryPage() {
   return (
     <Stack spacing={7} color={pageText}>
       <VStack align="stretch" spacing={1}>
-        <Heading as="h1" size="2xl" fontWeight="medium">
+        <Text color={sectionLabel} fontSize="sm" letterSpacing="0.12em" textTransform="uppercase">
+          {workspaceLabel}
+        </Text>
+        <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em">
           {galleryLabel}
-        </Heading>
-        <Text color={labelText}>{groupedByProjectLabel}</Text>
+        </Text>
+        <Text color={subtleText}>{galleryDescriptionLabel}</Text>
       </VStack>
 
       <HStack spacing={3}>

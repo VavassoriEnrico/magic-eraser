@@ -1,6 +1,7 @@
 from pathlib import Path
 import shutil
 from uuid import uuid4
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -45,6 +46,23 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
     return {"message": "Project deleted"}
 
 
+@router.patch("/{project_id}", response_model=schemas.Project)
+def update_project(project_id: int, payload: schemas.ProjectUpdate, db: Session = Depends(get_db)):
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if project is None:
+        raise HTTPException(status_code=404, detail="project not found")
+
+    next_name = payload.name.strip()
+    if not next_name:
+        raise HTTPException(status_code=400, detail="project name cannot be empty")
+
+    project.name = next_name
+    project.updated_at = datetime.now()
+    db.commit()
+    db.refresh(project)
+    return project
+
+
 @router.post("/{project_id}/images", response_model=schemas.Image)
 def add_image(project_id: int, image: schemas.ImageCreate, db: Session = Depends(get_db)):
     project = db.query(models.Project).filter(models.Project.id == project_id).first()
@@ -58,6 +76,7 @@ def add_image(project_id: int, image: schemas.ImageCreate, db: Session = Depends
     )
 
     db.add(db_image)
+    project.updated_at = datetime.now()
     db.commit()
     db.refresh(db_image)
     return db_image
@@ -92,6 +111,7 @@ def upload_image(
         filePath=public_path,
     )
     db.add(db_image)
+    project.updated_at = datetime.now()
     db.commit()
     db.refresh(db_image)
     return db_image
