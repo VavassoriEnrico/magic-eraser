@@ -1,0 +1,17 @@
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy.orm import relationship
+
+from app.db.session import Base
+
+
+class Project(Base):
+    __tablename__ = "projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+
+    images = relationship("Image", back_populates="project", cascade="all, delete-orphan")
