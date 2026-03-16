@@ -6,6 +6,7 @@ export interface AppLayoutProps {
   children: ReactNode;
   currentPath: "/" | "/gallery" | "/profile";
   onNavigate: (path: "/" | "/gallery" | "/profile") => void;
+  backgroundImageUrl?: string | { light: string; dark: string };
 }
 
 export interface PreviewScrollState {
@@ -26,8 +27,6 @@ export interface MoveDialogState {
 
 export interface FooterColumnProps {
   title: string;
-  muted: string;
-  titleColor: string;
   links: [string, string, string];
 }
 
