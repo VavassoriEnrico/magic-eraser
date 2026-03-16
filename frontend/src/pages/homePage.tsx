@@ -84,17 +84,22 @@ export default function HomePage() {
 
   const pageText = useColorModeValue("gray.800", "white");
   const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const panelBg = useColorModeValue("white", "whiteAlpha.50");
-  const panelBorder = useColorModeValue("gray.200", "whiteAlpha.200");
-  const inputBg = useColorModeValue("white", "whiteAlpha.100");
-  const inputBorder = useColorModeValue("gray.300", "whiteAlpha.300");
-  const thumbBg = useColorModeValue("gray.200", "blackAlpha.400");
-  const imagesPanelBg = useColorModeValue("gray.50", "whiteAlpha.50");
-  const imagesPanelBorder = useColorModeValue("gray.200", "whiteAlpha.300");
-  const uploadBarBg = useColorModeValue("white", "whiteAlpha.100");
-  const uploadBarBorder = useColorModeValue("gray.300", "whiteAlpha.300");
-  const dropZoneBg = useColorModeValue("gray.50", "blackAlpha.200");
-  const dropZoneBorder = useColorModeValue("gray.300", "whiteAlpha.400");
+  const panelBg = useColorModeValue("rgba(255, 255, 255, 0.58)", "whiteAlpha.50");
+  const panelBorder = useColorModeValue("rgba(255, 255, 255, 0.42)", "whiteAlpha.200");
+  const panelShadow = useColorModeValue(
+    "0 18px 45px rgba(148, 163, 184, 0.24)",
+    "0 18px 45px rgba(0, 0, 0, 0.28)"
+  );
+  const cardBg = useColorModeValue("rgba(255, 255, 255, 0.4)", "rgba(255, 255, 255, 0.04)");
+  const inputBg = useColorModeValue("rgba(255, 255, 255, 0.46)", "whiteAlpha.100");
+  const inputBorder = useColorModeValue("rgba(255, 255, 255, 0.38)", "whiteAlpha.300");
+  const thumbBg = useColorModeValue("rgba(226, 232, 240, 0.6)", "blackAlpha.400");
+  const imagesPanelBg = useColorModeValue("rgba(255, 255, 255, 0.52)", "whiteAlpha.50");
+  const imagesPanelBorder = useColorModeValue("rgba(255, 255, 255, 0.38)", "whiteAlpha.300");
+  const uploadBarBg = useColorModeValue("rgba(255, 255, 255, 0.4)", "whiteAlpha.100");
+  const uploadBarBorder = useColorModeValue("rgba(255, 255, 255, 0.34)", "whiteAlpha.300");
+  const dropZoneBg = useColorModeValue("rgba(255, 255, 255, 0.32)", "blackAlpha.200");
+  const dropZoneBorder = useColorModeValue("rgba(255, 255, 255, 0.36)", "whiteAlpha.400");
   const dropZoneBorderActive = useColorModeValue("blue.400", "blue.300");
   const homeDescriptionColor = useColorModeValue("black", "white");
 
@@ -463,61 +468,71 @@ export default function HomePage() {
   }, [uploadPreviewUrls]);
 
   return (
-    <Stack spacing={6} color={pageText} minH="calc(100vh - 140px)">
+    <Stack
+      spacing={6}
+      color={pageText}
+      minH="calc(100vh - 140px)"
+      maxW="1500px"
+      mx="auto"
+    >
       <Box>
-        <Text
-          fontSize={{ base: "2xl", md: "4xl" }}
-          mt={8}
-          mb={8}
-          fontFamily="'Inter', sans-serif"
-          color={homeDescriptionColor}
-          fontWeight="bold"
-          align="center"
-        >
-          {homeDescriptionLabel}
-        </Text>
+          <Text
+            fontSize={{ base: "2xl", md: "4xl" }}
+            mt={8}
+            mb={8}
+            fontFamily="'Inter', sans-serif"
+            color={homeDescriptionColor}
+            fontWeight="bold"
+            align="center"
+          >
+            {homeDescriptionLabel}
+          </Text>
       </Box>
 
-      <HStack
-        justify="space-between"
-        align={{ base: "start", md: "center" }}
-        flexWrap="wrap"
-        gap={3}
-        p={4}
-        borderRadius="md"
-        border="1px solid"
-        borderColor={panelBorder}
-        bg={panelBg}
-      >
-        <Text color={subtleText}>
-          {backendApiLabel}:{" "}
-          <Link href={`${API_BASE_URL}/docs`} isExternal color="blue.400" textDecoration="underline">
-            {API_BASE_URL}
-          </Link>
-        </Text>
-        <Button size="sm" variant="outline" onClick={() => void loadProjects()} isLoading={loadingProjects}>
-          {refreshLabel}
-        </Button>
-      </HStack>
-
-      {error ? (
-        <Badge colorScheme="red" variant="subtle" p={2} borderRadius="md">
-          {error}
-        </Badge>
-      ) : null}
-      {message ? (
-        <Badge colorScheme="green" variant="subtle" p={2} borderRadius="md">
-          {message}
-        </Badge>
-      ) : null}
-
-      <Stack direction={{ base: "column", xl: "row" }} align="start" gap={5}>
-        <Box
-          p={5}
+        <HStack
+          justify="space-between"
+          align={{ base: "start", md: "center" }}
+          flexWrap="wrap"
+          gap={3}
+          p={4}
           borderRadius="md"
           border="1px solid"
           borderColor={panelBorder}
           bg={panelBg}
+          backdropFilter="blur(10px)"
+          boxShadow={panelShadow}
+        >
+          <Text color={subtleText}>
+            {backendApiLabel}:{" "}
+            <Link href={`${API_BASE_URL}/docs`} isExternal color="blue.400" textDecoration="underline">
+              {API_BASE_URL}
+            </Link>
+          </Text>
+          <Button size="sm" variant="outline" onClick={() => void loadProjects()} isLoading={loadingProjects}>
+            {refreshLabel}
+          </Button>
+        </HStack>
+
+        {error ? (
+          <Badge colorScheme="red" variant="subtle" p={2} borderRadius="md" alignSelf="start">
+            {error}
+          </Badge>
+        ) : null}
+        {message ? (
+          <Badge colorScheme="green" variant="subtle" p={2} borderRadius="md" alignSelf="start">
+            {message}
+          </Badge>
+        ) : null}
+
+        <Stack direction={{ base: "column", xl: "row" }} align="start" gap={5}>
+          <Box
+            p={5}
+            borderRadius="md"
+          border="1px solid"
+          borderColor={panelBorder}
+          bg={panelBg}
+          backdropFilter="blur(12px)"
+          boxShadow={panelShadow}
           w={{ base: "100%", xl: "70%" }}
         >
           <Text fontWeight="semibold" fontSize="xl" mb={4}>
@@ -570,6 +585,8 @@ export default function HomePage() {
                     borderColor={isExpanded ? "blue.400" : panelBorder}
                     borderRadius="md"
                     p={4}
+                    bg={cardBg}
+                    backdropFilter="blur(10px)"
                     cursor="pointer"
                     onClick={() => onToggleProject(project.id)}
                   >
@@ -709,18 +726,20 @@ export default function HomePage() {
               })}
             </VStack>
           )}
-        </Box>
+          </Box>
 
-        <Box
-          p={5}
-          borderRadius="md"
-          border="1px solid"
-          borderColor={imagesPanelBorder}
-          bg={imagesPanelBg}
-          w={{ base: "100%", xl: "30%" }}
-          position={{ base: "static", xl: "sticky" }}
-          top={{ xl: "20px" }}
-        >
+          <Box
+            p={5}
+            borderRadius="md"
+            border="1px solid"
+            borderColor={imagesPanelBorder}
+            bg={imagesPanelBg}
+            backdropFilter="blur(12px)"
+            boxShadow={panelShadow}
+            w={{ base: "100%", xl: "30%" }}
+            position={{ base: "static", xl: "sticky" }}
+            top={{ xl: "20px" }}
+          >
           <Text fontWeight="semibold" fontSize="xl" mb={4}>
             {imagesLabel}
           </Text>
@@ -786,6 +805,7 @@ export default function HomePage() {
                     border="1px solid"
                     borderColor={uploadBarBorder}
                     bg={panelBg}
+                    backdropFilter="blur(10px)"
                   >
                     <img
                       src={uploadPreviewUrls[0]}
@@ -870,21 +890,21 @@ export default function HomePage() {
               </Button>
             </VStack>
           </form>
-        </Box>
-      </Stack>
+          </Box>
+        </Stack>
 
-      {openedImage ? (
-        <Box
-          position="fixed"
-          inset={0}
-          zIndex={2000}
-          bg="blackAlpha.900"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          p={{ base: 3, md: 6 }}
-          onClick={onCloseImagePopup}
-        >
+        {openedImage ? (
+          <Box
+            position="fixed"
+            inset={0}
+            zIndex={2000}
+            bg="blackAlpha.900"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            p={{ base: 3, md: 6 }}
+            onClick={onCloseImagePopup}
+          >
           <Button
             type="button"
             position="absolute"
@@ -912,12 +932,12 @@ export default function HomePage() {
               style={{ maxWidth: "95vw", maxHeight: "92vh", width: "auto", height: "auto", display: "block" }}
             />
           </Box>
-        </Box>
-      ) : null}
+          </Box>
+        ) : null}
 
-      <Modal isOpen={Boolean(moveDialogImage)} onClose={closeMoveDialog} isCentered>
-        <ModalOverlay />
-        <ModalContent>
+        <Modal isOpen={Boolean(moveDialogImage)} onClose={closeMoveDialog} isCentered>
+          <ModalOverlay />
+        <ModalContent bg={panelBg} backdropFilter="blur(14px)" border="1px solid" borderColor={panelBorder}>
           <ModalHeader>{moveImageLabel}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
