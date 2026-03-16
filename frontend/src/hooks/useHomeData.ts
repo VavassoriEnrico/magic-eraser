@@ -1,24 +1,37 @@
+import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
 import { deleteImage, getProjectImages, uploadImage } from "../api/images";
 import { createProject, deleteProject, getProjects, updateProject } from "../api/projects";
+import type { ImageAsset, Project } from "../types/api";
+import type { HomeData } from "../types/ui";
+import { getErrorMessage } from "../utils/errors";
 
-function convertToMilliseconds(dateInput) {
-  if (!dateInput) return 0;
+function convertToMilliseconds(dateInput?: string | null) {
+  if (!dateInput) {
+    return 0;
+  }
+
   const parsed = new Date(dateInput);
   const time = parsed.getTime();
   return Number.isNaN(time) ? 0 : time;
 }
 
-function sortProjectsByLastUpdate(projectList) {
-  return [...(projectList || [])].sort((a, b) => {
-    const bTime = Math.max(convertToMilliseconds(b?.updated_at), convertToMilliseconds(b?.created_at));
-    const aTime = Math.max(convertToMilliseconds(a?.updated_at), convertToMilliseconds(a?.created_at));
+function sortProjectsByLastUpdate(projectList: Project[]) {
+  return [...projectList].sort((a, b) => {
+    const bTime = Math.max(
+      convertToMilliseconds(b.updated_at),
+      convertToMilliseconds(b.created_at)
+    );
+    const aTime = Math.max(
+      convertToMilliseconds(a.updated_at),
+      convertToMilliseconds(a.created_at)
+    );
     return bTime - aTime;
   });
 }
 
-async function cloneImageToProject(image, projectId) {
+async function cloneImageToProject(image: ImageAsset, projectId: number) {
   const response = await fetch(image.filePath);
   if (!response.ok) {
     throw new Error(`Unable to read source image (${response.status})`);
@@ -26,36 +39,37 @@ async function cloneImageToProject(image, projectId) {
 
   const blob = await response.blob();
   const filename = image.fileName || "image-copy";
-  const file = new File([blob], filename, { type: blob.type || "application/octet-stream" });
+  const file = new File([blob], filename, {
+    type: blob.type || "application/octet-stream",
+  });
+
   await uploadImage(projectId, file);
 }
 
-export function useHomeData() {
-  const [projects, setProjects] = useState([]);
+export function useHomeData(): HomeData {
+  const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [uploadProjectId, setUploadProjectId] = useState("");
   const [expandedProjectId, setExpandedProjectId] = useState("");
-  const [projectImagesMap, setProjectImagesMap] = useState({});
-
+  const [projectImagesMap, setProjectImagesMap] = useState<Record<number, ImageAsset[]>>({});
   const [projectName, setProjectName] = useState("");
-
   const [loadingProjects, setLoadingProjects] = useState(false);
-  const [loadingImagesByProject, setLoadingImagesByProject] = useState({});
+  const [loadingImagesByProject, setLoadingImagesByProject] = useState<Record<number, boolean>>(
+    {}
+  );
   const [submitting, setSubmitting] = useState(false);
-
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const loadImagesForProject = useCallback(async (projectId) => {
-    if (!projectId) return [];
-
+  const loadImagesForProject = useCallback(async (projectId: number) => {
     setLoadingImagesByProject((prev) => ({ ...prev, [projectId]: true }));
+
     try {
       const data = await getProjectImages(projectId);
-      setProjectImagesMap((prev) => ({ ...prev, [projectId]: data || [] }));
-      return data || [];
-    } catch (err) {
-      setError(`Error loading images: ${err.message}`);
+      setProjectImagesMap((prev) => ({ ...prev, [projectId]: data ?? [] }));
+      return data ?? [];
+    } catch (caughtError) {
+      setError(`Error loading images: ${getErrorMessage(caughtError)}`);
       return [];
     } finally {
       setLoadingImagesByProject((prev) => ({ ...prev, [projectId]: false }));
@@ -68,19 +82,19 @@ export function useHomeData() {
 
     try {
       const data = await getProjects();
-      const nextProjects = sortProjectsByLastUpdate(data || []);
+      const nextProjects = sortProjectsByLastUpdate(data ?? []);
       setProjects(nextProjects);
 
-      if (nextProjects.length) {
+      if (nextProjects.length > 0) {
         const firstId = String(nextProjects[0].id);
         setSelectedProjectId((prev) =>
-          nextProjects.some((p) => String(p.id) === String(prev)) ? String(prev) : firstId
+          nextProjects.some((project) => String(project.id) === prev) ? prev : firstId
         );
         setUploadProjectId((prev) =>
-          nextProjects.some((p) => String(p.id) === String(prev)) ? String(prev) : firstId
+          nextProjects.some((project) => String(project.id) === prev) ? prev : firstId
         );
         setExpandedProjectId((prev) =>
-          nextProjects.some((p) => String(p.id) === String(prev)) ? String(prev) : ""
+          nextProjects.some((project) => String(project.id) === prev) ? prev : ""
         );
 
         await Promise.all(nextProjects.map((project) => loadImagesForProject(project.id)));
@@ -90,21 +104,23 @@ export function useHomeData() {
         setExpandedProjectId("");
         setProjectImagesMap({});
       }
-    } catch (err) {
-      setError(`Error loading projects: ${err.message}`);
+    } catch (caughtError) {
+      setError(`Error loading projects: ${getErrorMessage(caughtError)}`);
     } finally {
       setLoadingProjects(false);
     }
   }, [loadImagesForProject]);
 
   useEffect(() => {
-    loadProjects();
+    void loadProjects();
   }, [loadProjects]);
 
   const onCreateProject = useCallback(
-    async (event) => {
+    async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      if (!projectName.trim()) return;
+      if (!projectName.trim()) {
+        return;
+      }
 
       setSubmitting(true);
       setError("");
@@ -117,8 +133,8 @@ export function useHomeData() {
         await loadProjects();
         setSelectedProjectId(String(created.id));
         setExpandedProjectId(String(created.id));
-      } catch (err) {
-        setError(`Error creating project: ${err.message}`);
+      } catch (caughtError) {
+        setError(`Error creating project: ${getErrorMessage(caughtError)}`);
       } finally {
         setSubmitting(false);
       }
@@ -127,7 +143,7 @@ export function useHomeData() {
   );
 
   const onDeleteProject = useCallback(
-    async (projectId) => {
+    async (projectId: number) => {
       setSubmitting(true);
       setError("");
       setMessage("");
@@ -146,17 +162,17 @@ export function useHomeData() {
           return next;
         });
 
-        if (String(selectedProjectId) === String(projectId)) {
-          setSelectedProjectId(orderedProjects[0]?.id ? String(orderedProjects[0].id) : "");
+        if (selectedProjectId === String(projectId)) {
+          setSelectedProjectId(orderedProjects[0] ? String(orderedProjects[0].id) : "");
         }
-        if (String(uploadProjectId) === String(projectId)) {
-          setUploadProjectId(orderedProjects[0]?.id ? String(orderedProjects[0].id) : "");
+        if (uploadProjectId === String(projectId)) {
+          setUploadProjectId(orderedProjects[0] ? String(orderedProjects[0].id) : "");
         }
-        if (String(expandedProjectId) === String(projectId)) {
+        if (expandedProjectId === String(projectId)) {
           setExpandedProjectId("");
         }
-      } catch (err) {
-        setError(`Error deleting project: ${err.message}`);
+      } catch (caughtError) {
+        setError(`Error deleting project: ${getErrorMessage(caughtError)}`);
       } finally {
         setSubmitting(false);
       }
@@ -164,8 +180,8 @@ export function useHomeData() {
     [expandedProjectId, projects, selectedProjectId, uploadProjectId]
   );
 
-  const onRenameProject = useCallback(async (projectId, nextName) => {
-    const trimmedName = (nextName || "").trim();
+  const onRenameProject = useCallback(async (projectId: number, nextName: string) => {
+    const trimmedName = nextName.trim();
     if (!trimmedName) {
       setError("Project name cannot be empty");
       return false;
@@ -180,16 +196,20 @@ export function useHomeData() {
       setProjects((prev) =>
         sortProjectsByLastUpdate(
           prev.map((project) =>
-            String(project.id) === String(projectId)
-              ? { ...project, name: updated.name, updated_at: updated.updated_at }
+            project.id === projectId
+              ? {
+                  ...project,
+                  name: updated.name,
+                  updated_at: updated.updated_at,
+                }
               : project
           )
         )
       );
       setMessage(`Project updated: #${projectId} ${updated.name}`);
       return true;
-    } catch (err) {
-      setError(`Error updating project: ${err.message}`);
+    } catch (caughtError) {
+      setError(`Error updating project: ${getErrorMessage(caughtError)}`);
       return false;
     } finally {
       setSubmitting(false);
@@ -197,9 +217,15 @@ export function useHomeData() {
   }, []);
 
   const onCreateImage = useCallback(
-    async (event, uploadFiles, clearUploadFiles) => {
+    async (
+      event: FormEvent<HTMLFormElement>,
+      uploadFiles: File[],
+      clearUploadFiles: () => void
+    ) => {
       event.preventDefault();
-      if (!uploadProjectId || uploadFiles.length === 0) return;
+      if (!uploadProjectId || uploadFiles.length === 0) {
+        return;
+      }
 
       setSubmitting(true);
       setError("");
@@ -211,21 +237,21 @@ export function useHomeData() {
       try {
         for (const file of uploadFiles) {
           try {
-            await uploadImage(uploadProjectId, file);
+            await uploadImage(Number(uploadProjectId), file);
             successCount += 1;
-          } catch (err) {
+          } catch (caughtError) {
             if (!firstUploadError) {
-              firstUploadError = err.message;
+              firstUploadError = getErrorMessage(caughtError);
             }
           }
         }
 
         if (successCount > 0) {
-          await loadImagesForProject(uploadProjectId);
+          await loadImagesForProject(Number(uploadProjectId));
           setProjects((prev) =>
             sortProjectsByLastUpdate(
               prev.map((project) =>
-                String(project.id) === String(uploadProjectId)
+                project.id === Number(uploadProjectId)
                   ? { ...project, updated_at: new Date().toISOString() }
                   : project
               )
@@ -245,7 +271,7 @@ export function useHomeData() {
     [loadImagesForProject, uploadProjectId]
   );
 
-  const onDeleteImage = useCallback(async (imageId, projectId) => {
+  const onDeleteImage = useCallback(async (imageId: number, projectId: number) => {
     setSubmitting(true);
     setError("");
     setMessage("");
@@ -255,31 +281,31 @@ export function useHomeData() {
       setMessage(`Image deleted: #${imageId}`);
       setProjectImagesMap((prev) => ({
         ...prev,
-        [projectId]: (prev[projectId] || []).filter((image) => image.id !== imageId),
+        [projectId]: (prev[projectId] ?? []).filter((image) => image.id !== imageId),
       }));
       setProjects((prev) =>
         sortProjectsByLastUpdate(
           prev.map((project) =>
-            String(project.id) === String(projectId)
+            project.id === projectId
               ? { ...project, updated_at: new Date().toISOString() }
               : project
           )
         )
       );
-    } catch (err) {
-      setError(`Error deleting image: ${err.message}`);
+    } catch (caughtError) {
+      setError(`Error deleting image: ${getErrorMessage(caughtError)}`);
     } finally {
       setSubmitting(false);
     }
   }, []);
 
-  const onEditImage = useCallback((imageId, projectId) => {
+  const onEditImage = useCallback((imageId: number, projectId: number) => {
     setError("");
     setMessage(`Edit feature TO IMPLEMENT: image #${imageId} in project #${projectId}`);
   }, []);
 
   const onDuplicateImage = useCallback(
-    async (image, projectId) => {
+    async (image: ImageAsset, projectId: number) => {
       setSubmitting(true);
       setError("");
       setMessage("");
@@ -290,15 +316,15 @@ export function useHomeData() {
         setProjects((prev) =>
           sortProjectsByLastUpdate(
             prev.map((project) =>
-              String(project.id) === String(projectId)
+              project.id === projectId
                 ? { ...project, updated_at: new Date().toISOString() }
                 : project
             )
           )
         );
         setMessage(`Image duplicated in project #${projectId}`);
-      } catch (err) {
-        setError(`Error duplicating image: ${err.message}`);
+      } catch (caughtError) {
+        setError(`Error duplicating image: ${getErrorMessage(caughtError)}`);
       } finally {
         setSubmitting(false);
       }
@@ -307,12 +333,12 @@ export function useHomeData() {
   );
 
   const onMoveImage = useCallback(
-    async (image, sourceProjectId, targetProjectId) => {
+    async (image: ImageAsset, sourceProjectId: number, targetProjectId: number) => {
       if (!targetProjectId) {
         setError("Select a target project");
         return;
       }
-      if (String(targetProjectId) === String(sourceProjectId)) {
+      if (targetProjectId === sourceProjectId) {
         setError("Target project must be different");
         return;
       }
@@ -324,20 +350,30 @@ export function useHomeData() {
       try {
         await cloneImageToProject(image, targetProjectId);
         await deleteImage(image.id);
-        await Promise.all([loadImagesForProject(sourceProjectId), loadImagesForProject(targetProjectId)]);
-        const nowIso = new Date().toISOString();
+
+        const [sourceImages, targetImages] = await Promise.all([
+          loadImagesForProject(sourceProjectId),
+          loadImagesForProject(targetProjectId),
+        ]);
+
+        const now = new Date().toISOString();
+        setProjectImagesMap((prev) => ({
+          ...prev,
+          [sourceProjectId]: sourceImages,
+          [targetProjectId]: targetImages,
+        }));
         setProjects((prev) =>
           sortProjectsByLastUpdate(
             prev.map((project) =>
-              String(project.id) === String(sourceProjectId) || String(project.id) === String(targetProjectId)
-                ? { ...project, updated_at: nowIso }
+              project.id === sourceProjectId || project.id === targetProjectId
+                ? { ...project, updated_at: now }
                 : project
             )
           )
         );
         setMessage(`Image moved to project #${targetProjectId}`);
-      } catch (err) {
-        setError(`Error moving image: ${err.message}`);
+      } catch (caughtError) {
+        setError(`Error moving image: ${getErrorMessage(caughtError)}`);
       } finally {
         setSubmitting(false);
       }
@@ -372,4 +408,3 @@ export function useHomeData() {
     onMoveImage,
   };
 }
-

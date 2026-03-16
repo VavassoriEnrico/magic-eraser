@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import {
   Badge,
   Box,
@@ -10,7 +10,6 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  Portal,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -18,20 +17,30 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Portal,
   Select,
   Spinner,
   Stack,
   Text,
-  useColorModeValue,
   VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
+import { BiArrowFromBottom } from "react-icons/bi";
 
 import { API_BASE_URL } from "../api/client";
 import { useHomeData } from "../hooks/useHomeData";
+import type { ImageAsset, Project } from "../types/api";
+import type { MoveDialogState, OpenedImage, PreviewScrollState } from "../types/ui";
 import { formatRelativeTime, getProjectLastActivity } from "../utils/date";
 import { toImageUrl } from "../utils/images";
-//import { BiArrowFromBottom } from "../components/icons/Icons";
-import { BiArrowFromBottom } from "react-icons/bi";
+
+interface RenderProjectPreviewProps {
+  project: Project;
+  projectImages: ImageAsset[];
+  isExpanded: boolean;
+  previewState: PreviewScrollState;
+  compact?: boolean;
+}
 
 export default function HomePage() {
   const {
@@ -60,19 +69,20 @@ export default function HomePage() {
     onMoveImage,
   } = useHomeData();
 
-  const [uploadFiles, setUploadFiles] = useState([]);
-  const [uploadPreviewUrls, setUploadPreviewUrls] = useState([]);
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [uploadPreviewUrls, setUploadPreviewUrls] = useState<string[]>([]);
   const [isDragOverUpload, setIsDragOverUpload] = useState(false);
-  const [openedImage, setOpenedImage] = useState(null);
-  const [previewScrollStateByProject, setPreviewScrollStateByProject] = useState({});
-  const [moveDialogImage, setMoveDialogImage] = useState(null);
+  const [openedImage, setOpenedImage] = useState<OpenedImage | null>(null);
+  const [previewScrollStateByProject, setPreviewScrollStateByProject] = useState<
+    Record<number, PreviewScrollState>
+  >({});
+  const [moveDialogImage, setMoveDialogImage] = useState<MoveDialogState | null>(null);
   const [moveTargetProjectId, setMoveTargetProjectId] = useState("");
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingProjectName, setEditingProjectName] = useState("");
   const [deleteConfirmProjectId, setDeleteConfirmProjectId] = useState("");
 
   const pageText = useColorModeValue("gray.800", "white");
-  const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
   const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
   const panelBg = useColorModeValue("white", "whiteAlpha.50");
   const panelBorder = useColorModeValue("gray.200", "whiteAlpha.200");
@@ -88,10 +98,7 @@ export default function HomePage() {
   const dropZoneBorderActive = useColorModeValue("blue.400", "blue.300");
   const homeDescriptionColor = useColorModeValue("black", "white");
 
-  // TEXT LABELS
   const homeDescriptionLabel = "Create projects, upload images, and edit them";
-
-  //project
   const projectsLabel = "Projects";
   const createProjectPlaceholderLabel = "Project name...";
   const createProjectButtonLabel = "Create project";
@@ -100,23 +107,18 @@ export default function HomePage() {
   const uploadProjectLabel = "Project for upload";
   const noProjectsUploadLabel = "Create a project first to upload images.";
   const selectDestinationLabel = "Select destination project";
-
-  //images
   const imagesLabel = "Images";
   const uploadImageButtonLabel = "Upload image";
   const noImagesForProjectLabel = "No images in this project.";
   const uploadPreviewLabel = "Images preview";
   const moveImageLabel = "Move image";
   const loadingImagesLabel = "Loading images...";
-
-  //general
-  const workspaceLabel = "Workspace";
-  const homeTitleLabel = "Home";
   const backendApiLabel = "Backend API";
   const refreshLabel = "Refresh";
   const deleteLabel = "Delete";
   const cancelLabel = "Cancel";
   const editLabel = "Edit";
+  const duplicateLabel = "Duplicate";
   const saveLabel = "Save";
   const noFileSelectedLabel = "No file selected";
   const previewScrollLeftLabel = "◀";
@@ -129,29 +131,33 @@ export default function HomePage() {
   const yesLabel = "Yes";
   const noLabel = "No";
   const moveLabel = "Move";
-  
-  
 
-  const imageStripRefs = useRef({});
-  const uploadInputRef = useRef(null);
+  const imageStripRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
-  function onToggleProject(projectId) {
-    const next = String(expandedProjectId) === String(projectId) ? "" : String(projectId);
+  function onToggleProject(projectId: number) {
+    const next = expandedProjectId === String(projectId) ? "" : String(projectId);
     setExpandedProjectId(next);
     setSelectedProjectId(String(projectId));
   }
 
-  function onScrollPreview(projectId, direction) {
+  function onScrollPreview(projectId: number, direction: number) {
     const node = imageStripRefs.current[projectId];
-    if (!node) return;
+    if (!node) {
+      return;
+    }
 
     const scrollStep = Math.max(node.clientWidth * 0.8, 180);
     node.scrollBy({ left: direction * scrollStep, behavior: "smooth" });
   }
 
-  function onSelectUploadFiles(inputFiles) {
-    const nextFiles = Array.from(inputFiles || []).filter((file) => file.type.startsWith("image/"));
-    if (nextFiles.length === 0) return;
+  function onSelectUploadFiles(inputFiles: FileList | null) {
+    const nextFiles = Array.from(inputFiles ?? []).filter((file) =>
+      file.type.startsWith("image/")
+    );
+    if (nextFiles.length === 0) {
+      return;
+    }
 
     setUploadPreviewUrls((prev) => {
       prev.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
@@ -166,12 +172,13 @@ export default function HomePage() {
       return [];
     });
     setUploadFiles([]);
+
     if (uploadInputRef.current) {
       uploadInputRef.current.value = "";
     }
   }
 
-  function onOpenImagePopup(image) {
+  function onOpenImagePopup(image: ImageAsset) {
     setOpenedImage({
       src: toImageUrl(image.filePath),
       name: image.fileName || "Image preview",
@@ -182,8 +189,8 @@ export default function HomePage() {
     setOpenedImage(null);
   }
 
-  function openMoveDialog(image, sourceProjectId) {
-    const firstTarget = projects.find((p) => String(p.id) !== String(sourceProjectId));
+  function openMoveDialog(image: ImageAsset, sourceProjectId: number) {
+    const firstTarget = projects.find((project) => project.id !== sourceProjectId);
     setMoveDialogImage({ image, sourceProjectId });
     setMoveTargetProjectId(firstTarget ? String(firstTarget.id) : "");
   }
@@ -194,32 +201,45 @@ export default function HomePage() {
   }
 
   async function confirmMoveImage() {
-    if (!moveDialogImage || !moveTargetProjectId) return;
-    await onMoveImage(moveDialogImage.image, moveDialogImage.sourceProjectId, Number(moveTargetProjectId));
+    if (!moveDialogImage || !moveTargetProjectId) {
+      return;
+    }
+
+    await onMoveImage(
+      moveDialogImage.image,
+      moveDialogImage.sourceProjectId,
+      Number(moveTargetProjectId)
+    );
     closeMoveDialog();
   }
 
-  function onDropUpload(event) {
+  function onDropUpload(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setIsDragOverUpload(false);
-    if (!projects.length) return;
-    onSelectUploadFiles(event.dataTransfer?.files);
+    if (projects.length === 0) {
+      return;
+    }
+
+    onSelectUploadFiles(event.dataTransfer.files);
   }
 
-  function onDragOverUpload(event) {
+  function onDragOverUpload(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
-    if (!projects.length) return;
+    if (projects.length === 0) {
+      return;
+    }
+
     setIsDragOverUpload(true);
   }
 
-  function onDragLeaveUpload(event) {
+  function onDragLeaveUpload(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setIsDragOverUpload(false);
   }
 
-  function startInlineProjectEdit(project) {
+  function startInlineProjectEdit(project: Project) {
     setEditingProjectId(String(project.id));
-    setEditingProjectName(project.name || "");
+    setEditingProjectName(project.name);
   }
 
   function cancelInlineProjectEdit() {
@@ -227,22 +247,56 @@ export default function HomePage() {
     setEditingProjectName("");
   }
 
-  async function saveInlineProjectEdit(projectId) {
-    if (!projectId) return;
+  async function saveInlineProjectEdit(projectId: number) {
     const success = await onRenameProject(projectId, editingProjectName);
     if (success) {
       cancelInlineProjectEdit();
     }
   }
 
-  async function confirmDeleteProject(projectId) {
-    if (!projectId) return;
+  async function confirmDeleteProject(projectId: number) {
     await onDeleteProject(projectId);
     setDeleteConfirmProjectId("");
   }
 
-  function renderProjectPreview(project, projectImages, isExpanded, previewState, compact = false) {
-    if (!projectImages.length) return null;
+  function updatePreviewScrollState(projectId: number) {
+    const node = imageStripRefs.current[projectId];
+    if (!node) {
+      return;
+    }
+
+    const hasOverflow = node.scrollWidth > node.clientWidth + 2;
+    const canScrollLeft = node.scrollLeft > 1;
+    const canScrollRight = node.scrollLeft + node.clientWidth < node.scrollWidth - 2;
+
+    setPreviewScrollStateByProject((prev) => {
+      const current = prev[projectId];
+      if (
+        current &&
+        current.hasOverflow === hasOverflow &&
+        current.canScrollLeft === canScrollLeft &&
+        current.canScrollRight === canScrollRight
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [projectId]: { hasOverflow, canScrollLeft, canScrollRight },
+      };
+    });
+  }
+
+  function renderProjectPreview({
+    project,
+    projectImages,
+    isExpanded,
+    previewState,
+    compact = false,
+  }: RenderProjectPreviewProps) {
+    if (projectImages.length === 0) {
+      return null;
+    }
 
     return (
       <Box
@@ -279,11 +333,11 @@ export default function HomePage() {
                 sx={
                   isExpanded
                     ? {
-                      "&:hover .image-actions-overlay": {
-                        opacity: 1,
-                        pointerEvents: "auto",
-                      },
-                    }
+                        "&:hover .image-actions-overlay": {
+                          opacity: 1,
+                          pointerEvents: "auto",
+                        },
+                      }
                     : undefined
                 }
               >
@@ -306,43 +360,38 @@ export default function HomePage() {
                     justifyContent="flex-end"
                     p={2}
                   >
-                    <HStack gap={2}>
-                      <Menu placement="bottom-end" onClose={() => setDeleteConfirmProjectId("")}>
-                        <MenuButton
-                          as={Button}
-                          size="xs"
-                          variant="outline"
-                          aria-label="Image menu"
-                          onClick={(event) => event.stopPropagation()}
-                        >
-                          ⋯
-                        </MenuButton>
-                        <Portal>
-                          <MenuList
-                            onClick={(event) => event.stopPropagation()}
-                            p={1}
-                            minW="unset"
-                            w="fit-content"
-                          >
-                            <ButtonGroup size="xs" variant="outline">
-                              <Button onClick={() => onEditImage(image.id, project.id)}>Edit</Button>
-                              <Button
-                                colorScheme="red"
-                                onClick={() => onDeleteImage(image.id, project.id)}
-                                isDisabled={submitting}
-                              >
-                                {deleteLabel}
-                              </Button>
-                            </ButtonGroup>
-                            <Box h={1} />
-                            <ButtonGroup size="xs" variant="outline">
-                              <Button onClick={() => openMoveDialog(image, project.id)}>Move</Button>
-                              <Button onClick={() => onDuplicateImage(image, project.id)}>Duplicate</Button>
-                            </ButtonGroup>
-                          </MenuList>
-                        </Portal>
-                      </Menu>
-                    </HStack>
+                    <Menu placement="bottom-end" onClose={() => setDeleteConfirmProjectId("")}>
+                      <MenuButton
+                        as={Button}
+                        size="xs"
+                        variant="outline"
+                        aria-label="Image menu"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        ⋯
+                      </MenuButton>
+                      <Portal>
+                        <MenuList onClick={(event) => event.stopPropagation()} p={1} minW="unset" w="fit-content">
+                          <ButtonGroup size="xs" variant="outline">
+                            <Button onClick={() => onEditImage(image.id, project.id)}>{editLabel}</Button>
+                            <Button
+                              colorScheme="red"
+                              onClick={() => onDeleteImage(image.id, project.id)}
+                              isDisabled={submitting}
+                            >
+                              {deleteLabel}
+                            </Button>
+                          </ButtonGroup>
+                          <Box h={1} />
+                          <ButtonGroup size="xs" variant="outline">
+                            <Button onClick={() => openMoveDialog(image, project.id)}>{moveLabel}</Button>
+                            <Button onClick={() => onDuplicateImage(image, project.id)}>
+                              {duplicateLabel}
+                            </Button>
+                          </ButtonGroup>
+                        </MenuList>
+                      </Portal>
+                    </Menu>
                   </Box>
                 ) : null}
               </Box>
@@ -366,7 +415,7 @@ export default function HomePage() {
               _groupHover={{ opacity: 1, pointerEvents: "auto" }}
               onClick={() => onScrollPreview(project.id, -1)}
               aria-label="Scroll images left"
-              disabled={!previewState.canScrollLeft}
+              isDisabled={!previewState.canScrollLeft}
             >
               {previewScrollLeftLabel}
             </Button>
@@ -384,7 +433,7 @@ export default function HomePage() {
               _groupHover={{ opacity: 1, pointerEvents: "auto" }}
               onClick={() => onScrollPreview(project.id, 1)}
               aria-label="Scroll images right"
-              disabled={!previewState.canScrollRight}
+              isDisabled={!previewState.canScrollRight}
             >
               {previewScrollRightLabel}
             </Button>
@@ -392,32 +441,6 @@ export default function HomePage() {
         ) : null}
       </Box>
     );
-  }
-
-  function updatePreviewScrollState(projectId) {
-    const node = imageStripRefs.current[projectId];
-    if (!node) return;
-
-    const hasOverflow = node.scrollWidth > node.clientWidth + 2;
-    const canScrollLeft = node.scrollLeft > 1;
-    const canScrollRight = node.scrollLeft + node.clientWidth < node.scrollWidth - 2;
-
-    setPreviewScrollStateByProject((prev) => {
-      const current = prev[projectId];
-      if (
-        current &&
-        current.hasOverflow === hasOverflow &&
-        current.canScrollLeft === canScrollLeft &&
-        current.canScrollRight === canScrollRight
-      ) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        [projectId]: { hasOverflow, canScrollLeft, canScrollRight },
-      };
-    });
   }
 
   useEffect(() => {
@@ -442,14 +465,16 @@ export default function HomePage() {
   return (
     <Stack spacing={6} color={pageText} minH="calc(100vh - 140px)">
       <Box>
-        <Text fontSize={{ base: "2xl", md: "4xl" }}
-          mt={8} mb={8}
+        <Text
+          fontSize={{ base: "2xl", md: "4xl" }}
+          mt={8}
+          mb={8}
           fontFamily="'Inter', sans-serif"
           color={homeDescriptionColor}
           fontWeight="bold"
-          align="center">
+          align="center"
+        >
           {homeDescriptionLabel}
-
         </Text>
       </Box>
 
@@ -466,22 +491,22 @@ export default function HomePage() {
       >
         <Text color={subtleText}>
           {backendApiLabel}:{" "}
-          <Link href={API_BASE_URL + "/docs"} isExternal color="blue.400" textDecoration="underline">
+          <Link href={`${API_BASE_URL}/docs`} isExternal color="blue.400" textDecoration="underline">
             {API_BASE_URL}
           </Link>
         </Text>
-        <Button size="sm" variant="outline" onClick={loadProjects} loading={loadingProjects}>
+        <Button size="sm" variant="outline" onClick={() => void loadProjects()} isLoading={loadingProjects}>
           {refreshLabel}
         </Button>
       </HStack>
 
       {error ? (
-        <Badge colorPalette="red" variant="subtle" p={2} borderRadius="md">
+        <Badge colorScheme="red" variant="subtle" p={2} borderRadius="md">
           {error}
         </Badge>
       ) : null}
       {message ? (
-        <Badge colorPalette="green" variant="subtle" p={2} borderRadius="md">
+        <Badge colorScheme="green" variant="subtle" p={2} borderRadius="md">
           {message}
         </Badge>
       ) : null}
@@ -499,18 +524,18 @@ export default function HomePage() {
             {projectsLabel}
           </Text>
 
-          <form onSubmit={onCreateProject}>
+          <form onSubmit={(event) => void onCreateProject(event)}>
             <HStack align="stretch" gap={3} flexWrap="wrap">
               <Input
                 value={projectName}
-                onChange={(event) => setProjectName(event.target.value)}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => setProjectName(event.target.value)}
                 placeholder={createProjectPlaceholderLabel}
                 required
                 bg={inputBg}
                 borderColor={inputBorder}
                 maxW={{ base: "100%", md: "420px" }}
               />
-              <Button type="submit" colorPalette="blue" loading={submitting}>
+              <Button type="submit" colorScheme="blue" isLoading={submitting}>
                 {createProjectButtonLabel}
               </Button>
             </HStack>
@@ -528,11 +553,11 @@ export default function HomePage() {
           ) : (
             <VStack align="stretch" spacing={4}>
               {projects.map((project) => {
-                const isExpanded = String(project.id) === String(expandedProjectId);
-                const isEditing = String(project.id) === String(editingProjectId);
-                const projectImages = projectImagesMap[project.id] || [];
+                const isExpanded = project.id === Number(expandedProjectId);
+                const isEditing = project.id === Number(editingProjectId);
+                const projectImages = projectImagesMap[project.id] ?? [];
                 const projectLoading = loadingImagesByProject[project.id];
-                const previewState = previewScrollStateByProject[project.id] || {
+                const previewState = previewScrollStateByProject[project.id] ?? {
                   hasOverflow: false,
                   canScrollLeft: false,
                   canScrollRight: false,
@@ -551,116 +576,69 @@ export default function HomePage() {
                     <HStack justify="space-between" align="center" gap={3} mb={3}>
                       <HStack gap={3} align="center" minW={0} flex="1">
                         <Box flexShrink={0}>
-                          {isExpanded ? (
-                            <HStack gap={3} align="baseline" flexWrap="wrap">
-                              {isEditing ? (
-                                <VStack align="start" spacing={2} onClick={(event) => event.stopPropagation()}>
-                                  <Input
-                                    value={editingProjectName}
-                                    onChange={(event) => setEditingProjectName(event.target.value)}
-                                    variant="filled"
-                                    fontWeight="semibold"
-                                    fontSize="2xl"
-                                    lineHeight="1.2"
-                                    px={2}
-                                    py={1}
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    bg={inputBg}
-                                    _hover={{ bg: inputBg }}
-                                    _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
-                                    minW="260px"
-                                  />
-                                  <HStack gap={2}>
-                                    <Button
-                                      size="sm"
-                                      colorScheme="blue"
-                                      onClick={() => saveInlineProjectEdit(project.id)}
-                                      isDisabled={!editingProjectName.trim()}
-                                      isLoading={submitting}
-                                    >
-                                      {saveLabel}
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={cancelInlineProjectEdit}
-                                      isDisabled={submitting}
-                                    >
-                                      {cancelLabel}
-                                    </Button>
-                                  </HStack>
-                                </VStack>
-                              ) : (
-                                <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
-                                  {project.name}
-                                </Text>
-                              )}
-                              <Text color={subtleText} fontSize="sm">
-                                {lastUpdateLabel} {formatRelativeTime(getProjectLastActivity(project, projectImages))}
+                          <HStack gap={3} align="baseline" flexWrap="wrap">
+                            {isEditing ? (
+                              <VStack align="start" spacing={2} onClick={(event) => event.stopPropagation()}>
+                                <Input
+                                  value={editingProjectName}
+                                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                                    setEditingProjectName(event.target.value)
+                                  }
+                                  variant="filled"
+                                  fontWeight="semibold"
+                                  fontSize="2xl"
+                                  lineHeight="1.2"
+                                  px={2}
+                                  py={1}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  bg={inputBg}
+                                  _hover={{ bg: inputBg }}
+                                  _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
+                                  minW="260px"
+                                />
+                                <HStack gap={2}>
+                                  <Button
+                                    size="sm"
+                                    colorScheme="blue"
+                                    onClick={() => void saveInlineProjectEdit(project.id)}
+                                    isDisabled={!editingProjectName.trim()}
+                                    isLoading={submitting}
+                                  >
+                                    {saveLabel}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={cancelInlineProjectEdit}
+                                    isDisabled={submitting}
+                                  >
+                                    {cancelLabel}
+                                  </Button>
+                                </HStack>
+                              </VStack>
+                            ) : (
+                              <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
+                                {project.name}
                               </Text>
-                            </HStack>
-                          ) : (
-                            <Box>
-                              {isEditing ? (
-                                <VStack align="start" spacing={2} onClick={(event) => event.stopPropagation()}>
-                                  <Input
-                                    value={editingProjectName}
-                                    onChange={(event) => setEditingProjectName(event.target.value)}
-                                    variant="filled"
-                                    fontWeight="semibold"
-                                    fontSize="2xl"
-                                    lineHeight="1.2"
-                                    px={2}
-                                    py={1}
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    bg={inputBg}
-                                    _hover={{ bg: inputBg }}
-                                    _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
-                                    minW="260px"
-                                  />
-                                  <HStack gap={2}>
-                                    <Button
-                                      size="sm"
-                                      colorScheme="blue"
-                                      onClick={() => saveInlineProjectEdit(project.id)}
-                                      isDisabled={!editingProjectName.trim()}
-                                      isLoading={submitting}
-                                    >
-                                      {saveLabel}
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={cancelInlineProjectEdit}
-                                      isDisabled={submitting}
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </HStack>
-                                </VStack>
-                              ) : (
-                                <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
-                                  {project.name}
-                                </Text>
-                              )}
-                              <Text color={subtleText} fontSize="sm" mt={1}>
-                                {lastUpdateLabel} {formatRelativeTime(getProjectLastActivity(project, projectImages))}
-                              </Text>
-                            </Box>
-                          )}
+                            )}
+                            <Text color={subtleText} fontSize="sm">
+                              {lastUpdateLabel} {formatRelativeTime(getProjectLastActivity(project, projectImages))}
+                            </Text>
+                          </HStack>
                         </Box>
                         {!isExpanded && !projectLoading
-                          ? renderProjectPreview(project, projectImages, isExpanded, previewState, true)
+                          ? renderProjectPreview({
+                              project,
+                              projectImages,
+                              isExpanded,
+                              previewState,
+                              compact: true,
+                            })
                           : null}
                       </HStack>
 
                       <Menu placement="bottom-end" onClose={() => setDeleteConfirmProjectId("")}>
-                        {/*
-                          Keep the delete confirmation compact inside the same menu
-                          instead of opening a full-screen modal.
-                        */}
                         <MenuButton
                           as={Button}
                           size="sm"
@@ -672,12 +650,7 @@ export default function HomePage() {
                           ⋯
                         </MenuButton>
                         <Portal>
-                          <MenuList
-                            onClick={(event) => event.stopPropagation()}
-                            p={1}
-                            minW="unset"
-                            w="fit-content"
-                          >
+                          <MenuList onClick={(event) => event.stopPropagation()} p={1} minW="unset" w="fit-content">
                             <Box px={1} py={1}>
                               <ButtonGroup size="sm" variant="outline">
                                 <Button onClick={() => startInlineProjectEdit(project)}>{editLabel}</Button>
@@ -689,7 +662,7 @@ export default function HomePage() {
                                 </Button>
                               </ButtonGroup>
                             </Box>
-                            {String(deleteConfirmProjectId) === String(project.id) ? (
+                            {deleteConfirmProjectId === String(project.id) ? (
                               <Box px={3} py={2} borderTop="1px solid" borderColor={panelBorder}>
                                 <Text fontSize="xs" color={subtleText} mb={2}>
                                   {areYouSureLabel}
@@ -697,7 +670,7 @@ export default function HomePage() {
                                 <ButtonGroup size="xs" variant="outline">
                                   <Button
                                     colorScheme="red"
-                                    onClick={() => confirmDeleteProject(project.id)}
+                                    onClick={() => void confirmDeleteProject(project.id)}
                                     isLoading={submitting}
                                   >
                                     {yesLabel}
@@ -714,7 +687,6 @@ export default function HomePage() {
                           </MenuList>
                         </Portal>
                       </Menu>
-
                     </HStack>
 
                     {projectLoading ? (
@@ -725,7 +697,12 @@ export default function HomePage() {
                     ) : projectImages.length === 0 ? (
                       <Text color={subtleText}>{noImagesForProjectLabel}</Text>
                     ) : isExpanded ? (
-                      renderProjectPreview(project, projectImages, isExpanded, previewState)
+                      renderProjectPreview({
+                        project,
+                        projectImages,
+                        isExpanded,
+                        previewState,
+                      })
                     ) : null}
                   </Box>
                 );
@@ -748,7 +725,7 @@ export default function HomePage() {
             {imagesLabel}
           </Text>
 
-          <form onSubmit={(event) => onCreateImage(event, uploadFiles, clearUploadFiles)}>
+          <form onSubmit={(event) => void onCreateImage(event, uploadFiles, clearUploadFiles)}>
             <VStack align="stretch" spacing={4}>
               <input
                 ref={uploadInputRef}
@@ -757,7 +734,7 @@ export default function HomePage() {
                 accept="image/png,image/jpg,image/jpeg,image/webp,image/bmp"
                 style={{ display: "none" }}
                 onChange={(event) => onSelectUploadFiles(event.target.files)}
-                disabled={!projects.length}
+                disabled={projects.length === 0}
               />
 
               {uploadFiles.length === 0 ? (
@@ -786,20 +763,12 @@ export default function HomePage() {
                     {orLabel}
                   </Text>
                   <Button
-                    colorPalette="blue"
+                    colorScheme="blue"
                     onClick={() => uploadInputRef.current?.click()}
-                    disabled={!projects.length}
+                    isDisabled={projects.length === 0}
                   >
                     {uploadImageButtonLabel}
                   </Button>
-                  {/*
-                  <Text fontSize="xs" color={subtleText} mt={4}>
-                    {uploadTermsLabel}
-                  </Text>
-                  <Text fontSize="xs" color={subtleText} mt={1}>
-                    {uploadFormatsLabel}
-                  </Text> 
-                  */}
                   <Text fontSize="sm" color={subtleText} mt={2}>
                     {noFileSelectedLabel}
                   </Text>
@@ -829,7 +798,7 @@ export default function HomePage() {
                       position="absolute"
                       top={2}
                       right={2}
-                      colorPalette="red"
+                      colorScheme="red"
                       onClick={clearUploadFiles}
                     >
                       -
@@ -875,7 +844,7 @@ export default function HomePage() {
                   onChange={(event) => setUploadProjectId(event.target.value)}
                   bg={uploadBarBg}
                   borderColor={uploadBarBorder}
-                  disabled={!projects.length}
+                  isDisabled={projects.length === 0}
                 >
                   {projects.map((project) => (
                     <option key={project.id} value={String(project.id)}>
@@ -885,7 +854,7 @@ export default function HomePage() {
                 </Select>
               </Box>
 
-              {!projects.length ? (
+              {projects.length === 0 ? (
                 <Text color={subtleText} fontSize="sm">
                   {noProjectsUploadLabel}
                 </Text>
@@ -893,9 +862,9 @@ export default function HomePage() {
 
               <Button
                 type="submit"
-                colorPalette="blue"
-                disabled={!projects.length || !uploadProjectId || uploadFiles.length === 0}
-                loading={submitting}
+                colorScheme="blue"
+                isDisabled={!uploadProjectId || uploadFiles.length === 0 || projects.length === 0}
+                isLoading={submitting}
               >
                 {submitting ? uploadInProgressLabel : uploadImageButtonLabel}
               </Button>
@@ -922,7 +891,7 @@ export default function HomePage() {
             top={4}
             right={4}
             size="sm"
-            colorPalette="whiteAlpha"
+            colorScheme="whiteAlpha"
             onClick={onCloseImagePopup}
           >
             ×
@@ -946,7 +915,7 @@ export default function HomePage() {
         </Box>
       ) : null}
 
-      <Modal isOpen={!!moveDialogImage} onClose={closeMoveDialog} isCentered>
+      <Modal isOpen={Boolean(moveDialogImage)} onClose={closeMoveDialog} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{moveImageLabel}</ModalHeader>
@@ -960,7 +929,7 @@ export default function HomePage() {
               onChange={(event) => setMoveTargetProjectId(event.target.value)}
             >
               {projects
-                .filter((project) => String(project.id) !== String(moveDialogImage?.sourceProjectId))
+                .filter((project) => project.id !== moveDialogImage?.sourceProjectId)
                 .map((project) => (
                   <option key={project.id} value={String(project.id)}>
                     {project.name}
@@ -974,7 +943,7 @@ export default function HomePage() {
             </Button>
             <Button
               colorScheme="blue"
-              onClick={confirmMoveImage}
+              onClick={() => void confirmMoveImage()}
               isDisabled={!moveTargetProjectId}
               isLoading={submitting}
             >

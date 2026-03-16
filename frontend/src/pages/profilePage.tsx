@@ -10,6 +10,8 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 
+import type { FieldBlockProps } from "../types/ui";
+
 const favorites = [
   { id: 1, bg: "linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%)" },
   { id: 2, bg: "linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)" },
@@ -24,7 +26,6 @@ export default function ProfilePage() {
   const inputBg = useColorModeValue("whiteAlpha.900", "whiteAlpha.100");
   const inputBorder = useColorModeValue("gray.300", "whiteAlpha.200");
 
-  // TEXT LABELS
   const workspaceLabel = "Workspace";
   const profileTitleLabel = "Profile";
   const profileDescriptionLabel = "Manage your account info and favorite edits.";
@@ -104,7 +105,12 @@ export default function ProfilePage() {
             <FieldBlock label={surnameLabel} textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
           </Grid>
 
-          <FieldBlock label={emailAddressLabel} textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
+          <FieldBlock
+            label={emailAddressLabel}
+            textColor={textColor}
+            inputBg={inputBg}
+            inputBorder={inputBorder}
+          />
           <FieldBlock
             label={passwordLabel}
             type="password"
@@ -140,7 +146,14 @@ export default function ProfilePage() {
   );
 }
 
-function FieldBlock({ label, defaultValue, type = "text", textColor, inputBg, inputBorder }) {
+function FieldBlock({
+  label,
+  defaultValue,
+  type = "text",
+  textColor,
+  inputBg,
+  inputBorder,
+}: FieldBlockProps) {
   return (
     <VStack align="stretch" spacing={1}>
       <Text fontSize="sm" color={textColor}>

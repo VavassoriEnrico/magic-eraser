@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "./client";
-import { createProject, deleteProject, getProjects } from "./projects";
+import { createProject, deleteProject, getProjects, updateProject } from "./projects";
 import { deleteImage, getProjectImages, uploadImage } from "./images";
 
 export const api = {
@@ -7,6 +7,7 @@ export const api = {
   getProjects,
   createProject,
   deleteProject,
+  updateProject,
   getProjectImages,
   uploadImage,
   deleteImage,
@@ -17,6 +18,7 @@ export {
   getProjects,
   createProject,
   deleteProject,
+  updateProject,
   getProjectImages,
   uploadImage,
   deleteImage,

@@ -1,11 +1,20 @@
-import { Box, Divider, HStack, SimpleGrid, Text, VStack, useColorModeValue } from "@chakra-ui/react";
+import {
+  Box,
+  Divider,
+  HStack,
+  SimpleGrid,
+  Text,
+  VStack,
+  useColorModeValue,
+} from "@chakra-ui/react";
+
+import type { FooterColumnProps } from "../../types/ui";
 
 export default function Footbar() {
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
   const muted = useColorModeValue("blackAlpha.700", "whiteAlpha.800");
   const title = useColorModeValue("gray.700", "whiteAlpha.900");
 
-  //  TEXT LABELS
   const titleLabel = "Magic Eraser";
 
   return (
@@ -27,9 +36,24 @@ export default function Footbar() {
         </HStack>
 
         <SimpleGrid columns={{ base: 2, md: 3 }} maxW="1500px" mx="auto" w="100%">
-          <FooterColumn title="Content" muted={muted} titleColor={title} link1="Test1" link2="Test2" link3="Test3"/>
-          <FooterColumn title="Tool" muted={muted} titleColor={title}  link1="Test4" link2="Test5" link3="Test6"/>
-          <FooterColumn title="Help" muted={muted} titleColor={title}  link1="Test7" link2="Test8" link3="Test9"/>
+          <FooterColumn
+            title="Content"
+            muted={muted}
+            titleColor={title}
+            links={["Projects", "Gallery", "Uploads"]}
+          />
+          <FooterColumn
+            title="Tool"
+            muted={muted}
+            titleColor={title}
+            links={["Magic Eraser", "Image Review", "History"]}
+          />
+          <FooterColumn
+            title="Help"
+            muted={muted}
+            titleColor={title}
+            links={["Documentation", "Support", "Contact"]}
+          />
         </SimpleGrid>
 
         <Divider borderColor={borderColor} />
@@ -38,15 +62,17 @@ export default function Footbar() {
   );
 }
 
-function FooterColumn({ title, muted, titleColor, link1, link2, link3 }) {
+function FooterColumn({ title, muted, titleColor, links }: FooterColumnProps) {
   return (
     <VStack align="center" spacing={2}>
       <Text fontWeight="bold" fontSize="lg" color={titleColor}>
         {title}
       </Text>
-      <Text color={muted}>{link1}</Text>
-      <Text color={muted}>{link2}</Text>
-      <Text color={muted}>{link3}</Text>
+      {links.map((link) => (
+        <Text key={link} color={muted}>
+          {link}
+        </Text>
+      ))}
     </VStack>
   );
 }
