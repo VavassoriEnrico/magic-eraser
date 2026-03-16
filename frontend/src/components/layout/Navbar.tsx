@@ -1,13 +1,19 @@
+import type { MouseEvent } from "react";
+
 import { IconButton, useColorMode } from "@chakra-ui/react";
-import { BiSolidSun, BiSolidMoon } from "react-icons/bi";
+import { BiSolidMoon, BiSolidSun } from "react-icons/bi";
 
+type AppPath = "/" | "/gallery" | "/profile";
 
+interface NavbarProps {
+  currentPath: AppPath;
+  onNavigate: (path: AppPath) => void;
+}
 
-export default function Navbar({ currentPath, onNavigate }) {
+export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
   const { colorMode, toggleColorMode } = useColorMode();
 
-  //  TEXT LABELS
-  const titleLabel = "Magic eraser";
+  const titleLabel = "Magic Eraser";
   const homeLabel = "Home";
   const galleryLabel = "Gallery";
   const profileLabel = "Profile";
@@ -15,7 +21,11 @@ export default function Navbar({ currentPath, onNavigate }) {
   return (
     <header className="app-navbar">
       <div className="app-navbar__inner">
-        <a href="/" className="app-navbar__brand" onClick={(event) => onLinkClick(event, "/", onNavigate)}>
+        <a
+          href="/"
+          className="app-navbar__brand"
+          onClick={(event) => onLinkClick(event, "/", onNavigate)}
+        >
           <span className="app-navbar__logo">◈</span>
           <span>{titleLabel}</span>
         </a>
@@ -44,7 +54,11 @@ export default function Navbar({ currentPath, onNavigate }) {
             onClick={toggleColorMode}
             className="app-navbar__theme-btn"
             aria-label={colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            icon={<span aria-hidden="true">{colorMode === "dark" ? <BiSolidSun /> : <BiSolidMoon />}</span>}
+            icon={
+              <span aria-hidden="true">
+                {colorMode === "dark" ? <BiSolidSun /> : <BiSolidMoon />}
+              </span>
+            }
           />
           <a
             href="/profile"
@@ -60,11 +74,15 @@ export default function Navbar({ currentPath, onNavigate }) {
   );
 }
 
-function navClass(isActive) {
+function navClass(isActive: boolean) {
   return `app-navbar__link${isActive ? " is-active" : ""}`;
 }
 
-function onLinkClick(event, path, onNavigate) {
+function onLinkClick(
+  event: MouseEvent<HTMLAnchorElement>,
+  path: AppPath,
+  onNavigate: (path: AppPath) => void
+) {
   event.preventDefault();
   onNavigate(path);
 }

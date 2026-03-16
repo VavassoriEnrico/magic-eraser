@@ -6,16 +6,37 @@ import {
   Spinner,
   Stack,
   Text,
-  useColorModeValue,
   VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 
-import { API_BASE_URL } from "../api/client";
-import { getProjects } from "../api/projects";
 import { getProjectImages } from "../api/images";
+import { getProjects } from "../api/projects";
+import type { ImageAsset, Project } from "../types/api";
+import { getErrorMessage } from "../utils/errors";
+import { toImageUrl } from "../utils/images";
+
+interface GalleryGroup {
+  project: Project;
+  images: ImageAsset[];
+}
+
+interface ProjectRowProps {
+  project: Project;
+  images: ImageAsset[];
+  panelBg: string;
+  panelBorder: string;
+  subtleText: string;
+  scrollThumb: string;
+  scrollTrack: string;
+  projectLabel: string;
+  imagesLabel: string;
+  noImagesInProjectLabel: string;
+  imageLabel: string;
+}
 
 export default function GalleryPage() {
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState<GalleryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -28,7 +49,6 @@ export default function GalleryPage() {
   const scrollThumb = useColorModeValue("rgba(55,65,81,0.35)", "rgba(255,255,255,0.25)");
   const scrollTrack = useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.08)");
 
-  // TEXT LABELS
   const workspaceLabel = "Workspace";
   const loadingGalleryLabel = "Loading gallery...";
   const galleryLabel = "Gallery";
@@ -48,23 +68,22 @@ export default function GalleryPage() {
 
       try {
         const projects = await getProjects();
-
         const withImages = await Promise.all(
-          (projects || []).map(async (project) => {
-            const images = await getProjectImages(project.id);
-            return { project, images: images || [] };
-          })
+          projects.map(async (project) => ({
+            project,
+            images: (await getProjectImages(project.id)) ?? [],
+          }))
         );
 
         setGroups(withImages);
-      } catch (err) {
-        setError(err.message || loadErrorLabel);
+      } catch (caughtError) {
+        setError(getErrorMessage(caughtError) || loadErrorLabel);
       } finally {
         setLoading(false);
       }
     }
 
-    loadGallery();
+    void loadGallery();
   }, []);
 
   if (loading) {
@@ -97,10 +116,10 @@ export default function GalleryPage() {
       </VStack>
 
       <HStack spacing={3}>
-        <Badge colorPalette="blue" variant="subtle" px={2} py={1} borderRadius="md">
+        <Badge colorScheme="blue" variant="subtle" px={2} py={1} borderRadius="md">
           {groups.length} {projectsLabel}
         </Badge>
-        <Badge colorPalette="purple" variant="subtle" px={2} py={1} borderRadius="md">
+        <Badge colorScheme="purple" variant="subtle" px={2} py={1} borderRadius="md">
           {groups.reduce((sum, group) => sum + group.images.length, 0)} {imagesLabel}
         </Badge>
       </HStack>
@@ -145,7 +164,7 @@ function ProjectRow({
   imagesLabel,
   noImagesInProjectLabel,
   imageLabel,
-}) {
+}: ProjectRowProps) {
   return (
     <Box p={5} borderRadius="xl" border="1px solid" borderColor={panelBorder} bg={panelBg}>
       <HStack justify="space-between" mb={4} align="start" flexWrap="wrap" gap={2}>
@@ -203,20 +222,4 @@ function ProjectRow({
       )}
     </Box>
   );
-}
-
-function toImageUrl(filePath) {
-  if (!filePath) return "";
-
-  if (filePath.startsWith("/uploads/")) {
-    return `${API_BASE_URL}${filePath}`;
-  }
-
-  const uploadsIndex = filePath.indexOf("/uploads/");
-  if (uploadsIndex !== -1) {
-    const relative = filePath.slice(uploadsIndex);
-    return `${API_BASE_URL}${relative}`;
-  }
-
-  return filePath;
 }
