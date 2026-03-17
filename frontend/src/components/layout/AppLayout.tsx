@@ -12,18 +12,31 @@ export default function AppLayout({
   onNavigate,
   backgroundImageUrl,
 }: AppLayoutProps) {
-  const effectiveBackgroundImageUrl = backgroundImageUrl ?? {
-    light: defaultBackgroundLightImage,
-    dark: defaultBackgroundDarkImage,
-  };
+  const defaultResolvedBackgroundImageUrl = useColorModeValue(
+    defaultBackgroundLightImage,
+    defaultBackgroundDarkImage
+  );
+  const themedBackgroundSource =
+    typeof backgroundImageUrl === "string"
+      ? {
+          light: defaultBackgroundLightImage,
+          dark: defaultBackgroundDarkImage,
+        }
+      : backgroundImageUrl ?? {
+          light: defaultBackgroundLightImage,
+          dark: defaultBackgroundDarkImage,
+        };
+  const themedBackgroundImageUrl = useColorModeValue(
+    themedBackgroundSource.light,
+    themedBackgroundSource.dark
+  );
 
   const resolvedBackgroundImageUrl =
-    typeof effectiveBackgroundImageUrl === "string"
-      ? effectiveBackgroundImageUrl
-      : useColorModeValue(
-          effectiveBackgroundImageUrl.light,
-          effectiveBackgroundImageUrl.dark
-        );
+    typeof backgroundImageUrl === "string"
+      ? backgroundImageUrl
+      : backgroundImageUrl
+        ? themedBackgroundImageUrl
+        : defaultResolvedBackgroundImageUrl;
 
   const overlayGradient = useColorModeValue(
     "linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 247, 250, 0.7) 100%)",

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import {
   Badge,
   Box,
@@ -19,6 +19,7 @@ import {
   ModalOverlay,
   Portal,
   Select,
+  SimpleGrid,
   Spinner,
   Stack,
   Text,
@@ -84,27 +85,33 @@ export default function HomePage() {
 
   const pageText = useColorModeValue("gray.800", "white");
   const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const panelBg = useColorModeValue("rgba(255, 255, 255, 0.58)", "whiteAlpha.50");
-  const panelBorder = useColorModeValue("rgba(255, 255, 255, 0.42)", "whiteAlpha.200");
+  const panelBg = useColorModeValue("rgba(241, 245, 249, 0.92)", "rgba(15, 23, 42, 0.8)");
+  const panelBorder = useColorModeValue("rgba(148, 163, 184, 0.55)", "rgba(255, 255, 255, 0.22)");
   const panelShadow = useColorModeValue(
     "0 18px 45px rgba(148, 163, 184, 0.24)",
     "0 18px 45px rgba(0, 0, 0, 0.28)"
   );
-  const cardBg = useColorModeValue("rgba(255, 255, 255, 0.4)", "rgba(255, 255, 255, 0.04)");
-  const inputBg = useColorModeValue("rgba(255, 255, 255, 0.46)", "whiteAlpha.100");
-  const inputBorder = useColorModeValue("rgba(255, 255, 255, 0.38)", "whiteAlpha.300");
-  const thumbBg = useColorModeValue("rgba(226, 232, 240, 0.6)", "blackAlpha.400");
-  const imagesPanelBg = useColorModeValue("rgba(255, 255, 255, 0.52)", "whiteAlpha.50");
-  const imagesPanelBorder = useColorModeValue("rgba(255, 255, 255, 0.38)", "whiteAlpha.300");
-  const uploadBarBg = useColorModeValue("rgba(255, 255, 255, 0.4)", "whiteAlpha.100");
-  const uploadBarBorder = useColorModeValue("rgba(255, 255, 255, 0.34)", "whiteAlpha.300");
-  const dropZoneBg = useColorModeValue("rgba(255, 255, 255, 0.32)", "blackAlpha.200");
-  const dropZoneBorder = useColorModeValue("rgba(255, 255, 255, 0.36)", "whiteAlpha.400");
+  const cardBg = useColorModeValue("rgba(248, 250, 252, 0.9)", "rgba(255, 255, 255, 0.08)");
+  const inputBg = useColorModeValue("rgba(255, 255, 255, 0.88)", "rgba(255, 255, 255, 0.12)");
+  const inputBorder = useColorModeValue("rgba(148, 163, 184, 0.52)", "rgba(255, 255, 255, 0.22)");
+  const thumbBg = useColorModeValue("rgba(226, 232, 240, 0.85)", "blackAlpha.400");
+  const imagesPanelBg = useColorModeValue("rgba(241, 245, 249, 0.94)", "rgba(15, 23, 42, 0.66)");
+  const imagesPanelBorder = useColorModeValue("rgba(148, 163, 184, 0.56)", "rgba(255, 255, 255, 0.24)");
+  const uploadBarBg = useColorModeValue("rgba(255, 255, 255, 0.88)", "rgba(255, 255, 255, 0.1)");
+  const uploadBarBorder = useColorModeValue("rgba(148, 163, 184, 0.48)", "rgba(255, 255, 255, 0.22)");
+  const dropZoneBg = useColorModeValue("rgba(248, 250, 252, 0.88)", "rgba(255, 255, 255, 0.06)");
+  const dropZoneBorder = useColorModeValue("rgba(148, 163, 184, 0.5)", "rgba(255, 255, 255, 0.24)");
   const dropZoneBorderActive = useColorModeValue("blue.400", "blue.300");
   const homeDescriptionColor = useColorModeValue("black", "white");
+  const accentColor = useColorModeValue("#754397", "#89b1c9");
+  const infoBadgeBg = useColorModeValue("gray.200", "whiteAlpha.200");
+  const infoBadgeColor = useColorModeValue("gray.700", "whiteAlpha.800");
+  const cardHoverShadow = useColorModeValue(
+    "0 20px 40px rgba(148, 163, 184, 0.22)",
+    "0 20px 40px rgba(0, 0, 0, 0.22)"
+  );
 
-  const homeDescriptionLabel = "Create projects, upload images, and edit them";
-  const projectsLabel = "Projects";
+  const projectsLabel = "Project overview";
   const createProjectPlaceholderLabel = "Project name...";
   const createProjectButtonLabel = "Create project";
   const loadingProjectsLabel = "Loading projects...";
@@ -112,7 +119,6 @@ export default function HomePage() {
   const uploadProjectLabel = "Project for upload";
   const noProjectsUploadLabel = "Create a project first to upload images.";
   const selectDestinationLabel = "Select destination project";
-  const imagesLabel = "Images";
   const uploadImageButtonLabel = "Upload image";
   const noImagesForProjectLabel = "No images in this project.";
   const uploadPreviewLabel = "Images preview";
@@ -131,7 +137,6 @@ export default function HomePage() {
   const dragAndDropLabel = "Drag and drop";
   const orLabel = "OR";
   const uploadInProgressLabel = "Uploading...";
-  const lastUpdateLabel = "Last update:";
   const areYouSureLabel = "Are you sure?";
   const yesLabel = "Yes";
   const noLabel = "No";
@@ -139,6 +144,23 @@ export default function HomePage() {
 
   const imageStripRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const orderedProjects = useMemo(() => {
+    const expandedId = Number(expandedProjectId);
+
+    if (!expandedId) {
+      return projects;
+    }
+
+    const expandedProject = projects.find((project) => project.id === expandedId);
+    if (!expandedProject) {
+      return projects;
+    }
+
+    return [
+      expandedProject,
+      ...projects.filter((project) => project.id !== expandedId),
+    ];
+  }, [projects, expandedProjectId]);
 
   function onToggleProject(projectId: number) {
     const next = expandedProjectId === String(projectId) ? "" : String(projectId);
@@ -153,7 +175,7 @@ export default function HomePage() {
     }
 
     const scrollStep = Math.max(node.clientWidth * 0.8, 180);
-    node.scrollBy({ left: direction * scrollStep, behavior: "smooth" });
+    node.scrollBy({ left: direction * scrollStep });
   }
 
   function onSelectUploadFiles(inputFiles: FileList | null) {
@@ -359,7 +381,6 @@ export default function HomePage() {
                     bg="blackAlpha.500"
                     opacity={0}
                     pointerEvents="none"
-                    transition="opacity 0.15s ease"
                     display="flex"
                     alignItems="flex-start"
                     justifyContent="flex-end"
@@ -416,7 +437,6 @@ export default function HomePage() {
               zIndex={2}
               opacity={0}
               pointerEvents="none"
-              transition="opacity 0.2s ease"
               _groupHover={{ opacity: 1, pointerEvents: "auto" }}
               onClick={() => onScrollPreview(project.id, -1)}
               aria-label="Scroll images left"
@@ -434,7 +454,6 @@ export default function HomePage() {
               zIndex={2}
               opacity={0}
               pointerEvents="none"
-              transition="opacity 0.2s ease"
               _groupHover={{ opacity: 1, pointerEvents: "auto" }}
               onClick={() => onScrollPreview(project.id, 1)}
               aria-label="Scroll images right"
@@ -472,74 +491,80 @@ export default function HomePage() {
       spacing={6}
       color={pageText}
       minH="calc(100vh - 140px)"
-      maxW="1500px"
+      maxW="1120px"
       mx="auto"
     >
-      <Box>
-          <Text
-            fontSize={{ base: "2xl", md: "4xl" }}
-            mt={8}
-            mb={8}
-            fontFamily="'Inter', sans-serif"
-            color={homeDescriptionColor}
-            fontWeight="bold"
-            align="center"
-          >
-            {homeDescriptionLabel}
-          </Text>
-      </Box>
+      <VStack spacing={3}>
+        <Text
+          fontSize={{ base: "3xl", md: "5xl" }}
+          fontFamily="'Inter', sans-serif"
+          textAlign="center"
+          fontWeight="800"
+          letterSpacing="0.05em"
+          textTransform="uppercase"
+          lineHeight="0.95"
+          color={homeDescriptionColor}
+        >
+          dashboard
+        </Text>
+      </VStack>
 
-        <HStack
+      <HStack
+        justify="space-between"
+        align={{ base: "start", md: "center" }}
+        flexWrap="wrap"
+        gap={3}
+        p={4}
+        borderRadius="lg"
+        border="1px solid"
+        borderColor={panelBorder}
+        bg={panelBg}
+        backdropFilter="blur(10px)"
+        boxShadow={panelShadow}
+      >
+        <Text color={subtleText}>
+          {backendApiLabel}:{" "}
+          <Link href={`${API_BASE_URL}/docs`} isExternal color={accentColor} textDecoration="underline">
+            {API_BASE_URL}
+          </Link>
+        </Text>
+        <Button size="sm" variant="outline" onClick={() => void loadProjects()} isLoading={loadingProjects}>
+          {refreshLabel}
+        </Button>
+      </HStack>
+
+      {error ? (
+        <Badge colorScheme="red" variant="subtle" p={2} borderRadius="md" alignSelf="start">
+          {error}
+        </Badge>
+      ) : null}
+      {message ? (
+        <Badge colorScheme="green" variant="subtle" p={2} borderRadius="md" alignSelf="start">
+          {message}
+        </Badge>
+      ) : null}
+
+      <Box
+        p={{ base: 4, md: 5 }}
+        borderRadius="xl"
+        border="1px solid"
+        borderColor={panelBorder}
+        bg={panelBg}
+        backdropFilter="blur(12px)"
+        boxShadow={panelShadow}
+      >
+        <Text fontWeight="semibold" fontSize="2xl" mb={4}>
+          {projectsLabel}
+        </Text>
+
+        <Stack
+          direction={{ base: "column", lg: "row" }}
+          align={{ base: "stretch", lg: "center" }}
           justify="space-between"
-          align={{ base: "start", md: "center" }}
-          flexWrap="wrap"
           gap={3}
-          p={4}
-          borderRadius="md"
-          border="1px solid"
-          borderColor={panelBorder}
-          bg={panelBg}
-          backdropFilter="blur(10px)"
-          boxShadow={panelShadow}
+          mb={5}
         >
-          <Text color={subtleText}>
-            {backendApiLabel}:{" "}
-            <Link href={`${API_BASE_URL}/docs`} isExternal color="blue.400" textDecoration="underline">
-              {API_BASE_URL}
-            </Link>
-          </Text>
-          <Button size="sm" variant="outline" onClick={() => void loadProjects()} isLoading={loadingProjects}>
-            {refreshLabel}
-          </Button>
-        </HStack>
-
-        {error ? (
-          <Badge colorScheme="red" variant="subtle" p={2} borderRadius="md" alignSelf="start">
-            {error}
-          </Badge>
-        ) : null}
-        {message ? (
-          <Badge colorScheme="green" variant="subtle" p={2} borderRadius="md" alignSelf="start">
-            {message}
-          </Badge>
-        ) : null}
-
-        <Stack direction={{ base: "column", xl: "row" }} align="start" gap={5}>
-          <Box
-            p={5}
-            borderRadius="md"
-          border="1px solid"
-          borderColor={panelBorder}
-          bg={panelBg}
-          backdropFilter="blur(12px)"
-          boxShadow={panelShadow}
-          w={{ base: "100%", xl: "70%" }}
-        >
-          <Text fontWeight="semibold" fontSize="xl" mb={4}>
-            {projectsLabel}
-          </Text>
-
-          <form onSubmit={(event) => void onCreateProject(event)}>
+          <form onSubmit={(event) => void onCreateProject(event)} style={{ width: "100%" }}>
             <HStack align="stretch" gap={3} flexWrap="wrap">
               <Input
                 value={projectName}
@@ -548,7 +573,7 @@ export default function HomePage() {
                 required
                 bg={inputBg}
                 borderColor={inputBorder}
-                maxW={{ base: "100%", md: "420px" }}
+                maxW={{ base: "100%", lg: "420px" }}
               />
               <Button type="submit" colorScheme="blue" isLoading={submitting}>
                 {createProjectButtonLabel}
@@ -556,104 +581,137 @@ export default function HomePage() {
             </HStack>
           </form>
 
-          <Box h="1px" bg={panelBorder} my={4} />
+          <Badge
+            alignSelf={{ base: "start", lg: "center" }}
+            colorScheme="purple"
+            variant="subtle"
+            px={3}
+            py={2}
+            borderRadius="md"
+            whiteSpace="nowrap"
+          >
+            {projects.length} projects
+          </Badge>
+        </Stack>
 
-          {loadingProjects ? (
-            <VStack py={5} spacing={3}>
-              <Spinner />
-              <Text color={subtleText}>{loadingProjectsLabel}</Text>
-            </VStack>
-          ) : projects.length === 0 ? (
-            <Text color={subtleText}>{noProjectsLabel}</Text>
-          ) : (
-            <VStack align="stretch" spacing={4}>
-              {projects.map((project) => {
-                const isExpanded = project.id === Number(expandedProjectId);
-                const isEditing = project.id === Number(editingProjectId);
-                const projectImages = projectImagesMap[project.id] ?? [];
-                const projectLoading = loadingImagesByProject[project.id];
-                const previewState = previewScrollStateByProject[project.id] ?? {
-                  hasOverflow: false,
-                  canScrollLeft: false,
-                  canScrollRight: false,
-                };
+        {loadingProjects ? (
+          <VStack py={8} spacing={3}>
+            <Spinner />
+            <Text color={subtleText}>{loadingProjectsLabel}</Text>
+          </VStack>
+        ) : projects.length === 0 ? (
+          <Text color={subtleText}>{noProjectsLabel}</Text>
+        ) : (
+          <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={4}>
+            {orderedProjects.map((project) => {
+              const isExpanded = project.id === Number(expandedProjectId);
+              const isEditing = project.id === Number(editingProjectId);
+              const projectImages = projectImagesMap[project.id] ?? [];
+              const projectLoading = loadingImagesByProject[project.id];
+              const previewState = previewScrollStateByProject[project.id] ?? {
+                hasOverflow: false,
+                canScrollLeft: false,
+                canScrollRight: false,
+              };
 
-                return (
-                  <Box
-                    key={project.id}
-                    border="1px solid"
-                    borderColor={isExpanded ? "blue.400" : panelBorder}
-                    borderRadius="md"
-                    p={4}
-                    bg={cardBg}
-                    backdropFilter="blur(10px)"
-                    cursor="pointer"
-                    onClick={() => onToggleProject(project.id)}
-                  >
-                    <HStack justify="space-between" align="center" gap={3} mb={3}>
-                      <HStack gap={3} align="center" minW={0} flex="1">
-                        <Box flexShrink={0}>
-                          <HStack gap={3} align="baseline" flexWrap="wrap">
-                            {isEditing ? (
-                              <VStack align="start" spacing={2} onClick={(event) => event.stopPropagation()}>
-                                <Input
-                                  value={editingProjectName}
-                                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                                    setEditingProjectName(event.target.value)
-                                  }
-                                  variant="filled"
-                                  fontWeight="semibold"
-                                  fontSize="2xl"
-                                  lineHeight="1.2"
-                                  px={2}
-                                  py={1}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  bg={inputBg}
-                                  _hover={{ bg: inputBg }}
-                                  _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
-                                  minW="260px"
-                                />
-                                <HStack gap={2}>
-                                  <Button
-                                    size="sm"
-                                    colorScheme="blue"
-                                    onClick={() => void saveInlineProjectEdit(project.id)}
-                                    isDisabled={!editingProjectName.trim()}
-                                    isLoading={submitting}
-                                  >
-                                    {saveLabel}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={cancelInlineProjectEdit}
-                                    isDisabled={submitting}
-                                  >
-                                    {cancelLabel}
-                                  </Button>
-                                </HStack>
-                              </VStack>
-                            ) : (
-                              <Text fontWeight="semibold" fontSize="2xl" lineHeight="1.2">
-                                {project.name}
-                              </Text>
-                            )}
-                            <Text color={subtleText} fontSize="sm">
-                              {lastUpdateLabel} {formatRelativeTime(getProjectLastActivity(project, projectImages))}
-                            </Text>
-                          </HStack>
-                        </Box>
-                        {!isExpanded && !projectLoading
-                          ? renderProjectPreview({
-                              project,
-                              projectImages,
-                              isExpanded,
-                              previewState,
-                              compact: true,
-                            })
-                          : null}
-                      </HStack>
+              return (
+                <Box
+                  key={project.id}
+                  border="1px solid"
+                  borderColor={isExpanded ? accentColor : panelBorder}
+                  borderRadius="lg"
+                  p={4}
+                  bg={cardBg}
+                  backdropFilter="blur(10px)"
+                  cursor="pointer"
+                  boxShadow="sm"
+                  transition="transform 0.18s ease, box-shadow 0.18s ease"
+                  _hover={{
+                    transform: "translateY(-3px)",
+                    boxShadow: cardHoverShadow,
+                  }}
+                  gridColumn={
+                    isExpanded
+                      ? { base: "auto", md: "span 2", xl: "span 3" }
+                      : undefined
+                  }
+                  onClick={() => onToggleProject(project.id)}
+                >
+                  <VStack align="stretch" spacing={0}>
+                    <HStack justify="space-between" align="start" gap={3} mb={1}>
+                      <Box minW={0} flex="1">
+                        {isEditing ? (
+                          <VStack align="start" spacing={2} onClick={(event) => event.stopPropagation()}>
+                            <Input
+                              value={editingProjectName}
+                              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                                setEditingProjectName(event.target.value)
+                              }
+                              variant="filled"
+                              fontWeight="semibold"
+                              fontSize="lg"
+                              lineHeight="1.2"
+                              px={2}
+                              py={1}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              bg={inputBg}
+                              _hover={{ bg: inputBg }}
+                              _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
+                            />
+                            <HStack gap={2}>
+                              <Button
+                                size="sm"
+                                colorScheme="blue"
+                                onClick={() => void saveInlineProjectEdit(project.id)}
+                                isDisabled={!editingProjectName.trim()}
+                                isLoading={submitting}
+                              >
+                                {saveLabel}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={cancelInlineProjectEdit}
+                                isDisabled={submitting}
+                              >
+                                {cancelLabel}
+                              </Button>
+                            </HStack>
+                          </VStack>
+                        ) : (
+                          <Text
+                            fontWeight="semibold"
+                            fontSize={{ base: "xl", md: "1xl" }}
+                            lineHeight="1.3"
+                            color={accentColor}
+                          >
+                            {project.name}
+                          </Text>
+                        )}
+                        <HStack spacing={2} mt={1} flexWrap="wrap">
+                          <Badge
+                            colorScheme="purple"
+                            variant="subtle"
+                            px={2}
+                            py={1}
+                            borderRadius="md"
+                          >
+                            {projectImages.length} image{projectImages.length === 1 ? "" : "s"}
+                          </Badge>
+                          <Badge
+                            bg={infoBadgeBg}
+                            color={infoBadgeColor}
+                            px={2}
+                            py={1}
+                            borderRadius="md"
+                            textTransform="none"
+                            fontWeight="medium"
+                          >
+                            {formatRelativeTime(getProjectLastActivity(project, projectImages))}
+                          </Badge>
+                        </HStack>
+                      </Box>
 
                       <Menu placement="bottom-end" onClose={() => setDeleteConfirmProjectId("")}>
                         <MenuButton
@@ -713,39 +771,44 @@ export default function HomePage() {
                       </HStack>
                     ) : projectImages.length === 0 ? (
                       <Text color={subtleText}>{noImagesForProjectLabel}</Text>
-                    ) : isExpanded ? (
-                      renderProjectPreview({
-                        project,
-                        projectImages,
-                        isExpanded,
-                        previewState,
-                      })
-                    ) : null}
-                  </Box>
-                );
-              })}
-            </VStack>
-          )}
-          </Box>
+                    ) : (
+                      <Box mt={1}>
+                        {renderProjectPreview({
+                          project,
+                          projectImages,
+                          isExpanded,
+                          previewState,
+                          compact: !isExpanded,
+                        })}
+                      </Box>
+                    )}
+                  </VStack>
+                </Box>
+              );
+            })}
+          </SimpleGrid>
+        )}
+      </Box>
 
-          <Box
-            p={5}
-            borderRadius="md"
-            border="1px solid"
-            borderColor={imagesPanelBorder}
-            bg={imagesPanelBg}
-            backdropFilter="blur(12px)"
-            boxShadow={panelShadow}
-            w={{ base: "100%", xl: "30%" }}
-            position={{ base: "static", xl: "sticky" }}
-            top={{ xl: "20px" }}
-          >
-          <Text fontWeight="semibold" fontSize="xl" mb={4}>
-            {imagesLabel}
-          </Text>
+      <Box
+        p={{ base: 4, md: 5 }}
+        borderRadius="xl"
+        border="1px solid"
+        borderColor={imagesPanelBorder}
+        bg={imagesPanelBg}
+        backdropFilter="blur(12px)"
+        boxShadow={panelShadow}
+      >
+        <Text fontWeight="semibold" fontSize="2xl" mb={1}>
+          Upload a new image
+        </Text>
+        <Text color={subtleText} mb={5}>
+          Select the destination project, then add one or more images from the area below.
+        </Text>
 
-          <form onSubmit={(event) => void onCreateImage(event, uploadFiles, clearUploadFiles)}>
-            <VStack align="stretch" spacing={4}>
+        <form onSubmit={(event) => void onCreateImage(event, uploadFiles, clearUploadFiles)}>
+          <Stack direction={{ base: "column", xl: "row" }} align="stretch" spacing={5}>
+            <VStack align="stretch" spacing={4} flex="1">
               <input
                 ref={uploadInputRef}
                 type="file"
@@ -768,7 +831,6 @@ export default function HomePage() {
                   onDrop={onDropUpload}
                   onDragOver={onDragOverUpload}
                   onDragLeave={onDragLeaveUpload}
-                  transition="border-color 0.2s ease, background-color 0.2s ease"
                 >
                   <BiArrowFromBottom
                     size={56}
@@ -793,7 +855,7 @@ export default function HomePage() {
                   </Text>
                 </Box>
               ) : (
-                <Box>
+                <Box flex="1">
                   <Text fontSize="xs" color={subtleText} mb={2} textTransform="uppercase" letterSpacing="0.08em">
                     {uploadPreviewLabel} ({uploadFiles.length})
                   </Text>
@@ -854,7 +916,14 @@ export default function HomePage() {
                   </Text>
                 </Box>
               )}
+            </VStack>
 
+            <VStack
+              align="stretch"
+              spacing={4}
+              w={{ base: "100%", xl: "320px" }}
+              justify="space-between"
+            >
               <Box>
                 <Text fontSize="sm" fontWeight="medium" mb={2}>
                   {uploadProjectLabel}
@@ -885,26 +954,27 @@ export default function HomePage() {
                 colorScheme="blue"
                 isDisabled={!uploadProjectId || uploadFiles.length === 0 || projects.length === 0}
                 isLoading={submitting}
+                mt={{ xl: "auto" }}
               >
                 {submitting ? uploadInProgressLabel : uploadImageButtonLabel}
               </Button>
             </VStack>
-          </form>
-          </Box>
-        </Stack>
+          </Stack>
+        </form>
+      </Box>
 
-        {openedImage ? (
-          <Box
-            position="fixed"
-            inset={0}
-            zIndex={2000}
-            bg="blackAlpha.900"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            p={{ base: 3, md: 6 }}
-            onClick={onCloseImagePopup}
-          >
+      {openedImage ? (
+        <Box
+          position="fixed"
+          inset={0}
+          zIndex={2000}
+          bg="blackAlpha.900"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          p={{ base: 3, md: 6 }}
+          onClick={onCloseImagePopup}
+        >
           <Button
             type="button"
             position="absolute"
@@ -932,11 +1002,11 @@ export default function HomePage() {
               style={{ maxWidth: "95vw", maxHeight: "92vh", width: "auto", height: "auto", display: "block" }}
             />
           </Box>
-          </Box>
-        ) : null}
+        </Box>
+      ) : null}
 
-        <Modal isOpen={Boolean(moveDialogImage)} onClose={closeMoveDialog} isCentered>
-          <ModalOverlay />
+      <Modal isOpen={Boolean(moveDialogImage)} onClose={closeMoveDialog} isCentered>
+        <ModalOverlay />
         <ModalContent bg={panelBg} backdropFilter="blur(14px)" border="1px solid" borderColor={panelBorder}>
           <ModalHeader>{moveImageLabel}</ModalHeader>
           <ModalCloseButton />
