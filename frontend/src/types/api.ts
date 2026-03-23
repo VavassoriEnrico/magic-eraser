@@ -19,6 +19,7 @@ export interface ProcessRunPayload {
   input_image_url: string;
   project_id?: number;
   image_id?: number;
+  model_key?: string;
 }
 
 export interface ProcessRunResponse {

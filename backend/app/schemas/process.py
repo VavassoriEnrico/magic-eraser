@@ -7,6 +7,7 @@ class ProcessRunRequest(BaseModel):
     input_image_url: str
     project_id: int | None = None
     image_id: int | None = None
+    model_key: str | None = None
 
 
 class ProcessRunResponse(BaseModel):

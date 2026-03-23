@@ -2,9 +2,13 @@ import os
 
 from fastapi import HTTPException
 
-from app.integrations.fal_client import run_fal_model
+from app.integrations.fal_adapter import run_fal_model
 from app.processes.base_process import BaseProcess
 from app.schemas.process import ProcessRunRequest
+
+from app.processes.segment_models import SEGMENT_MODEL_REGISTRY
+
+from app.integrations.image_input_resolver import resolve_image_input
 
 
 class SegmentFromPromptProcess(BaseProcess):
@@ -14,12 +18,22 @@ class SegmentFromPromptProcess(BaseProcess):
     def run(self, payload: ProcessRunRequest):
         self.validate(payload)
 
-        model_id = os.getenv("FAL_SEGMENT_MODEL_ID", "").strip()
+        model_key = (payload.model_key or "sam3").strip()
+        definition = SEGMENT_MODEL_REGISTRY.get(model_key)
+        if definition is None:
+            raise HTTPException(status_code=400, detail="unsupported segmentation model")
+
+        model_id = str(definition.get("model_id", "")).strip()
         if not model_id:
-            raise HTTPException(status_code=500, detail="FAL_SEGMENT_MODEL_ID is not set")
+            raise HTTPException(
+                status_code=500,
+                detail=f'model_id is not configured for model "{model_key}"',
+            )
+
+        resolved_image_input = resolve_image_input(payload.input_image_url)
 
         request_payload = {
-            "image_url": payload.input_image_url.strip(),
+            "image_url": resolved_image_input,
             "prompt": payload.prompt.strip(),
             "apply_mask": True,
             "output_format": "png",

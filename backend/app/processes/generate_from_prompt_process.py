@@ -8,5 +8,5 @@ class GenerateFromPromptProcess(BaseProcess):
 
     def run(self, payload: ProcessRunRequest) -> str:
         self.validate(payload)
-        #Qui ci sarà la chiamata a fal per la generazione
+        #here wll be the call to fal to generate an image from the prompt
         return payload.input_image_url.strip()

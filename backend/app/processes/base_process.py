@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from app.schemas.process import ProcessRunRequest
 
-#Base class that represent a project
+#Base class that represent a generic process
 class BaseProcess(ABC):
     process_type: str
     prompt_required: bool = True

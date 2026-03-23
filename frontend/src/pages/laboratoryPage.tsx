@@ -5,6 +5,7 @@ import {
   Button,
   HStack,
   Input,
+  Select,
   Stack,
   Text,
   useColorModeValue,
@@ -27,6 +28,7 @@ const PROCESS_STEPS: ProcessStep[] = [
     title: "Segment",
     promptPlaceholder: "Write what object to segment...",
     promptRequired: true,
+    modelOptions: [{ key: "sam3", label: "SAM 3" }],
   },
   {
     id: "remove-step",
@@ -71,6 +73,13 @@ export default function LaboratoryPage() {
   const processes = useMemo<ProcessStep[]>(() => PROCESS_STEPS, []);
 
   const [promptsById, setPromptsById] = useState<Record<string, string>>({});
+  const [modelKeyByStepId, setModelKeyByStepId] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      PROCESS_STEPS.flatMap((step) =>
+        step.modelOptions?.[0] ? [[step.id, step.modelOptions[0].key]] : []
+      )
+    )
+  );
   const [statusById, setStatusById] = useState<Record<string, ProcessStatus>>({});
   const [outputById, setOutputById] = useState<Record<string, string>>({});
   const [errorById, setErrorById] = useState<Record<string, string>>({});
@@ -125,6 +134,15 @@ export default function LaboratoryPage() {
     return Boolean(outputById[previousStep.id]);
   }
 
+  function getModelKeyForStep(step: ProcessStep): string | undefined {
+    const selectedModelKey = modelKeyByStepId[step.id];
+    if (selectedModelKey) {
+      return selectedModelKey;
+    }
+
+    return step.modelOptions?.[0]?.key;
+  }
+
   async function runSingleStep(step: ProcessStep, stepIndex: number) {
     const inputImageUrl = getInputForStep(stepIndex);
     if (!inputImageUrl) {
@@ -145,6 +163,7 @@ export default function LaboratoryPage() {
         process_type: step.kind,
         prompt: promptsById[step.id] ?? "",
         input_image_url: inputImageUrl,
+        model_key: getModelKeyForStep(step),
         project_id: projectId ? Number(projectId) : undefined,
         image_id: imageId ? Number(imageId) : undefined,
       });
@@ -178,6 +197,7 @@ export default function LaboratoryPage() {
           process_type: step.kind,
           prompt: promptsById[step.id] ?? "",
           input_image_url: currentInput,
+          model_key: getModelKeyForStep(step),
           project_id: projectId ? Number(projectId) : undefined,
           image_id: imageId ? Number(imageId) : undefined,
         });
@@ -353,6 +373,24 @@ export default function LaboratoryPage() {
                             }
                             isDisabled={!isReady || status === "running" || runningAll}
                           />
+                        ) : null}
+                        {step.modelOptions?.length ? (
+                          <Select
+                            value={getModelKeyForStep(step) ?? ""}
+                            onChange={(event) =>
+                              setModelKeyByStepId((prev) => ({
+                                ...prev,
+                                [step.id]: event.target.value,
+                              }))
+                            }
+                            isDisabled={!isReady || status === "running" || runningAll}
+                          >
+                            {step.modelOptions.map((modelOption) => (
+                              <option key={modelOption.key} value={modelOption.key}>
+                                {modelOption.label}
+                              </option>
+                            ))}
+                          </Select>
                         ) : null}
                       </VStack>
 

@@ -3,6 +3,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+BASE_DIR = Path(__file__).resolve().parents[2]
+load_dotenv(BASE_DIR / ".env")
+
 load_dotenv()
 
 #single point to access to settings. This is useful to avoid having to import os and dotenv in every file that needs to access the settings.

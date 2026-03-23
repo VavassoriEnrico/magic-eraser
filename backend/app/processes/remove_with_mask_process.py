@@ -8,5 +8,5 @@ class RemoveWithMaskProcess(BaseProcess):
 
     def run(self, payload: ProcessRunRequest) -> str:
         self.validate(payload)
-        #Qui ci sarà la chiamata a fal per la rimozione della porzione di immagine
+        #here there will be the call to fal to remove the masked area
         return payload.input_image_url.strip()
