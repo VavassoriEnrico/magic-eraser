@@ -1,3 +1,3 @@
-from . import images, projects
+from . import images, processes, projects
 
-__all__ = ["projects", "images"]
+__all__ = ["projects", "images", "processes"]

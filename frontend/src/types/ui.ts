@@ -2,10 +2,12 @@ import type { ReactNode, FormEvent } from "react";
 
 import type { ImageAsset, Project } from "./api";
 
+export type AppPath = "/" | "/gallery" | "/profile" | "/laboratory";
+
 export interface AppLayoutProps {
   children: ReactNode;
-  currentPath: "/" | "/gallery" | "/profile";
-  onNavigate: (path: "/" | "/gallery" | "/profile") => void;
+  currentPath: AppPath;
+  onNavigate: (path: AppPath, search?: string) => void;
   backgroundImageUrl?: string | { light: string; dark: string };
 }
 

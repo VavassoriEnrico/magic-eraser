@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import AppLayout from "./components/layout/AppLayout";
 import GalleryPage from "./pages/galleryPage";
 import HomePage from "./pages/homePage";
+import LaboratoryPage from "./pages/laboratoryPage";
 import ProfilePage from "./pages/profilePage";
 
-type AppPath = "/" | "/gallery" | "/profile";
+type AppPath = "/" | "/gallery" | "/profile" | "/laboratory";
 
 function normalizePath(pathname: string): AppPath {
   if (!pathname || pathname === "/") {
@@ -20,6 +21,8 @@ function normalizePath(pathname: string): AppPath {
       return "/gallery";
     case "/profile":
       return "/profile";
+    case "/laboratory":
+      return "/laboratory";
     default:
       return "/";
   }
@@ -39,13 +42,15 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  function navigate(path: AppPath) {
+  function navigate(path: AppPath, search = "") {
     const nextPath = normalizePath(path);
-    if (nextPath === currentPath) {
+    const normalizedSearch = search.startsWith("?") || search === "" ? search : `?${search}`;
+    const currentSearch = window.location.search ?? "";
+    if (nextPath === currentPath && normalizedSearch === currentSearch) {
       return;
     }
 
-    window.history.pushState({}, "", nextPath);
+    window.history.pushState({}, "", `${nextPath}${normalizedSearch}`);
     setCurrentPath(nextPath);
   }
 
@@ -55,6 +60,8 @@ export default function App() {
         return <GalleryPage />;
       case "/profile":
         return <ProfilePage />;
+      case "/laboratory":
+        return <LaboratoryPage />;
       case "/":
       default:
         return <HomePage />;

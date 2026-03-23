@@ -2,12 +2,11 @@ import type { MouseEvent } from "react";
 
 import { IconButton, useColorMode } from "@chakra-ui/react";
 import { BiSolidMoon, BiSolidSun } from "react-icons/bi";
-
-type AppPath = "/" | "/gallery" | "/profile";
+import type { AppPath } from "../../types/ui";
 
 interface NavbarProps {
   currentPath: AppPath;
-  onNavigate: (path: AppPath) => void;
+  onNavigate: (path: AppPath, search?: string) => void;
 }
 
 export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
@@ -81,7 +80,7 @@ function navClass(isActive: boolean) {
 function onLinkClick(
   event: MouseEvent<HTMLAnchorElement>,
   path: AppPath,
-  onNavigate: (path: AppPath) => void
+  onNavigate: (path: AppPath, search?: string) => void
 ) {
   event.preventDefault();
   onNavigate(path);
