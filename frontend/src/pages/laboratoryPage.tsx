@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { BiArrowToBottom, BiChevronRight } from "react-icons/bi";
 
-import { uploadImage } from "../api/images";
+import { uploadImageFromUrl } from "../api/images";
 import { runProcess } from "../api/processes";
 import type { ImageAsset } from "../types/api";
 import type { ProcessStatus, ProcessStep } from "../types/process";
@@ -26,18 +26,21 @@ const PROCESS_STEPS: ProcessStep[] = [
     kind: "segment_from_prompt",
     title: "Segment",
     promptPlaceholder: "Write what object to segment...",
+    promptRequired: true,
   },
   {
     id: "remove-step",
     kind: "remove_with_mask",
     title: "Remove",
     promptPlaceholder: "Write how to remove the selected object...",
+    promptRequired: false,
   },
   {
     id: "generate-step",
     kind: "generate_from_prompt",
     title: "Generate",
     promptPlaceholder: "Write what you want to generate...",
+    promptRequired: true,
   },
 ];
 
@@ -238,25 +241,11 @@ export default function LaboratoryPage() {
     setSaveError("");
 
     try {
-      const response = await fetch(finalOutputUrl);
-      if (!response.ok) {
-        throw new Error(`Cannot read final image (${response.status})`);
-      }
-
-      const blob = await response.blob();
-      const extension =
-        blob.type === "image/png"
-          ? "png"
-          : blob.type === "image/webp"
-            ? "webp"
-            : blob.type === "image/jpeg"
-              ? "jpg"
-              : "png";
-      const file = new File([blob], `laboratory-result-${Date.now()}.${extension}`, {
-        type: blob.type || "image/png",
-      });
-
-      await uploadImage(targetProjectId, file);
+      await uploadImageFromUrl(
+        targetProjectId,
+        toImageUrl(finalOutputUrl),
+        `laboratory-result-${Date.now()}`
+      );
       setSaveMessage(`Saved in project #${targetProjectId}`);
     } catch (caughtError) {
       setSaveError(getErrorMessage(caughtError));
@@ -355,14 +344,16 @@ export default function LaboratoryPage() {
                             />
                           ) : null}
                         </Box>
-                        <Input
-                          placeholder={step.promptPlaceholder}
-                          value={promptsById[step.id] ?? ""}
-                          onChange={(event) =>
-                            setPromptsById((prev) => ({ ...prev, [step.id]: event.target.value }))
-                          }
-                          isDisabled={!isReady || status === "running" || runningAll}
-                        />
+                        {step.promptRequired ? (
+                          <Input
+                            placeholder={step.promptPlaceholder}
+                            value={promptsById[step.id] ?? ""}
+                            onChange={(event) =>
+                              setPromptsById((prev) => ({ ...prev, [step.id]: event.target.value }))
+                            }
+                            isDisabled={!isReady || status === "running" || runningAll}
+                          />
+                        ) : null}
                       </VStack>
 
                       <VStack justify="center" align="center" minW="120px" spacing={2}>

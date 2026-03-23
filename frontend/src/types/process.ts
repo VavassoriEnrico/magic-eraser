@@ -7,4 +7,5 @@ export interface ProcessStep {
   kind: ProcessKind;
   title: string;
   promptPlaceholder: string;
+  promptRequired: boolean;
 }

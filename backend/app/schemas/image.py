@@ -14,3 +14,8 @@ class ImageRead(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ImageFromUrlCreate(BaseModel):
+    image_url: str
+    file_name: str | None = None
