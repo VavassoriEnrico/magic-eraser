@@ -26,3 +26,9 @@ export interface ProcessRunResponse {
   process_type: string;
   output_image_url: string;
 }
+
+export interface SegmentModel {
+  key: string;
+  label: string;
+  default: boolean;
+}

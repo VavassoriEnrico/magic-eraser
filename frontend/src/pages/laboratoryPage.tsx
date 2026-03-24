@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Badge,
   Box,
@@ -14,21 +14,21 @@ import {
 import { BiArrowToBottom, BiChevronRight } from "react-icons/bi";
 
 import { uploadImageFromUrl } from "../api/images";
-import { runProcess } from "../api/processes";
+import { getSegmentModels, runProcess } from "../api/processes";
 import type { ImageAsset } from "../types/api";
 import type { ProcessStatus, ProcessStep } from "../types/process";
 import { getErrorMessage } from "../utils/errors";
 import { toImageUrl } from "../utils/images";
 
 const STORAGE_KEY = "laboratory:selected-image";
-const PROCESS_STEPS: ProcessStep[] = [
+const BASE_PROCESS_STEPS: ProcessStep[] = [
   {
     id: "segment-step",
     kind: "segment_from_prompt",
     title: "Segment",
     promptPlaceholder: "Write what object to segment...",
     promptRequired: true,
-    modelOptions: [{ key: "sam3", label: "SAM 3" }],
+    modelOptions: [],
   },
   {
     id: "remove-step",
@@ -70,12 +70,21 @@ export default function LaboratoryPage() {
   const projectId = urlParams.get("projectId");
   const imageId = urlParams.get("imageId");
   const selectedImage = useMemo(() => getSelectedImageFromSession(), []);
-  const processes = useMemo<ProcessStep[]>(() => PROCESS_STEPS, []);
+  const [segmentModelOptions, setSegmentModelOptions] = useState(
+    BASE_PROCESS_STEPS[0].modelOptions ?? []
+  );
+  const processes = useMemo<ProcessStep[]>(
+    () =>
+      BASE_PROCESS_STEPS.map((step) =>
+        step.kind === "segment_from_prompt" ? { ...step, modelOptions: segmentModelOptions } : step
+      ),
+    [segmentModelOptions]
+  );
 
   const [promptsById, setPromptsById] = useState<Record<string, string>>({});
   const [modelKeyByStepId, setModelKeyByStepId] = useState<Record<string, string>>(() =>
     Object.fromEntries(
-      PROCESS_STEPS.flatMap((step) =>
+      BASE_PROCESS_STEPS.flatMap((step) =>
         step.modelOptions?.[0] ? [[step.id, step.modelOptions[0].key]] : []
       )
     )
@@ -87,6 +96,37 @@ export default function LaboratoryPage() {
   const [isSavingFinal, setIsSavingFinal] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadModels() {
+      try {
+        const models = await getSegmentModels();
+        if (cancelled || !models.length) {
+          return;
+        }
+
+        const options = models.map((model) => ({
+          key: model.key,
+          label: model.label,
+        }));
+        setSegmentModelOptions(options);
+
+        const defaultModel = models.find((model) => model.default) ?? models[0];
+        if (defaultModel) {
+          setModelKeyByStepId((prev) => ({ ...prev, "segment-step": defaultModel.key }));
+        }
+      } catch {
+        // fallback to local options
+      }
+    }
+
+    void loadModels();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const workspaceLabel = "Workspace";
   const titleLabel = "Laboratory";
@@ -374,6 +414,7 @@ export default function LaboratoryPage() {
                             isDisabled={!isReady || status === "running" || runningAll}
                           />
                         ) : null}
+                        {/* Multiple choice between models */}
                         {step.modelOptions?.length ? (
                           <Select
                             value={getModelKeyForStep(step) ?? ""}
