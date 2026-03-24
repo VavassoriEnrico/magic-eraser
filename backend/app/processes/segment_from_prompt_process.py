@@ -10,6 +10,8 @@ from app.processes.segment_models import SEGMENT_MODEL_REGISTRY
 
 from app.integrations.image_input_resolver import resolve_image_input
 
+#Process implementation for the "segment_from_prompt" process type
+#which performs image segmentation based on a text prompt and an input image.
 
 class SegmentFromPromptProcess(BaseProcess):
     process_type = "segment_from_prompt"

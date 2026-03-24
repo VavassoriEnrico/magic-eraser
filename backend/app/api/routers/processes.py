@@ -3,6 +3,8 @@ from fastapi import APIRouter
 from app.schemas.process import ProcessRunRequest, ProcessRunResponse
 from app.services import process_service
 
+#API endpoints for the process entity
+
 router = APIRouter(prefix="/processes", tags=["processes"])
 
 #Run a process
