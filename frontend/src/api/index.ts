@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "./client";
 import { createProject, deleteProject, getProjects, updateProject } from "./projects";
-import { deleteImage, getProjectImages, uploadImage } from "./images";
+import { deleteImage, getProjectImages, uploadImage, uploadImageFromUrl } from "./images";
+import { runProcess } from "./processes";
 
 export const api = {
   baseUrl: API_BASE_URL,
@@ -10,7 +11,9 @@ export const api = {
   updateProject,
   getProjectImages,
   uploadImage,
+  uploadImageFromUrl,
   deleteImage,
+  runProcess,
 };
 
 export {
@@ -21,5 +24,7 @@ export {
   updateProject,
   getProjectImages,
   uploadImage,
+  uploadImageFromUrl,
   deleteImage,
+  runProcess,
 };

@@ -1,4 +1,6 @@
 import shutil
+from urllib.parse import urlparse
+from urllib.request import urlopen
 from pathlib import Path
 from uuid import uuid4
 
@@ -65,3 +67,60 @@ def upload_image(db: Session, project_id: int, file: UploadFile):
 def list_project_images(db: Session, project_id: int):
     get_project(db, project_id)
     return image_repository.list_by_project_id(db, project_id)
+
+
+def upload_image_from_url(
+    db: Session,
+    project_id: int,
+    image_url: str,
+    file_name: str | None = None,
+):
+    project = get_project(db, project_id)
+
+    source_url = image_url.strip()
+    if not source_url:
+        raise HTTPException(status_code=400, detail="image_url is required")
+
+    try:
+        with urlopen(source_url) as response:
+            if response.status != 200:
+                raise HTTPException(status_code=400, detail="cannot download image from provided url")
+            content = response.read()
+            content_type = response.headers.get("Content-Type", "")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=400, detail="cannot download image from provided url")
+
+    parsed_path = Path(urlparse(source_url).path)
+    extension = parsed_path.suffix
+    if not extension:
+        if "png" in content_type:
+            extension = ".png"
+        elif "jpeg" in content_type or "jpg" in content_type:
+            extension = ".jpg"
+        elif "webp" in content_type:
+            extension = ".webp"
+        else:
+            extension = ".bin"
+
+    original_name = Path(file_name or parsed_path.name or f"image{extension}").name
+    if Path(original_name).suffix == "":
+        original_name = f"{original_name}{extension}"
+
+    stored_name = f"{uuid4().hex}{Path(original_name).suffix}"
+
+    project_upload_dir = settings.uploads_dir / f"project_{project_id}"
+    project_upload_dir.mkdir(parents=True, exist_ok=True)
+
+    stored_file = project_upload_dir / stored_name
+    with stored_file.open("wb") as destination:
+        destination.write(content)
+
+    public_path = f"/uploads/project_{project_id}/{stored_name}"
+    image = image_repository.create(
+        db, project_id=project_id, file_name=original_name, file_path=public_path
+    )
+    project_repository.touch(db, project)
+    db.commit()
+    return image

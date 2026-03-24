@@ -65,7 +65,6 @@ export default function HomePage() {
     onRenameProject,
     onCreateImage,
     onDeleteImage,
-    onEditImage,
     onDuplicateImage,
     onMoveImage,
   } = useHomeData();
@@ -210,6 +209,20 @@ export default function HomePage() {
       src: toImageUrl(image.filePath),
       name: image.fileName || "Image preview",
     });
+  }
+
+  function openLaboratory(image: ImageAsset, projectId: number) {
+    const selectedImage = {
+      ...image,
+      project_id: projectId,
+    };
+    window.sessionStorage.setItem("laboratory:selected-image", JSON.stringify(selectedImage));
+    const params = new URLSearchParams({
+      projectId: String(projectId),
+      imageId: String(image.id),
+    });
+    window.history.pushState({}, "", `/laboratory?${params.toString()}`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
   function onCloseImagePopup() {
@@ -399,7 +412,9 @@ export default function HomePage() {
                       <Portal>
                         <MenuList onClick={(event) => event.stopPropagation()} p={1} minW="unset" w="fit-content">
                           <ButtonGroup size="xs" variant="outline">
-                            <Button onClick={() => onEditImage(image.id, project.id)}>{editLabel}</Button>
+                            <Button onClick={() => openLaboratory(image, project.id)}>
+                              {editLabel}
+                            </Button>
                             <Button
                               colorScheme="red"
                               onClick={() => onDeleteImage(image.id, project.id)}
