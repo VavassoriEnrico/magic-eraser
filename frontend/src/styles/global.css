@@ -1,9 +1,11 @@
 :root {
   --bg: #bcc4ce;
-  --line: rgba(15, 23, 42, 0.14);
+  --line: rgba(255, 255, 255, 0.34);
   --text: #111827;
   --muted: #475569;
-  --navbar-bg: rgba(238, 242, 247, 0.86);
+  --navbar-bg: rgba(255, 255, 255, 0.3);
+  --footbar-title: #374151;
+  --footbar-muted: rgba(71, 85, 105, 0.22);
   --avatar-grad: linear-gradient(135deg, #91caff, #366ad9);
 }
 
@@ -13,7 +15,9 @@ body.chakra-ui-dark {
   --line: rgba(255, 255, 255, 0.14);
   --text: #f2f4f7;
   --muted: #98a2b3;
-  --navbar-bg: rgba(2, 11, 18, 0.86);
+  --navbar-bg: rgba(2, 11, 18, 0.3);
+  --footbar-title: rgba(255, 255, 255, 0.92);
+  --footbar-muted: rgba(255, 255, 255, 0.8);
   --avatar-grad: linear-gradient(135deg, #d4ff3f, #5cb85c);
 }
 
@@ -47,8 +51,37 @@ body {
   top: 0;
   z-index: 20;
   background: var(--navbar-bg);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
+}
+
+.app-footbar {
+  margin-top: 64px;
+  padding: 48px 20px 40px;
+  background: var(--navbar-bg);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+}
+
+.app-footbar__logo {
+  border: 3px solid var(--footbar-title);
+}
+
+.app-footbar__title,
+.app-footbar__column-title {
+  color: var(--footbar-title);
+}
+
+.app-footbar__grid {
+  width: 100%;
+}
+
+.app-footbar__column-link {
+  color: var(--footbar-muted);
+}
+
+.app-footbar__divider {
+  border-color: var(--line) !important;
 }
 
 .app-navbar__inner {

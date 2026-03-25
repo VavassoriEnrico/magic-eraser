@@ -69,3 +69,4 @@ docker compose down -v
 - Database data is persisted in the `postgres_data` Docker volume.
 - Uploaded images are persisted in the `backend_uploads` Docker volume.
 - Frontend is built with `VITE_API_URL=http://localhost:8000`.
+- Frontend is now written in TypeScript and includes `npm run typecheck` and `npm run lint` in the `frontend` workspace.
