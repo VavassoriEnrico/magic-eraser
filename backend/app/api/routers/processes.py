@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.processes.segment_models import SEGMENT_MODEL_REGISTRY
+from app.catalogs.segment_models import SEGMENT_MODEL_REGISTRY
 from app.schemas.process import ProcessRunRequest, ProcessRunResponse
 from app.services import process_service
 

@@ -9,7 +9,6 @@ def create(db: Session, project_id: int, file_name: str, file_path: str) -> Imag
     image = Image(project_id=project_id, fileName=file_name, filePath=file_path)
     db.add(image)
     db.flush()
-    db.refresh(image)
     return image
 
 
@@ -27,4 +26,3 @@ def get_by_id(db: Session, image_id: int) -> Image | None:
 
 def delete(db: Session, image: Image) -> None:
     db.delete(image)
-    db.commit()
