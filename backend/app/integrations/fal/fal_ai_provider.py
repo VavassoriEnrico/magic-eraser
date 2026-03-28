@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 
 from app.integrations.fal.fal_client import run_model
+from app.integrations.fal.image_input_resolver import resolve_image_input
 from app.providers.protocols import AIProvider
 
 
@@ -8,18 +9,20 @@ class FalAIProvider(AIProvider):
     def segment_from_prompt(
         self,
         *,
-        model_id: str,
-        image_input: str,
+        provider_model_id: str,
+        input_image_url: str,
         prompt: str,
     ) -> str:
+        resolved_image_input = resolve_image_input(input_image_url)
+
         request_payload = {
-            "image_url": image_input,
+            "image_url": resolved_image_input,
             "prompt": prompt,
             "apply_mask": True,
             "output_format": "png",
         }
 
-        response = run_model(model_id, request_payload)
+        response = run_model(provider_model_id, request_payload)
         output_url = self._extract_output_url(response)
         if not output_url:
             response_keys = ", ".join(response.keys()) if isinstance(response, dict) else "not-a-dict"
@@ -33,12 +36,12 @@ class FalAIProvider(AIProvider):
     def generate_from_prompt(
         self,
         *,
-        model_id: str,
+        provider_model_id: str,
         prompt: str,
     ) -> str:
         raise HTTPException(
             status_code=501,
-            detail=f'generate_from_prompt is not implemented yet for provider "fal" and model "{model_id}"',
+            detail=f'generate_from_prompt is not implemented yet for provider "fal" and model "{provider_model_id}"',
         )
 
     def _extract_output_url(self, response: object) -> str | None:

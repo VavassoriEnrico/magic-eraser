@@ -13,7 +13,7 @@ PROCESS_HANDLERS = {
 
 
 def run_process(payload: ProcessRunRequest) -> ProcessRunResponse:
-    process_type = payload.process_type.strip()
+    process_type = payload.process_type
     handler = PROCESS_HANDLERS.get(process_type)
 
     if handler is None:

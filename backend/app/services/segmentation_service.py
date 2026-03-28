@@ -1,12 +1,11 @@
 from fastapi import HTTPException
 
 from app.catalogs.segment_models import SEGMENT_MODEL_REGISTRY
-from app.integrations.image_input_resolver import resolve_image_input
 from app.providers.ai_provider import get_ai_provider
-from app.schemas.process import ProcessRunRequest
+from app.schemas.process import SegmentFromPromptRequest
 
 
-def segment_from_prompt(payload: ProcessRunRequest) -> str:
+def segment_from_prompt(payload: SegmentFromPromptRequest) -> str:
     prompt = payload.prompt.strip()
     if not prompt:
         raise HTTPException(status_code=400, detail="prompt is required")
@@ -20,11 +19,11 @@ def segment_from_prompt(payload: ProcessRunRequest) -> str:
     if definition is None:
         raise HTTPException(status_code=400, detail="unsupported segmentation model")
 
-    model_id = str(definition.get("model_id", "")).strip()
-    if not model_id:
+    provider_model_id = str(definition.get("provider_model_id", "")).strip()
+    if not provider_model_id:
         raise HTTPException(
             status_code=500,
-            detail=f'model_id is not configured for model "{model_key}"',
+            detail=f'provider_model_id is not configured for model "{model_key}"',
         )
 
     provider_key = str(definition.get("provider", "")).strip()
@@ -35,10 +34,9 @@ def segment_from_prompt(payload: ProcessRunRequest) -> str:
         )
 
     provider = get_ai_provider(provider_key)
-    resolved_image_input = resolve_image_input(input_image_url)
 
     return provider.segment_from_prompt(
-        model_id=model_id,
-        image_input=resolved_image_input,
+        provider_model_id=provider_model_id,
+        input_image_url=input_image_url,
         prompt=prompt,
     )

@@ -5,8 +5,8 @@ class AIProvider(Protocol):
     def segment_from_prompt(
         self,
         *,
-        model_id: str,
-        image_input: str,
+        provider_model_id: str,
+        input_image_url: str,
         prompt: str,
     ) -> str:
         ...
@@ -14,7 +14,7 @@ class AIProvider(Protocol):
     def generate_from_prompt(
         self,
         *,
-        model_id: str,
+        provider_model_id: str,
         prompt: str,
     ) -> str:
         ...
