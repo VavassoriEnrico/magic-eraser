@@ -14,7 +14,12 @@ def delete_image(db: Session, image_id: int) -> None:
         raise HTTPException(status_code=404, detail="image not found")
 
     project = project_repository.get_by_id(db, image.project_id)
-    if project is not None:
-        project_repository.touch(db, project)
+    try:
+        if project is not None:
+            project_repository.touch(db, project)
 
-    image_repository.delete(db, image)
+        image_repository.delete(db, image)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise

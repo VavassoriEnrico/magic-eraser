@@ -10,8 +10,6 @@ from app.models import Project
 def create(db: Session, name: str) -> Project:
     project = Project(name=name)
     db.add(project)
-    db.commit()
-    db.refresh(project)
     return project
 
 
@@ -26,8 +24,6 @@ def get_by_id(db: Session, project_id: int) -> Project | None:
 def update_name(db: Session, project: Project, name: str) -> Project:
     project.name = name
     project.updated_at = datetime.now()
-    db.commit()
-    db.refresh(project)
     return project
 
 
@@ -37,4 +33,3 @@ def touch(db: Session, project: Project) -> None:
 
 def delete(db: Session, project: Project) -> None:
     db.delete(project)
-    db.commit()
