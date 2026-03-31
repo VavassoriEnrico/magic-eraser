@@ -1,5 +1,10 @@
 import { request } from "./client";
-import type { ProcessRunPayload, ProcessRunResponse, SegmentModel } from "../types/api";
+import type {
+  ProcessCatalogItem,
+  ProcessRunPayload,
+  ProcessRunResponse,
+  SegmentModel,
+} from "../types/api";
 
 export function runProcess(payload: ProcessRunPayload) {
   return request<ProcessRunResponse>("/processes/run", {
@@ -10,4 +15,8 @@ export function runProcess(payload: ProcessRunPayload) {
 
 export function getSegmentModels() {
   return request<SegmentModel[]>("/processes/segment-models");
+}
+
+export function getProcessCatalog() {
+  return request<ProcessCatalogItem[]>("/processes/catalog");
 }
