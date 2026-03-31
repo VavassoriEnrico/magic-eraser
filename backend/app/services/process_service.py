@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 
+from app.services.delete_from_mask_service import remove_with_mask
 from app.schemas.process import ProcessRunRequest, ProcessRunResponse
 from app.services.generation_service import generate_from_prompt
-from app.services.inpainting_service import remove_with_mask
 from app.services.segmentation_service import segment_from_prompt
 
 PROCESS_HANDLERS = {

@@ -208,7 +208,7 @@ export default function LaboratoryPage() {
   function getInputForCell(cellIndex: number, sourceCells: LabCell[]) {
     if (!selectedImage) return "";
     if (cellIndex === 0) return toImageUrl(selectedImage.filePath);
-    return sourceCells[cellIndex - 1].outputUrl;
+    return toImageUrl(sourceCells[cellIndex - 1].outputUrl);
   }
 
   function resetFromCell(cellIndex: number) {
@@ -259,8 +259,8 @@ export default function LaboratoryPage() {
     if (cell.processType === "remove_with_mask") {
       return {
         ...basePayload,
-        input_image_url: inputImageUrl,
-        mask_image_url: previousOutputUrl,
+        input_image_url: selectedImage ? toImageUrl(selectedImage.filePath) : inputImageUrl,
+        mask_image_url: toImageUrl(previousOutputUrl),
       };
     }
 
@@ -526,7 +526,7 @@ export default function LaboratoryPage() {
                           >
                             {cell.outputUrl ? (
                               <img
-                                src={cell.outputUrl}
+                                src={toImageUrl(cell.outputUrl)}
                                 alt={`Cell ${index + 1} output`}
                                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                               />
