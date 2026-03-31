@@ -11,51 +11,80 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import { BiArrowToBottom, BiChevronRight } from "react-icons/bi";
+import { BiChevronRight } from "react-icons/bi";
 
 import { uploadImageFromUrl } from "../api/images";
-import { getSegmentModels, runProcess } from "../api/processes";
-import type { ImageAsset } from "../types/api";
-import type { ProcessStatus, ProcessStep } from "../types/process";
+import { getProcessCatalog, runProcess } from "../api/processes";
+import type { ImageAsset, ProcessCatalogItem, ProcessRunPayload } from "../types/api";
+import type { ProcessStatus } from "../types/process";
 import { getErrorMessage } from "../utils/errors";
 import { toImageUrl } from "../utils/images";
 
 const STORAGE_KEY = "laboratory:selected-image";
-const BASE_PROCESS_STEPS: ProcessStep[] = [
+
+const FALLBACK_CATALOG: ProcessCatalogItem[] = [
   {
-    id: "segment-step",
-    kind: "segment_from_prompt",
+    process_type: "segment_from_prompt",
     title: "Segment",
-    promptPlaceholder: "Write what object to segment...",
-    promptRequired: true,
-    modelOptions: [],
+    priority: 1,
+    prompt_required: true,
+    model_options: [{ key: "sam3", label: "SAM 3", default: true }],
   },
   {
-    id: "remove-step",
-    kind: "remove_with_mask",
+    process_type: "remove_with_mask",
     title: "Remove",
-    promptPlaceholder: "Write how to remove the selected object...",
-    promptRequired: false,
+    priority: 2,
+    prompt_required: false,
   },
   {
-    id: "generate-step",
-    kind: "generate_from_prompt",
+    process_type: "generate_from_prompt",
     title: "Generate",
-    promptPlaceholder: "Write what you want to generate...",
-    promptRequired: true,
+    priority: 3,
+    prompt_required: true,
   },
 ];
+
+type LabCell = {
+  id: string;
+  processType: string;
+  title: string;
+  priority: number;
+  promptRequired: boolean;
+  modelOptions: { key: string; label: string }[];
+  prompt: string;
+  modelKey: string;
+  status: ProcessStatus;
+  outputUrl: string;
+  error: string;
+};
 
 function getSelectedImageFromSession(): ImageAsset | null {
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
+    if (!raw) return null;
     return JSON.parse(raw) as ImageAsset;
   } catch {
     return null;
   }
+}
+
+function createCell(def: ProcessCatalogItem): LabCell {
+  const modelOptions = (def.model_options ?? []).map((m) => ({ key: m.key, label: m.label }));
+  const defaultModel = (def.model_options ?? []).find((m) => m.default) ?? def.model_options?.[0];
+
+  return {
+    id: `${def.process_type}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    processType: def.process_type,
+    title: def.title,
+    priority: def.priority,
+    promptRequired: def.prompt_required,
+    modelOptions,
+    prompt: "",
+    modelKey: defaultModel?.key ?? "",
+    status: "idle",
+    outputUrl: "",
+    error: "",
+  };
 }
 
 export default function LaboratoryPage() {
@@ -70,28 +99,10 @@ export default function LaboratoryPage() {
   const projectId = urlParams.get("projectId");
   const imageId = urlParams.get("imageId");
   const selectedImage = useMemo(() => getSelectedImageFromSession(), []);
-  const [segmentModelOptions, setSegmentModelOptions] = useState(
-    BASE_PROCESS_STEPS[0].modelOptions ?? []
-  );
-  const processes = useMemo<ProcessStep[]>(
-    () =>
-      BASE_PROCESS_STEPS.map((step) =>
-        step.kind === "segment_from_prompt" ? { ...step, modelOptions: segmentModelOptions } : step
-      ),
-    [segmentModelOptions]
-  );
 
-  const [promptsById, setPromptsById] = useState<Record<string, string>>({});
-  const [modelKeyByStepId, setModelKeyByStepId] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      BASE_PROCESS_STEPS.flatMap((step) =>
-        step.modelOptions?.[0] ? [[step.id, step.modelOptions[0].key]] : []
-      )
-    )
-  );
-  const [statusById, setStatusById] = useState<Record<string, ProcessStatus>>({});
-  const [outputById, setOutputById] = useState<Record<string, string>>({});
-  const [errorById, setErrorById] = useState<Record<string, string>>({});
+  const [catalog, setCatalog] = useState<ProcessCatalogItem[]>(FALLBACK_CATALOG);
+  const [cells, setCells] = useState<LabCell[]>([]);
+  const [addProcessType, setAddProcessType] = useState("");
   const [runningAll, setRunningAll] = useState(false);
   const [isSavingFinal, setIsSavingFinal] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
@@ -100,195 +111,222 @@ export default function LaboratoryPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadModels() {
+    async function loadCatalog() {
       try {
-        const models = await getSegmentModels();
-        if (cancelled || !models.length) {
-          return;
-        }
-
-        const options = models.map((model) => ({
-          key: model.key,
-          label: model.label,
-        }));
-        setSegmentModelOptions(options);
-
-        const defaultModel = models.find((model) => model.default) ?? models[0];
-        if (defaultModel) {
-          setModelKeyByStepId((prev) => ({ ...prev, "segment-step": defaultModel.key }));
+        const loaded = await getProcessCatalog();
+        if (!cancelled && loaded.length > 0) {
+          setCatalog(loaded);
         }
       } catch {
-        // fallback to local options
+        // keep fallback catalog
       }
     }
 
-    void loadModels();
+    void loadCatalog();
     return () => {
       cancelled = true;
     };
   }, []);
 
+  const availableProcesses = useMemo(() => {
+    if (cells.length === 0) return catalog;
+    const minPriority = cells[cells.length - 1].priority;
+    return catalog.filter((p) => p.priority >= minPriority);
+  }, [catalog, cells]);
+
+  useEffect(() => {
+    if (availableProcesses.length === 0) {
+      setAddProcessType("");
+      return;
+    }
+
+    const exists = availableProcesses.some((p) => p.process_type === addProcessType);
+    if (!exists) {
+      setAddProcessType(availableProcesses[0].process_type);
+    }
+  }, [availableProcesses, addProcessType]);
+
   const workspaceLabel = "Workspace";
   const titleLabel = "Laboratory";
-  const descriptionLabel = "Build and run your processing chain step by step.";
+  const descriptionLabel = "Notebook workflow: add cells, run them in order, and save final output.";
   const selectedImageLabel = "Input image";
-  const noImageLabel =
-    "No image selected yet. Open this page from the Edit button of an image in Home.";
+  const noImageLabel = "No image selected yet. Open this page from Home > Edit.";
   const backToHomeLabel = "Back to home";
-  const runAllLabel = "Run all";
-  const operateLabel = "Operate";
-  const backLabel = "Back";
-  const outputLabel = "Output";
+  const runAllLabel = "Run all cells";
+  const addCellLabel = "Add cell";
+  const runCellLabel = "Run cell";
+  const resetFromLabel = "Reset from here";
+  const removeCellLabel = "Remove cell";
   const waitingOutputLabel = "Output will appear here";
   const saveFinalLabel = "Save final image";
-  const finalReadyLabel = "Final result ready";
 
-  const lastProcess = processes[processes.length - 1];
-  const finalOutputUrl = outputById[lastProcess.id];
+  const finalOutputUrl = cells.length ? cells[cells.length - 1].outputUrl : "";
+  const notebookExplanationList = useMemo(() => {
+    const seen = new Set<string>();
+    const items: string[] = [];
+
+    for (const item of catalog) {
+      const explanations = [item.explanation, item.priority_explanation];
+      for (const text of explanations) {
+        const clean = (text ?? "").trim();
+        if (!clean || seen.has(clean)) continue;
+        seen.add(clean);
+        items.push(clean);
+      }
+    }
+
+    return items;
+  }, [catalog]);
 
   function goHome() {
     window.history.pushState({}, "", "/");
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
-  function getInputForStep(stepIndex: number): string {
-    if (!selectedImage) {
-      return "";
-    }
-    if (stepIndex === 0) {
-      return toImageUrl(selectedImage.filePath);
+  function addCell() {
+    const selected = catalog.find((p) => p.process_type === addProcessType);
+    if (!selected) return;
+
+    if (cells.length > 0) {
+      const lastPriority = cells[cells.length - 1].priority;
+      if (selected.priority < lastPriority) return;
     }
 
-    const previousStep = processes[stepIndex - 1];
-    return outputById[previousStep.id] ?? "";
+    setCells((prev) => [...prev, createCell(selected)]);
+    setSaveMessage("");
+    setSaveError("");
   }
 
-  function isStepReady(stepIndex: number): boolean {
-    if (!selectedImage) {
+  function updateCell(cellIndex: number, patch: Partial<LabCell>) {
+    setCells((prev) => {
+      const next = [...prev];
+      next[cellIndex] = { ...next[cellIndex], ...patch };
+      return next;
+    });
+  }
+
+  function getInputForCell(cellIndex: number, sourceCells: LabCell[]) {
+    if (!selectedImage) return "";
+    if (cellIndex === 0) return toImageUrl(selectedImage.filePath);
+    return sourceCells[cellIndex - 1].outputUrl;
+  }
+
+  function resetFromCell(cellIndex: number) {
+    setCells((prev) => {
+      const next = [...prev];
+      for (let i = cellIndex; i < next.length; i += 1) {
+        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
+      }
+      return next;
+    });
+    setSaveMessage("");
+    setSaveError("");
+  }
+
+  function removeCell(cellIndex: number) {
+    setCells((prev) => {
+      const next = prev.filter((_, index) => index !== cellIndex);
+      for (let i = cellIndex; i < next.length; i += 1) {
+        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
+      }
+      return next;
+    });
+    setSaveMessage("");
+    setSaveError("");
+  }
+
+  function buildPayload(
+    cell: LabCell,
+    inputImageUrl: string,
+    previousOutputUrl: string,
+  ): ProcessRunPayload {
+    const basePayload: ProcessRunPayload = {
+      process_type: cell.processType,
+      priority: cell.priority,
+      project_id: projectId ? Number(projectId) : undefined,
+      image_id: imageId ? Number(imageId) : undefined,
+    };
+
+    if (cell.processType === "segment_from_prompt") {
+      return {
+        ...basePayload,
+        prompt: cell.prompt,
+        input_image_url: inputImageUrl,
+        model_key: cell.modelKey || undefined,
+      };
+    }
+
+    if (cell.processType === "remove_with_mask") {
+      return {
+        ...basePayload,
+        input_image_url: inputImageUrl,
+        mask_image_url: previousOutputUrl,
+      };
+    }
+
+    return {
+      ...basePayload,
+      prompt: cell.prompt,
+      model_key: cell.modelKey || undefined,
+    };
+  }
+
+  async function runCell(cellIndex: number) {
+    if (!selectedImage) return false;
+
+    const currentCells = [...cells];
+    const cell = currentCells[cellIndex];
+    if (!cell) return false;
+
+    const inputImageUrl = getInputForCell(cellIndex, currentCells);
+    const previousOutputUrl = cellIndex > 0 ? currentCells[cellIndex - 1].outputUrl : "";
+
+    if (!inputImageUrl) {
+      updateCell(cellIndex, { status: "failed", error: "Previous cell output missing" });
       return false;
     }
-    if (stepIndex === 0) {
-      return true;
-    }
-    const previousStep = processes[stepIndex - 1];
-    return Boolean(outputById[previousStep.id]);
-  }
 
-  function getModelKeyForStep(step: ProcessStep): string | undefined {
-    const selectedModelKey = modelKeyByStepId[step.id];
-    if (selectedModelKey) {
-      return selectedModelKey;
+    if (cell.processType === "remove_with_mask" && !previousOutputUrl) {
+      updateCell(cellIndex, { status: "failed", error: "Mask image missing from previous cell" });
+      return false;
     }
 
-    return step.modelOptions?.[0]?.key;
-  }
-
-  async function runSingleStep(step: ProcessStep, stepIndex: number) {
-    const inputImageUrl = getInputForStep(stepIndex);
-    if (!inputImageUrl) {
-      setErrorById((prev) => ({
-        ...prev,
-        [step.id]: "Previous step output missing",
-      }));
-      return;
-    }
-
-    setStatusById((prev) => ({ ...prev, [step.id]: "running" }));
-    setErrorById((prev) => ({ ...prev, [step.id]: "" }));
+    updateCell(cellIndex, { status: "running", error: "" });
     setSaveMessage("");
     setSaveError("");
 
     try {
-      const response = await runProcess({
-        process_type: step.kind,
-        prompt: promptsById[step.id] ?? "",
-        input_image_url: inputImageUrl,
-        model_key: getModelKeyForStep(step),
-        project_id: projectId ? Number(projectId) : undefined,
-        image_id: imageId ? Number(imageId) : undefined,
+      const payload = buildPayload(cell, inputImageUrl, previousOutputUrl);
+      const response = await runProcess(payload);
+      updateCell(cellIndex, { status: "done", outputUrl: response.output_image_url, error: "" });
+      return true;
+    } catch (error) {
+      updateCell(cellIndex, {
+        status: "failed",
+        error: error instanceof Error ? error.message : "Unexpected error",
       });
-      setOutputById((prev) => ({ ...prev, [step.id]: response.output_image_url }));
-      setStatusById((prev) => ({ ...prev, [step.id]: "done" }));
-    } catch (caughtError) {
-      const message = caughtError instanceof Error ? caughtError.message : "Unexpected error";
-      setStatusById((prev) => ({ ...prev, [step.id]: "failed" }));
-      setErrorById((prev) => ({ ...prev, [step.id]: message }));
+      return false;
     }
   }
 
-  async function runAllSteps() {
-    if (!selectedImage) {
-      return;
-    }
+  async function runAllCells() {
+    if (!selectedImage || cells.length === 0) return;
 
-    const inputImageUrl = toImageUrl(selectedImage.filePath);
     setRunningAll(true);
-    setErrorById({});
     setSaveMessage("");
     setSaveError("");
 
-    let currentInput = inputImageUrl;
-    for (const step of processes) {
-      setStatusById((prev) => ({ ...prev, [step.id]: "running" }));
-      setErrorById((prev) => ({ ...prev, [step.id]: "" }));
-
-      try {
-        const response = await runProcess({
-          process_type: step.kind,
-          prompt: promptsById[step.id] ?? "",
-          input_image_url: currentInput,
-          model_key: getModelKeyForStep(step),
-          project_id: projectId ? Number(projectId) : undefined,
-          image_id: imageId ? Number(imageId) : undefined,
-        });
-        setOutputById((prev) => ({ ...prev, [step.id]: response.output_image_url }));
-        setStatusById((prev) => ({ ...prev, [step.id]: "done" }));
-        currentInput = response.output_image_url;
-      } catch (caughtError) {
-        const message = caughtError instanceof Error ? caughtError.message : "Unexpected error";
-        setStatusById((prev) => ({ ...prev, [step.id]: "failed" }));
-        setErrorById((prev) => ({ ...prev, [step.id]: message }));
-        break;
-      }
+    for (let i = 0; i < cells.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const ok = await runCell(i);
+      if (!ok) break;
     }
+
     setRunningAll(false);
   }
 
-  function resetFromStep(stepIndex: number) {
-    const stepsToClear = processes.slice(stepIndex);
-
-    setOutputById((prev) => {
-      const next = { ...prev };
-      for (const step of stepsToClear) {
-        delete next[step.id];
-      }
-      return next;
-    });
-
-    setStatusById((prev) => {
-      const next = { ...prev };
-      for (const step of stepsToClear) {
-        next[step.id] = "idle";
-      }
-      return next;
-    });
-
-    setErrorById((prev) => {
-      const next = { ...prev };
-      for (const step of stepsToClear) {
-        delete next[step.id];
-      }
-      return next;
-    });
-
-    setSaveMessage("");
-    setSaveError("");
-  }
-
   async function saveFinalImageToProject() {
-    if (!finalOutputUrl || !selectedImage) {
-      return;
-    }
+    if (!finalOutputUrl || !selectedImage) return;
 
     const targetProjectId = projectId ? Number(projectId) : selectedImage.project_id;
     if (!targetProjectId) {
@@ -304,11 +342,11 @@ export default function LaboratoryPage() {
       await uploadImageFromUrl(
         targetProjectId,
         toImageUrl(finalOutputUrl),
-        `laboratory-result-${Date.now()}`
+        `laboratory-result-${Date.now()}`,
       );
       setSaveMessage(`Saved in project #${targetProjectId}`);
-    } catch (caughtError) {
-      setSaveError(getErrorMessage(caughtError));
+    } catch (error) {
+      setSaveError(getErrorMessage(error));
     } finally {
       setIsSavingFinal(false);
     }
@@ -326,6 +364,15 @@ export default function LaboratoryPage() {
         <Text color={subtleText} mt={1}>
           {descriptionLabel}
         </Text>
+        {notebookExplanationList.length > 0 ? (
+          <VStack align="start" spacing={1} mt={2}>
+            {notebookExplanationList.map((itemText) => (
+              <Text key={itemText} color={subtleText} fontSize="sm">
+                • {itemText}
+              </Text>
+            ))}
+          </VStack>
+        ) : null}
       </Box>
 
       <HStack justify="space-between" align="center" flexWrap="wrap">
@@ -333,10 +380,10 @@ export default function LaboratoryPage() {
           project #{projectId ?? "-"} • image #{imageId ?? "-"}
         </Badge>
         <HStack>
-          <Button width="fit-content" variant="outline" onClick={goHome}>
+          <Button variant="outline" onClick={goHome}>
             {backToHomeLabel}
           </Button>
-          <Button colorScheme="blue" onClick={() => void runAllSteps()} isLoading={runningAll}>
+          <Button colorScheme="blue" onClick={() => void runAllCells()} isLoading={runningAll}>
             {runAllLabel}
           </Button>
           <Button
@@ -350,11 +397,6 @@ export default function LaboratoryPage() {
         </HStack>
       </HStack>
 
-      {finalOutputUrl ? (
-        <Badge width="fit-content" colorScheme="green" variant="subtle">
-          {finalReadyLabel}
-        </Badge>
-      ) : null}
       {saveMessage ? (
         <Text color="green.400" fontSize="sm">
           {saveMessage}
@@ -375,133 +417,144 @@ export default function LaboratoryPage() {
           {!selectedImage ? (
             <Text color={subtleText}>{noImageLabel}</Text>
           ) : (
-            <VStack align="stretch" spacing={8}>
-              {processes.map((step, stepIndex) => {
-                const inputImageUrl = getInputForStep(stepIndex);
-                const outputImageUrl = outputById[step.id];
-                const isReady = isStepReady(stepIndex);
-                const status = statusById[step.id] ?? "idle";
+            <>
+              <HStack align="end" spacing={3} flexWrap="wrap">
+                <Box minW="260px">
+                  <Text fontSize="sm" color={subtleText} mb={1}>
+                    Process type
+                  </Text>
+                  <Select value={addProcessType} onChange={(e) => setAddProcessType(e.target.value)}>
+                    {availableProcesses.map((processItem) => (
+                      <option key={processItem.process_type} value={processItem.process_type}>
+                        {processItem.title}
+                      </option>
+                    ))}
+                  </Select>
+                </Box>
+                <Button onClick={addCell} colorScheme="teal" isDisabled={!addProcessType}>
+                  {addCellLabel}
+                </Button>
+              </HStack>
 
-                return (
-                  <VStack key={step.id} align="stretch" spacing={4}>
-                    <Text fontWeight="semibold">{stepIndex + 1}. {step.title}</Text>
+              <VStack align="stretch" spacing={5} mt={2}>
+                {cells.map((cell, index) => {
+                  const inputUrl = getInputForCell(index, cells);
 
-                    <HStack align="start" spacing={5} flexWrap={{ base: "wrap", xl: "nowrap" }}>
-                      <VStack align="stretch" flex={1} minW={{ base: "100%", xl: "40%" }} spacing={3}>
-                        <Box
-                          h={{ base: "220px", md: "280px" }}
-                          borderRadius="md"
-                          overflow="hidden"
-                          border="1px solid"
-                          borderColor={panelBorder}
-                          bg="blackAlpha.500"
-                        >
-                          {inputImageUrl ? (
-                            <img
-                              src={inputImageUrl}
-                              alt={`Input step ${stepIndex + 1}`}
-                              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                            />
-                          ) : null}
-                        </Box>
-                        {step.promptRequired ? (
-                          <Input
-                            placeholder={step.promptPlaceholder}
-                            value={promptsById[step.id] ?? ""}
-                            onChange={(event) =>
-                              setPromptsById((prev) => ({ ...prev, [step.id]: event.target.value }))
-                            }
-                            isDisabled={!isReady || status === "running" || runningAll}
-                          />
-                        ) : null}
-                        {/* Multiple choice between models */}
-                        {step.modelOptions?.length ? (
-                          <Select
-                            value={getModelKeyForStep(step) ?? ""}
-                            onChange={(event) =>
-                              setModelKeyByStepId((prev) => ({
-                                ...prev,
-                                [step.id]: event.target.value,
-                              }))
-                            }
-                            isDisabled={!isReady || status === "running" || runningAll}
-                          >
-                            {step.modelOptions.map((modelOption) => (
-                              <option key={modelOption.key} value={modelOption.key}>
-                                {modelOption.label}
-                              </option>
-                            ))}
-                          </Select>
-                        ) : null}
-                      </VStack>
+                  return (
+                    <Box key={cell.id} p={4} borderRadius="lg" border="1px solid" borderColor={panelBorder}>
+                      <HStack justify="space-between" align="center" flexWrap="wrap" mb={3}>
+                        <HStack>
+                          <Badge>{`Cell ${index + 1}`}</Badge>
+                          <Text fontWeight="semibold">{cell.title}</Text>
+                          <Badge colorScheme="purple">priority {cell.priority}</Badge>
+                          <Badge variant="subtle">{cell.status}</Badge>
+                        </HStack>
 
-                      <VStack justify="center" align="center" minW="120px" spacing={2}>
-                        <Button
-                          colorScheme="blue"
-                          leftIcon={<BiChevronRight />}
-                          onClick={() => void runSingleStep(step, stepIndex)}
-                          isDisabled={!isReady || runningAll}
-                          isLoading={status === "running"}
-                        >
-                          {operateLabel}
-                        </Button>
-                        {stepIndex > 0 ? (
+                        <HStack>
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => resetFromStep(stepIndex)}
+                            leftIcon={<BiChevronRight />}
+                            onClick={() => void runCell(index)}
+                            isLoading={cell.status === "running"}
                             isDisabled={runningAll}
                           >
-                            {backLabel}
+                            {runCellLabel}
                           </Button>
-                        ) : null}
-                        <Badge variant="subtle">{status}</Badge>
-                      </VStack>
-
-                      <VStack align="stretch" flex={1} minW={{ base: "100%", xl: "40%" }} spacing={3}>
-                        <Box
-                          h={{ base: "220px", md: "280px" }}
-                          borderRadius="md"
-                          overflow="hidden"
-                          border="1px solid"
-                          borderColor={panelBorder}
-                          bg={outputBg}
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                        >
-                          {outputImageUrl ? (
-                            <img
-                              src={outputImageUrl}
-                              alt={`Output step ${stepIndex + 1}`}
-                              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                            />
-                          ) : (
-                            <Text color={subtleText} fontSize="sm">
-                              {waitingOutputLabel}
-                            </Text>
-                          )}
-                        </Box>
-                        <Text color={subtleText} fontSize="sm">
-                          {outputLabel}
-                        </Text>
-                        {errorById[step.id] ? (
-                          <Text color="red.400" fontSize="sm">
-                            {errorById[step.id]}
-                          </Text>
-                        ) : null}
-                      </VStack>
-                    </HStack>
-
-                    {stepIndex < processes.length - 1 ? (
-                      <HStack justify="center">
-                        <BiArrowToBottom />
+                          <Button size="sm" variant="outline" onClick={() => resetFromCell(index)}>
+                            {resetFromLabel}
+                          </Button>
+                          <Button size="sm" colorScheme="red" variant="ghost" onClick={() => removeCell(index)}>
+                            {removeCellLabel}
+                          </Button>
+                        </HStack>
                       </HStack>
-                    ) : null}
-                  </VStack>
-                );
-              })}
-            </VStack>
+
+                      <Stack direction={{ base: "column", xl: "row" }} spacing={4}>
+                        <VStack align="stretch" flex={1} spacing={3}>
+                          <Box
+                            h={{ base: "220px", md: "280px" }}
+                            borderRadius="md"
+                            overflow="hidden"
+                            border="1px solid"
+                            borderColor={panelBorder}
+                            bg="blackAlpha.500"
+                          >
+                            {inputUrl ? (
+                              <img
+                                src={inputUrl}
+                                alt={`Cell ${index + 1} input`}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                              />
+                            ) : null}
+                          </Box>
+
+                          {cell.promptRequired ? (
+                            <Input
+                              placeholder="Write prompt..."
+                              value={cell.prompt}
+                              onChange={(e) => updateCell(index, { prompt: e.target.value })}
+                              isDisabled={cell.status === "running" || runningAll}
+                            />
+                          ) : null}
+
+                          {cell.modelOptions.length > 0 ? (
+                            <Select
+                              value={cell.modelKey}
+                              onChange={(e) => updateCell(index, { modelKey: e.target.value })}
+                              isDisabled={cell.status === "running" || runningAll}
+                            >
+                              {cell.modelOptions.map((option) => (
+                                <option key={option.key} value={option.key}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </Select>
+                          ) : null}
+                        </VStack>
+
+                        <VStack align="stretch" flex={1} spacing={2}>
+                          <Box
+                            h={{ base: "220px", md: "280px" }}
+                            borderRadius="md"
+                            overflow="hidden"
+                            border="1px solid"
+                            borderColor={panelBorder}
+                            bg={outputBg}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                          >
+                            {cell.outputUrl ? (
+                              <img
+                                src={cell.outputUrl}
+                                alt={`Cell ${index + 1} output`}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                              />
+                            ) : (
+                              <Text color={subtleText} fontSize="sm">
+                                {waitingOutputLabel}
+                              </Text>
+                            )}
+                          </Box>
+
+                          {cell.error ? (
+                            <Text color="red.400" fontSize="sm">
+                              {cell.error}
+                            </Text>
+                          ) : null}
+                        </VStack>
+                      </Stack>
+                    </Box>
+                  );
+                })}
+
+                {cells.length === 0 ? (
+                  <Text color={subtleText} fontSize="sm">
+                    Add your first work cell to start your job
+                  </Text>
+                ) : null}
+              </VStack>
+            </>
           )}
         </VStack>
       </Box>

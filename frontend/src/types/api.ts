@@ -15,8 +15,10 @@ export interface ImageAsset {
 
 export interface ProcessRunPayload {
   process_type: string;
-  prompt: string;
-  input_image_url: string;
+  priority: number;
+  prompt?: string;
+  input_image_url?: string;
+  mask_image_url?: string;
   project_id?: number;
   image_id?: number;
   model_key?: string;
@@ -31,4 +33,14 @@ export interface SegmentModel {
   key: string;
   label: string;
   default: boolean;
+}
+
+export interface ProcessCatalogItem {
+  process_type: string;
+  title: string;
+  priority: number;
+  prompt_required: boolean;
+  explanation?: string;
+  priority_explanation?: string;
+  model_options?: SegmentModel[];
 }
