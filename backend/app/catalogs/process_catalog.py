@@ -1,4 +1,5 @@
 from app.catalogs.segment_models import SEGMENT_MODEL_REGISTRY
+from app.catalogs.generation_models import GENERATION_MODEL_REGISTRY
 from app.schemas.process import (
     GenerateFromPromptRequest,
     ProcessCatalogItem,
@@ -12,6 +13,21 @@ def get_segment_model_options() -> list[ProcessModelOption]:
     options: list[ProcessModelOption] = []
 
     for key, info in SEGMENT_MODEL_REGISTRY.items():
+        options.append(
+            ProcessModelOption(
+                key=key,
+                label=str(info.get("label", key)),
+                default=bool(info.get("default", False)),
+            )
+        )
+
+    options.sort(key=lambda item: (not item.default, item.label))
+    return options
+
+def get_generation_model_options() -> list[ProcessModelOption]:
+    options: list[ProcessModelOption] = []
+
+    for key, info in GENERATION_MODEL_REGISTRY.items():
         options.append(
             ProcessModelOption(
                 key=key,
@@ -49,5 +65,6 @@ PROCESS_CATALOG: list[ProcessCatalogItem] = [
         prompt_required=True,
         explanation=GenerateFromPromptRequest.model_fields["explanation"].default,
         priority_explanation=GenerateFromPromptRequest.model_fields["priority_explanation"].default,
+        model_options = get_generation_model_options(),
     ),
 ]
