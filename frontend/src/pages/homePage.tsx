@@ -24,7 +24,6 @@ import {
   Stack,
   Text,
   VStack,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { BiArrowFromBottom } from "react-icons/bi";
 
@@ -81,65 +80,6 @@ export default function HomePage() {
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingProjectName, setEditingProjectName] = useState("");
   const [deleteConfirmProjectId, setDeleteConfirmProjectId] = useState("");
-
-  const pageText = useColorModeValue("gray.800", "white");
-  const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const panelBg = useColorModeValue("rgba(241, 245, 249, 0.92)", "rgba(15, 23, 42, 0.8)");
-  const panelBorder = useColorModeValue("rgba(148, 163, 184, 0.55)", "rgba(255, 255, 255, 0.22)");
-  const panelShadow = useColorModeValue(
-    "0 18px 45px rgba(148, 163, 184, 0.24)",
-    "0 18px 45px rgba(0, 0, 0, 0.28)"
-  );
-  const cardBg = useColorModeValue("rgba(248, 250, 252, 0.9)", "rgba(255, 255, 255, 0.08)");
-  const inputBg = useColorModeValue("rgba(255, 255, 255, 0.88)", "rgba(255, 255, 255, 0.12)");
-  const inputBorder = useColorModeValue("rgba(148, 163, 184, 0.52)", "rgba(255, 255, 255, 0.22)");
-  const thumbBg = useColorModeValue("rgba(226, 232, 240, 0.85)", "blackAlpha.400");
-  const imagesPanelBg = useColorModeValue("rgba(241, 245, 249, 0.94)", "rgba(15, 23, 42, 0.66)");
-  const imagesPanelBorder = useColorModeValue("rgba(148, 163, 184, 0.56)", "rgba(255, 255, 255, 0.24)");
-  const uploadBarBg = useColorModeValue("rgba(255, 255, 255, 0.88)", "rgba(255, 255, 255, 0.1)");
-  const uploadBarBorder = useColorModeValue("rgba(148, 163, 184, 0.48)", "rgba(255, 255, 255, 0.22)");
-  const dropZoneBg = useColorModeValue("rgba(248, 250, 252, 0.88)", "rgba(255, 255, 255, 0.06)");
-  const dropZoneBorder = useColorModeValue("rgba(148, 163, 184, 0.5)", "rgba(255, 255, 255, 0.24)");
-  const dropZoneBorderActive = useColorModeValue("blue.400", "blue.300");
-  const homeDescriptionColor = useColorModeValue("black", "white");
-  const accentColor = useColorModeValue("#754397", "#89b1c9");
-  const infoBadgeBg = useColorModeValue("gray.200", "whiteAlpha.200");
-  const infoBadgeColor = useColorModeValue("gray.700", "whiteAlpha.800");
-  const cardHoverShadow = useColorModeValue(
-    "0 20px 40px rgba(148, 163, 184, 0.22)",
-    "0 20px 40px rgba(0, 0, 0, 0.22)"
-  );
-
-  const projectsLabel = "Project overview";
-  const createProjectPlaceholderLabel = "Project name...";
-  const createProjectButtonLabel = "Create project";
-  const loadingProjectsLabel = "Loading projects...";
-  const noProjectsLabel = "No projects created yet.";
-  const uploadProjectLabel = "Project for upload";
-  const noProjectsUploadLabel = "Create a project first to upload images.";
-  const selectDestinationLabel = "Select destination project";
-  const uploadImageButtonLabel = "Upload image";
-  const noImagesForProjectLabel = "No images in this project.";
-  const uploadPreviewLabel = "Images preview";
-  const moveImageLabel = "Move image";
-  const loadingImagesLabel = "Loading images...";
-  const backendApiLabel = "Backend API";
-  const refreshLabel = "Refresh";
-  const deleteLabel = "Delete";
-  const cancelLabel = "Cancel";
-  const editLabel = "Edit";
-  const duplicateLabel = "Duplicate";
-  const saveLabel = "Save";
-  const noFileSelectedLabel = "No file selected";
-  const previewScrollLeftLabel = "◀";
-  const previewScrollRightLabel = "▶";
-  const dragAndDropLabel = "Drag and drop";
-  const orLabel = "OR";
-  const uploadInProgressLabel = "Uploading...";
-  const areYouSureLabel = "Are you sure?";
-  const yesLabel = "Yes";
-  const noLabel = "No";
-  const moveLabel = "Move";
 
   const imageStripRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -363,13 +303,17 @@ export default function HomePage() {
                 h={isExpanded ? "120px" : "55px"}
                 borderRadius="md"
                 overflow="hidden"
-                bg={thumbBg}
+                bg="rgba(226, 232, 240, 0.85)"
                 border="1px solid"
-                borderColor={panelBorder}
+                borderColor="rgba(148, 163, 184, 0.55)"
                 position="relative"
                 flexShrink={0}
                 cursor="zoom-in"
                 onClick={() => onOpenImagePopup(image)}
+                _dark={{
+                  bg: "blackAlpha.400",
+                  borderColor: "rgba(255, 255, 255, 0.22)",
+                }}
                 sx={
                   isExpanded
                     ? {
@@ -413,21 +357,21 @@ export default function HomePage() {
                         <MenuList onClick={(event) => event.stopPropagation()} p={1} minW="unset" w="fit-content">
                           <ButtonGroup size="xs" variant="outline">
                             <Button onClick={() => openLaboratory(image, project.id)}>
-                              {editLabel}
+                              Edit
                             </Button>
                             <Button
                               colorScheme="red"
                               onClick={() => onDeleteImage(image.id, project.id)}
                               isDisabled={submitting}
                             >
-                              {deleteLabel}
+                              Delete
                             </Button>
                           </ButtonGroup>
                           <Box h={1} />
                           <ButtonGroup size="xs" variant="outline">
-                            <Button onClick={() => openMoveDialog(image, project.id)}>{moveLabel}</Button>
+                            <Button onClick={() => openMoveDialog(image, project.id)}>Move</Button>
                             <Button onClick={() => onDuplicateImage(image, project.id)}>
-                              {duplicateLabel}
+                              Duplicate
                             </Button>
                           </ButtonGroup>
                         </MenuList>
@@ -457,7 +401,7 @@ export default function HomePage() {
               aria-label="Scroll images left"
               isDisabled={!previewState.canScrollLeft}
             >
-              {previewScrollLeftLabel}
+              ◀
             </Button>
             <Button
               size={compact ? "xs" : "sm"}
@@ -474,7 +418,7 @@ export default function HomePage() {
               aria-label="Scroll images right"
               isDisabled={!previewState.canScrollRight}
             >
-              {previewScrollRightLabel}
+              ▶
             </Button>
           </>
         ) : null}
@@ -504,10 +448,11 @@ export default function HomePage() {
   return (
     <Stack
       spacing={6}
-      color={pageText}
+      color="gray.800"
       minH="calc(100vh - 140px)"
       maxW="1120px"
       mx="auto"
+      _dark={{ color: "white" }}
     >
       <VStack spacing={3}>
         <Text
@@ -518,7 +463,8 @@ export default function HomePage() {
           letterSpacing="0.05em"
           textTransform="uppercase"
           lineHeight="0.95"
-          color={homeDescriptionColor}
+          color="black"
+          _dark={{ color: "white" }}
         >
           dashboard
         </Text>
@@ -532,19 +478,30 @@ export default function HomePage() {
         p={4}
         borderRadius="lg"
         border="1px solid"
-        borderColor={panelBorder}
-        bg={panelBg}
+        borderColor="rgba(148, 163, 184, 0.55)"
+        bg="rgba(241, 245, 249, 0.92)"
         backdropFilter="blur(10px)"
-        boxShadow={panelShadow}
+        boxShadow="0 18px 45px rgba(148, 163, 184, 0.24)"
+        _dark={{
+          borderColor: "rgba(255, 255, 255, 0.22)",
+          bg: "rgba(15, 23, 42, 0.8)",
+          boxShadow: "0 18px 45px rgba(0, 0, 0, 0.28)",
+        }}
       >
-        <Text color={subtleText}>
-          {backendApiLabel}:{" "}
-          <Link href={`${API_BASE_URL}/docs`} isExternal color={accentColor} textDecoration="underline">
+        <Text color="gray.600" _dark={{ color: "whiteAlpha.700" }}>
+          Backend API:{" "}
+          <Link
+            href={`${API_BASE_URL}/docs`}
+            isExternal
+            color="#754397"
+            textDecoration="underline"
+            _dark={{ color: "#89b1c9" }}
+          >
             {API_BASE_URL}
           </Link>
         </Text>
         <Button size="sm" variant="outline" onClick={() => void loadProjects()} isLoading={loadingProjects}>
-          {refreshLabel}
+          Refresh
         </Button>
       </HStack>
 
@@ -563,13 +520,18 @@ export default function HomePage() {
         p={{ base: 4, md: 5 }}
         borderRadius="xl"
         border="1px solid"
-        borderColor={panelBorder}
-        bg={panelBg}
+        borderColor="rgba(148, 163, 184, 0.55)"
+        bg="rgba(241, 245, 249, 0.92)"
         backdropFilter="blur(12px)"
-        boxShadow={panelShadow}
+        boxShadow="0 18px 45px rgba(148, 163, 184, 0.24)"
+        _dark={{
+          borderColor: "rgba(255, 255, 255, 0.22)",
+          bg: "rgba(15, 23, 42, 0.8)",
+          boxShadow: "0 18px 45px rgba(0, 0, 0, 0.28)",
+        }}
       >
         <Text fontWeight="semibold" fontSize="2xl" mb={4}>
-          {projectsLabel}
+          Project overview
         </Text>
 
         <Stack
@@ -584,14 +546,18 @@ export default function HomePage() {
               <Input
                 value={projectName}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setProjectName(event.target.value)}
-                placeholder={createProjectPlaceholderLabel}
+                placeholder="Project name..."
                 required
-                bg={inputBg}
-                borderColor={inputBorder}
+                bg="rgba(255, 255, 255, 0.88)"
+                borderColor="rgba(148, 163, 184, 0.52)"
                 maxW={{ base: "100%", lg: "420px" }}
+                _dark={{
+                  bg: "rgba(255, 255, 255, 0.12)",
+                  borderColor: "rgba(255, 255, 255, 0.22)",
+                }}
               />
               <Button type="submit" colorScheme="blue" isLoading={submitting}>
-                {createProjectButtonLabel}
+                Create project
               </Button>
             </HStack>
           </form>
@@ -612,10 +578,10 @@ export default function HomePage() {
         {loadingProjects ? (
           <VStack py={8} spacing={3}>
             <Spinner />
-            <Text color={subtleText}>{loadingProjectsLabel}</Text>
+            <Text color="gray.600" _dark={{ color: "whiteAlpha.700" }}>Loading projects...</Text>
           </VStack>
         ) : projects.length === 0 ? (
-          <Text color={subtleText}>{noProjectsLabel}</Text>
+          <Text color="gray.600" _dark={{ color: "whiteAlpha.700" }}>No projects created yet.</Text>
         ) : (
           <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={4}>
             {orderedProjects.map((project) => {
@@ -633,17 +599,24 @@ export default function HomePage() {
                 <Box
                   key={project.id}
                   border="1px solid"
-                  borderColor={isExpanded ? accentColor : panelBorder}
+                  borderColor={isExpanded ? "#754397" : "rgba(148, 163, 184, 0.55)"}
                   borderRadius="lg"
                   p={4}
-                  bg={cardBg}
+                  bg="rgba(248, 250, 252, 0.9)"
                   backdropFilter="blur(10px)"
                   cursor="pointer"
                   boxShadow="sm"
                   transition="transform 0.18s ease, box-shadow 0.18s ease"
                   _hover={{
                     transform: "translateY(-3px)",
-                    boxShadow: cardHoverShadow,
+                    boxShadow: "0 20px 40px rgba(148, 163, 184, 0.22)",
+                  }}
+                  _dark={{
+                    borderColor: isExpanded ? "#89b1c9" : "rgba(255, 255, 255, 0.22)",
+                    bg: "rgba(255, 255, 255, 0.08)",
+                    _hover: {
+                      boxShadow: "0 20px 40px rgba(0, 0, 0, 0.22)",
+                    },
                   }}
                   gridColumn={
                     isExpanded
@@ -669,10 +642,15 @@ export default function HomePage() {
                               px={2}
                               py={1}
                               border="1px solid"
-                              borderColor={inputBorder}
-                              bg={inputBg}
-                              _hover={{ bg: inputBg }}
+                              borderColor="rgba(148, 163, 184, 0.52)"
+                              bg="rgba(255, 255, 255, 0.88)"
+                              _hover={{ bg: "rgba(255, 255, 255, 0.88)" }}
                               _focusVisible={{ borderColor: "blue.400", boxShadow: "none" }}
+                              _dark={{
+                                borderColor: "rgba(255, 255, 255, 0.22)",
+                                bg: "rgba(255, 255, 255, 0.12)",
+                                _hover: { bg: "rgba(255, 255, 255, 0.12)" },
+                              }}
                             />
                             <HStack gap={2}>
                               <Button
@@ -682,7 +660,7 @@ export default function HomePage() {
                                 isDisabled={!editingProjectName.trim()}
                                 isLoading={submitting}
                               >
-                                {saveLabel}
+                                Save
                               </Button>
                               <Button
                                 size="sm"
@@ -690,7 +668,7 @@ export default function HomePage() {
                                 onClick={cancelInlineProjectEdit}
                                 isDisabled={submitting}
                               >
-                                {cancelLabel}
+                                Cancel
                               </Button>
                             </HStack>
                           </VStack>
@@ -699,7 +677,8 @@ export default function HomePage() {
                             fontWeight="semibold"
                             fontSize={{ base: "xl", md: "1xl" }}
                             lineHeight="1.3"
-                            color={accentColor}
+                            color="#754397"
+                            _dark={{ color: "#89b1c9" }}
                           >
                             {project.name}
                           </Text>
@@ -715,13 +694,14 @@ export default function HomePage() {
                             {projectImages.length} image{projectImages.length === 1 ? "" : "s"}
                           </Badge>
                           <Badge
-                            bg={infoBadgeBg}
-                            color={infoBadgeColor}
+                            bg="gray.200"
+                            color="gray.700"
                             px={2}
                             py={1}
                             borderRadius="md"
                             textTransform="none"
                             fontWeight="medium"
+                            _dark={{ bg: "whiteAlpha.200", color: "whiteAlpha.800" }}
                           >
                             {formatRelativeTime(getProjectLastActivity(project, projectImages))}
                           </Badge>
@@ -743,19 +723,25 @@ export default function HomePage() {
                           <MenuList onClick={(event) => event.stopPropagation()} p={1} minW="unset" w="fit-content">
                             <Box px={1} py={1}>
                               <ButtonGroup size="sm" variant="outline">
-                                <Button onClick={() => startInlineProjectEdit(project)}>{editLabel}</Button>
+                                <Button onClick={() => startInlineProjectEdit(project)}>Edit</Button>
                                 <Button
                                   colorScheme="red"
                                   onClick={() => setDeleteConfirmProjectId(String(project.id))}
                                 >
-                                  {deleteLabel}
+                                  Delete
                                 </Button>
                               </ButtonGroup>
                             </Box>
                             {deleteConfirmProjectId === String(project.id) ? (
-                              <Box px={3} py={2} borderTop="1px solid" borderColor={panelBorder}>
-                                <Text fontSize="xs" color={subtleText} mb={2}>
-                                  {areYouSureLabel}
+                              <Box
+                                px={3}
+                                py={2}
+                                borderTop="1px solid"
+                                borderColor="rgba(148, 163, 184, 0.55)"
+                                _dark={{ borderColor: "rgba(255, 255, 255, 0.22)" }}
+                              >
+                                <Text fontSize="xs" color="gray.600" mb={2} _dark={{ color: "whiteAlpha.700" }}>
+                                  Are you sure?
                                 </Text>
                                 <ButtonGroup size="xs" variant="outline">
                                   <Button
@@ -763,13 +749,13 @@ export default function HomePage() {
                                     onClick={() => void confirmDeleteProject(project.id)}
                                     isLoading={submitting}
                                   >
-                                    {yesLabel}
+                                    Yes
                                   </Button>
                                   <Button
                                     onClick={() => setDeleteConfirmProjectId("")}
                                     isDisabled={submitting}
                                   >
-                                    {noLabel}
+                                    No
                                   </Button>
                                 </ButtonGroup>
                               </Box>
@@ -782,10 +768,10 @@ export default function HomePage() {
                     {projectLoading ? (
                       <HStack py={4} gap={3}>
                         <Spinner size="sm" />
-                        <Text color={subtleText}>{loadingImagesLabel}</Text>
+                        <Text color="gray.600" _dark={{ color: "whiteAlpha.700" }}>Loading images...</Text>
                       </HStack>
                     ) : projectImages.length === 0 ? (
-                      <Text color={subtleText}>{noImagesForProjectLabel}</Text>
+                      <Text color="gray.600" _dark={{ color: "whiteAlpha.700" }}>No images in this project.</Text>
                     ) : (
                       <Box mt={1}>
                         {renderProjectPreview({
@@ -809,15 +795,20 @@ export default function HomePage() {
         p={{ base: 4, md: 5 }}
         borderRadius="xl"
         border="1px solid"
-        borderColor={imagesPanelBorder}
-        bg={imagesPanelBg}
+        borderColor="rgba(148, 163, 184, 0.56)"
+        bg="rgba(241, 245, 249, 0.94)"
         backdropFilter="blur(12px)"
-        boxShadow={panelShadow}
+        boxShadow="0 18px 45px rgba(148, 163, 184, 0.24)"
+        _dark={{
+          borderColor: "rgba(255, 255, 255, 0.24)",
+          bg: "rgba(15, 23, 42, 0.66)",
+          boxShadow: "0 18px 45px rgba(0, 0, 0, 0.28)",
+        }}
       >
         <Text fontWeight="semibold" fontSize="2xl" mb={1}>
           Upload a new image
         </Text>
-        <Text color={subtleText} mb={5}>
+        <Text color="gray.600" mb={5} _dark={{ color: "whiteAlpha.700" }}>
           Select the destination project, then add one or more images from the area below.
         </Text>
 
@@ -837,8 +828,8 @@ export default function HomePage() {
               {uploadFiles.length === 0 ? (
                 <Box
                   border="2px dashed"
-                  borderColor={isDragOverUpload ? dropZoneBorderActive : dropZoneBorder}
-                  bg={dropZoneBg}
+                  borderColor={isDragOverUpload ? "blue.400" : "rgba(148, 163, 184, 0.5)"}
+                  bg="rgba(248, 250, 252, 0.88)"
                   borderRadius="xl"
                   px={5}
                   py={8}
@@ -846,6 +837,10 @@ export default function HomePage() {
                   onDrop={onDropUpload}
                   onDragOver={onDragOverUpload}
                   onDragLeave={onDragLeaveUpload}
+                  _dark={{
+                    borderColor: isDragOverUpload ? "blue.300" : "rgba(255, 255, 255, 0.24)",
+                    bg: "rgba(255, 255, 255, 0.06)",
+                  }}
                 >
                   <BiArrowFromBottom
                     size={56}
@@ -853,26 +848,33 @@ export default function HomePage() {
                     color="currentColor"
                   />
                   <Text fontSize="lg" fontWeight="medium" mb={2}>
-                    {dragAndDropLabel}
+                    Drag and drop
                   </Text>
-                  <Text color={subtleText} mb={4}>
-                    {orLabel}
+                  <Text color="gray.600" mb={4} _dark={{ color: "whiteAlpha.700" }}>
+                    OR
                   </Text>
                   <Button
                     colorScheme="blue"
                     onClick={() => uploadInputRef.current?.click()}
                     isDisabled={projects.length === 0}
                   >
-                    {uploadImageButtonLabel}
+                    Upload image
                   </Button>
-                  <Text fontSize="sm" color={subtleText} mt={2}>
-                    {noFileSelectedLabel}
+                  <Text fontSize="sm" color="gray.600" mt={2} _dark={{ color: "whiteAlpha.700" }}>
+                    No file selected
                   </Text>
                 </Box>
               ) : (
                 <Box flex="1">
-                  <Text fontSize="xs" color={subtleText} mb={2} textTransform="uppercase" letterSpacing="0.08em">
-                    {uploadPreviewLabel} ({uploadFiles.length})
+                  <Text
+                    fontSize="xs"
+                    color="gray.600"
+                    mb={2}
+                    textTransform="uppercase"
+                    letterSpacing="0.08em"
+                    _dark={{ color: "whiteAlpha.700" }}
+                  >
+                    Images preview ({uploadFiles.length})
                   </Text>
                   <Box
                     position="relative"
@@ -880,9 +882,13 @@ export default function HomePage() {
                     borderRadius="xl"
                     overflow="hidden"
                     border="1px solid"
-                    borderColor={uploadBarBorder}
-                    bg={panelBg}
+                    borderColor="rgba(148, 163, 184, 0.48)"
+                    bg="rgba(241, 245, 249, 0.92)"
                     backdropFilter="blur(10px)"
+                    _dark={{
+                      borderColor: "rgba(255, 255, 255, 0.22)",
+                      bg: "rgba(15, 23, 42, 0.8)",
+                    }}
                   >
                     <img
                       src={uploadPreviewUrls[0]}
@@ -911,9 +917,13 @@ export default function HomePage() {
                           borderRadius="md"
                           overflow="hidden"
                           border="1px solid"
-                          borderColor={uploadBarBorder}
+                          borderColor="rgba(148, 163, 184, 0.48)"
                           flexShrink={0}
-                          bg={panelBg}
+                          bg="rgba(241, 245, 249, 0.92)"
+                          _dark={{
+                            borderColor: "rgba(255, 255, 255, 0.22)",
+                            bg: "rgba(15, 23, 42, 0.8)",
+                          }}
                         >
                           <img
                             src={previewUrl}
@@ -924,7 +934,7 @@ export default function HomePage() {
                       ))}
                     </HStack>
                   ) : null}
-                  <Text fontSize="sm" color={subtleText} mt={2}>
+                  <Text fontSize="sm" color="gray.600" mt={2} _dark={{ color: "whiteAlpha.700" }}>
                     {uploadFiles.length === 1
                       ? uploadFiles[0].name
                       : `${uploadFiles.length} files selected`}
@@ -941,14 +951,18 @@ export default function HomePage() {
             >
               <Box>
                 <Text fontSize="sm" fontWeight="medium" mb={2}>
-                  {uploadProjectLabel}
+                  Project for upload
                 </Text>
                 <Select
                   value={uploadProjectId}
                   onChange={(event) => setUploadProjectId(event.target.value)}
-                  bg={uploadBarBg}
-                  borderColor={uploadBarBorder}
+                  bg="rgba(255, 255, 255, 0.88)"
+                  borderColor="rgba(148, 163, 184, 0.48)"
                   isDisabled={projects.length === 0}
+                  _dark={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    borderColor: "rgba(255, 255, 255, 0.22)",
+                  }}
                 >
                   {projects.map((project) => (
                     <option key={project.id} value={String(project.id)}>
@@ -959,8 +973,8 @@ export default function HomePage() {
               </Box>
 
               {projects.length === 0 ? (
-                <Text color={subtleText} fontSize="sm">
-                  {noProjectsUploadLabel}
+                <Text color="gray.600" fontSize="sm" _dark={{ color: "whiteAlpha.700" }}>
+                  Create a project first to upload images.
                 </Text>
               ) : null}
 
@@ -971,7 +985,7 @@ export default function HomePage() {
                 isLoading={submitting}
                 mt={{ xl: "auto" }}
               >
-                {submitting ? uploadInProgressLabel : uploadImageButtonLabel}
+                {submitting ? "Uploading..." : "Upload image"}
               </Button>
             </VStack>
           </Stack>
@@ -1022,12 +1036,21 @@ export default function HomePage() {
 
       <Modal isOpen={Boolean(moveDialogImage)} onClose={closeMoveDialog} isCentered>
         <ModalOverlay />
-        <ModalContent bg={panelBg} backdropFilter="blur(14px)" border="1px solid" borderColor={panelBorder}>
-          <ModalHeader>{moveImageLabel}</ModalHeader>
+        <ModalContent
+          bg="rgba(241, 245, 249, 0.92)"
+          backdropFilter="blur(14px)"
+          border="1px solid"
+          borderColor="rgba(148, 163, 184, 0.55)"
+          _dark={{
+            bg: "rgba(15, 23, 42, 0.8)",
+            borderColor: "rgba(255, 255, 255, 0.22)",
+          }}
+        >
+          <ModalHeader>Move image</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text fontSize="sm" mb={2}>
-              {selectDestinationLabel}
+              Select destination project
             </Text>
             <Select
               value={moveTargetProjectId}
@@ -1044,7 +1067,7 @@ export default function HomePage() {
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={closeMoveDialog}>
-              {cancelLabel}
+              Cancel
             </Button>
             <Button
               colorScheme="blue"
@@ -1052,7 +1075,7 @@ export default function HomePage() {
               isDisabled={!moveTargetProjectId}
               isLoading={submitting}
             >
-              {moveLabel}
+              Move
             </Button>
           </ModalFooter>
         </ModalContent>

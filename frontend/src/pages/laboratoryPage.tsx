@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Badge,
   Box,
@@ -87,6 +87,24 @@ function createCell(def: ProcessCatalogItem): LabCell {
   };
 }
 
+function syncCellWithDefinition(cell: LabCell, def: ProcessCatalogItem): LabCell {
+  const modelOptions = (def.model_options ?? []).map((model) => ({
+    key: model.key,
+    label: model.label,
+  }));
+  const defaultModel = (def.model_options ?? []).find((model) => model.default) ?? def.model_options?.[0];
+  const hasCurrentModel = modelOptions.some((model) => model.key === cell.modelKey);
+
+  return {
+    ...cell,
+    title: def.title,
+    priority: def.priority,
+    promptRequired: def.prompt_required,
+    modelOptions,
+    modelKey: hasCurrentModel ? cell.modelKey : defaultModel?.key ?? "",
+  };
+}
+
 export default function LaboratoryPage() {
   const pageText = useColorModeValue("gray.800", "white");
   const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
@@ -102,11 +120,12 @@ export default function LaboratoryPage() {
 
   const [catalog, setCatalog] = useState<ProcessCatalogItem[]>(FALLBACK_CATALOG);
   const [cells, setCells] = useState<LabCell[]>([]);
-  const [addProcessType, setAddProcessType] = useState("");
+  const [addProcessTypeByAnchor, setAddProcessTypeByAnchor] = useState<Record<string, string>>({});
   const [runningAll, setRunningAll] = useState(false);
   const [isSavingFinal, setIsSavingFinal] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+  const hasInitializedDefaultCell = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,23 +147,59 @@ export default function LaboratoryPage() {
     };
   }, []);
 
-  const availableProcesses = useMemo(() => {
-    if (cells.length === 0) return catalog;
-    const minPriority = cells[cells.length - 1].priority;
-    return catalog.filter((p) => p.priority >= minPriority);
-  }, [catalog, cells]);
-
   useEffect(() => {
-    if (availableProcesses.length === 0) {
-      setAddProcessType("");
+    if (!selectedImage || hasInitializedDefaultCell.current || cells.length > 0) {
       return;
     }
 
-    const exists = availableProcesses.some((p) => p.process_type === addProcessType);
-    if (!exists) {
-      setAddProcessType(availableProcesses[0].process_type);
+    const defaultProcess =
+      catalog.find((processItem) => processItem.process_type === "segment_from_prompt") ?? catalog[0];
+
+    if (!defaultProcess) {
+      return;
     }
-  }, [availableProcesses, addProcessType]);
+
+    setCells([createCell(defaultProcess)]);
+    hasInitializedDefaultCell.current = true;
+  }, [catalog, cells.length, selectedImage]);
+
+  useEffect(() => {
+    if (catalog.length === 0) {
+      return;
+    }
+
+    setCells((prev) => {
+      let changed = false;
+
+      const next = prev.map((cell) => {
+        const matchingProcess = catalog.find((processItem) => processItem.process_type === cell.processType);
+        if (!matchingProcess) {
+          return cell;
+        }
+
+        const syncedCell = syncCellWithDefinition(cell, matchingProcess);
+        if (
+          syncedCell.title !== cell.title ||
+          syncedCell.priority !== cell.priority ||
+          syncedCell.promptRequired !== cell.promptRequired ||
+          syncedCell.modelKey !== cell.modelKey ||
+          syncedCell.modelOptions.length !== cell.modelOptions.length ||
+          syncedCell.modelOptions.some(
+            (modelOption, index) =>
+              modelOption.key !== cell.modelOptions[index]?.key ||
+              modelOption.label !== cell.modelOptions[index]?.label
+          )
+        ) {
+          changed = true;
+          return syncedCell;
+        }
+
+        return cell;
+      });
+
+      return changed ? next : prev;
+    });
+  }, [catalog]);
 
   const workspaceLabel = "Workspace";
   const titleLabel = "Laboratory";
@@ -153,7 +208,6 @@ export default function LaboratoryPage() {
   const noImageLabel = "No image selected yet. Open this page from Home > Edit.";
   const backToHomeLabel = "Back to home";
   const runAllLabel = "Run all cells";
-  const addCellLabel = "Add cell";
   const runCellLabel = "Run cell";
   const resetFromLabel = "Reset from here";
   const removeCellLabel = "Remove cell";
@@ -183,18 +237,127 @@ export default function LaboratoryPage() {
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
-  function addCell() {
-    const selected = catalog.find((p) => p.process_type === addProcessType);
+  function getAddAnchorKey(afterIndex: number) {
+    if (afterIndex < 0) return "start";
+    return `after-${cells[afterIndex]?.id ?? afterIndex}`;
+  }
+
+  function getAvailableProcessesAfter(afterIndex: number, sourceCells: LabCell[] = cells) {
+    const previousPriority = afterIndex >= 0 ? sourceCells[afterIndex]?.priority ?? 0 : 0;
+    const nextPriority =
+      afterIndex + 1 < sourceCells.length ? sourceCells[afterIndex + 1]?.priority ?? Number.MAX_SAFE_INTEGER : Number.MAX_SAFE_INTEGER;
+
+    return catalog.filter(
+      (processItem) =>
+        processItem.priority >= previousPriority && processItem.priority <= nextPriority
+    );
+  }
+
+  function getSelectedProcessTypeFor(afterIndex: number) {
+    const available = getAvailableProcessesAfter(afterIndex);
+    if (available.length === 0) return "";
+
+    const anchorKey = getAddAnchorKey(afterIndex);
+    const selected = addProcessTypeByAnchor[anchorKey];
+    return available.some((processItem) => processItem.process_type === selected)
+      ? selected
+      : available[0].process_type;
+  }
+
+  function setSelectedProcessTypeFor(afterIndex: number, processType: string) {
+    const anchorKey = getAddAnchorKey(afterIndex);
+    setAddProcessTypeByAnchor((prev) => ({ ...prev, [anchorKey]: processType }));
+  }
+
+  function addCell(afterIndex: number) {
+    const selectedProcessType = getSelectedProcessTypeFor(afterIndex);
+    const selected = catalog.find((p) => p.process_type === selectedProcessType);
     if (!selected) return;
 
-    if (cells.length > 0) {
-      const lastPriority = cells[cells.length - 1].priority;
-      if (selected.priority < lastPriority) return;
-    }
+    setCells((prev) => {
+      const next = [...prev];
+      const insertAt = afterIndex + 1;
+      next.splice(insertAt, 0, createCell(selected));
 
-    setCells((prev) => [...prev, createCell(selected)]);
+      for (let i = insertAt; i < next.length; i += 1) {
+        if (i === insertAt) continue;
+        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
+      }
+
+      return next;
+    });
     setSaveMessage("");
     setSaveError("");
+  }
+
+  function renderAddProcessControl(afterIndex: number) {
+    const availableProcesses = getAvailableProcessesAfter(afterIndex);
+    const selectedProcessType = getSelectedProcessTypeFor(afterIndex);
+
+    if (availableProcesses.length === 0) {
+      return null;
+    }
+
+    return (
+      <VStack align="center" spacing={3} py={2}>
+        <HStack
+          w={{ base: "100%", md: "auto" }}
+          spacing={3}
+          align="stretch"
+          flexDirection={{ base: "column", md: "row" }}
+          justify="center"
+        >
+          {availableProcesses.length > 1 ? (
+            <Box w={{ base: "100%", md: "280px" }}>
+              <Select
+                value={selectedProcessType}
+                onChange={(event) => setSelectedProcessTypeFor(afterIndex, event.target.value)}
+                borderRadius="lg"
+              >
+                {availableProcesses.map((processItem) => (
+                  <option key={processItem.process_type} value={processItem.process_type}>
+                    {processItem.title}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+          ) : null}
+
+          <Button
+            onClick={() => addCell(afterIndex)}
+            colorScheme="teal"
+            variant="outline"
+            borderRadius="lg"
+            px={6}
+            isDisabled={!selectedProcessType}
+          >
+            + Add process
+          </Button>
+        </HStack>
+      </VStack>
+    );
+  }
+
+  function renderLastCellAction(cell: LabCell, index: number) {
+    if (cell.processType === "generate_from_prompt") {
+      return (
+        <VStack align="center" spacing={3} py={2}>
+          <Button
+            onClick={() => void saveFinalImageToProject()}
+            colorScheme="green"
+            variant="outline"
+            borderRadius="lg"
+            px={6}
+            isDisabled={!cell.outputUrl}
+            isLoading={isSavingFinal}
+          >
+            {saveFinalLabel}
+          </Button>
+        </VStack>
+      );
+    }
+
+    return renderAddProcessControl(index);
   }
 
   function updateCell(cellIndex: number, patch: Partial<LabCell>) {
@@ -212,18 +375,16 @@ export default function LaboratoryPage() {
   }
 
   function resetFromCell(cellIndex: number) {
-    setCells((prev) => {
-      const next = [...prev];
-      for (let i = cellIndex; i < next.length; i += 1) {
-        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
-      }
-      return next;
-    });
+    setCells((prev) => prev.slice(0, cellIndex + 1));
     setSaveMessage("");
     setSaveError("");
   }
 
   function removeCell(cellIndex: number) {
+    if (cellIndex === 0) {
+      return;
+    }
+
     setCells((prev) => {
       const next = prev.filter((_, index) => index !== cellIndex);
       for (let i = cellIndex; i < next.length; i += 1) {
@@ -427,140 +588,139 @@ export default function LaboratoryPage() {
             <Text color={subtleText}>{noImageLabel}</Text>
           ) : (
             <>
-              <HStack align="end" spacing={3} flexWrap="wrap">
-                <Box minW="260px">
-                  <Text fontSize="sm" color={subtleText} mb={1}>
-                    Process type
-                  </Text>
-                  <Select value={addProcessType} onChange={(e) => setAddProcessType(e.target.value)}>
-                    {availableProcesses.map((processItem) => (
-                      <option key={processItem.process_type} value={processItem.process_type}>
-                        {processItem.title}
-                      </option>
-                    ))}
-                  </Select>
-                </Box>
-                <Button onClick={addCell} colorScheme="teal" isDisabled={!addProcessType}>
-                  {addCellLabel}
-                </Button>
-              </HStack>
-
               <VStack align="stretch" spacing={5} mt={2}>
                 {cells.map((cell, index) => {
                   const inputUrl = getInputForCell(index, cells);
 
                   return (
-                    <Box key={cell.id} p={4} borderRadius="lg" border="1px solid" borderColor={panelBorder}>
-                      <HStack justify="space-between" align="center" flexWrap="wrap" mb={3}>
-                        <HStack>
-                          <Badge>{`Cell ${index + 1}`}</Badge>
-                          <Text fontWeight="semibold">{cell.title}</Text>
-                          <Badge colorScheme="purple">priority {cell.priority}</Badge>
-                          <Badge variant="subtle">{cell.status}</Badge>
+                    <VStack key={cell.id} align="stretch" spacing={4}>
+                      <Box p={4} borderRadius="lg" border="1px solid" borderColor={panelBorder}>
+                        <HStack justify="space-between" align="center" flexWrap="wrap" mb={3}>
+                          <HStack>
+                            <Badge>{`Cell ${index + 1}`}</Badge>
+                            <Text fontWeight="semibold">{cell.title}</Text>
+                            <Badge variant="subtle">{cell.status}</Badge>
+                          </HStack>
+
+                          <HStack>
+                            <Button
+                              size="sm"
+                              leftIcon={<BiChevronRight />}
+                              onClick={() => void runCell(index)}
+                              isLoading={cell.status === "running"}
+                              isDisabled={runningAll}
+                            >
+                              {runCellLabel}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => resetFromCell(index)}
+                              isDisabled={index === cells.length - 1}
+                            >
+                              {resetFromLabel}
+                            </Button>
+                            <Button
+                              size="sm"
+                              colorScheme="red"
+                              variant="ghost"
+                              onClick={() => removeCell(index)}
+                              isDisabled={index === 0}
+                            >
+                              {removeCellLabel}
+                            </Button>
+                          </HStack>
                         </HStack>
 
-                        <HStack>
-                          <Button
-                            size="sm"
-                            leftIcon={<BiChevronRight />}
-                            onClick={() => void runCell(index)}
-                            isLoading={cell.status === "running"}
-                            isDisabled={runningAll}
-                          >
-                            {runCellLabel}
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => resetFromCell(index)}>
-                            {resetFromLabel}
-                          </Button>
-                          <Button size="sm" colorScheme="red" variant="ghost" onClick={() => removeCell(index)}>
-                            {removeCellLabel}
-                          </Button>
-                        </HStack>
-                      </HStack>
+                        <Stack direction={{ base: "column", xl: "row" }} spacing={4}>
+                          <VStack align="stretch" flex={1} spacing={3}>
+                            <Box
+                              h={{ base: "220px", md: "280px" }}
+                              borderRadius="md"
+                              overflow="hidden"
+                              border="1px solid"
+                              borderColor={panelBorder}
+                              bg="blackAlpha.500"
+                            >
+                              {inputUrl ? (
+                                <img
+                                  src={inputUrl}
+                                  alt={`Cell ${index + 1} input`}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                />
+                              ) : null}
+                            </Box>
 
-                      <Stack direction={{ base: "column", xl: "row" }} spacing={4}>
-                        <VStack align="stretch" flex={1} spacing={3}>
-                          <Box
-                            h={{ base: "220px", md: "280px" }}
-                            borderRadius="md"
-                            overflow="hidden"
-                            border="1px solid"
-                            borderColor={panelBorder}
-                            bg="blackAlpha.500"
-                          >
-                            {inputUrl ? (
-                              <img
-                                src={inputUrl}
-                                alt={`Cell ${index + 1} input`}
-                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                            {cell.promptRequired ? (
+                              <Input
+                                placeholder="Write prompt..."
+                                value={cell.prompt}
+                                onChange={(e) => updateCell(index, { prompt: e.target.value })}
+                                isDisabled={cell.status === "running" || runningAll}
                               />
                             ) : null}
-                          </Box>
 
-                          {cell.promptRequired ? (
-                            <Input
-                              placeholder="Write prompt..."
-                              value={cell.prompt}
-                              onChange={(e) => updateCell(index, { prompt: e.target.value })}
-                              isDisabled={cell.status === "running" || runningAll}
-                            />
-                          ) : null}
+                            {cell.modelOptions.length > 0 ? (
+                              <Select
+                                value={cell.modelKey}
+                                onChange={(e) => updateCell(index, { modelKey: e.target.value })}
+                                isDisabled={cell.status === "running" || runningAll}
+                              >
+                                {cell.modelOptions.map((option) => (
+                                  <option key={option.key} value={option.key}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </Select>
+                            ) : null}
+                          </VStack>
 
-                          {cell.modelOptions.length > 0 ? (
-                            <Select
-                              value={cell.modelKey}
-                              onChange={(e) => updateCell(index, { modelKey: e.target.value })}
-                              isDisabled={cell.status === "running" || runningAll}
+                          <VStack align="stretch" flex={1} spacing={2}>
+                            <Box
+                              h={{ base: "220px", md: "280px" }}
+                              borderRadius="md"
+                              overflow="hidden"
+                              border="1px solid"
+                              borderColor={panelBorder}
+                              bg={outputBg}
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
                             >
-                              {cell.modelOptions.map((option) => (
-                                <option key={option.key} value={option.key}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </Select>
-                          ) : null}
-                        </VStack>
+                              {cell.outputUrl ? (
+                                <img
+                                  src={toImageUrl(cell.outputUrl)}
+                                  alt={`Cell ${index + 1} output`}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                />
+                              ) : (
+                                <Text color={subtleText} fontSize="sm">
+                                  {waitingOutputLabel}
+                                </Text>
+                              )}
+                            </Box>
 
-                        <VStack align="stretch" flex={1} spacing={2}>
-                          <Box
-                            h={{ base: "220px", md: "280px" }}
-                            borderRadius="md"
-                            overflow="hidden"
-                            border="1px solid"
-                            borderColor={panelBorder}
-                            bg={outputBg}
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                          >
-                            {cell.outputUrl ? (
-                              <img
-                                src={toImageUrl(cell.outputUrl)}
-                                alt={`Cell ${index + 1} output`}
-                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                              />
-                            ) : (
-                              <Text color={subtleText} fontSize="sm">
-                                {waitingOutputLabel}
+                            {cell.error ? (
+                              <Text color="red.400" fontSize="sm">
+                                {cell.error}
                               </Text>
-                            )}
-                          </Box>
+                            ) : null}
+                          </VStack>
+                        </Stack>
+                      </Box>
 
-                          {cell.error ? (
-                            <Text color="red.400" fontSize="sm">
-                              {cell.error}
-                            </Text>
-                          ) : null}
-                        </VStack>
-                      </Stack>
-                    </Box>
+                      {index === cells.length - 1 ? renderLastCellAction(cell, index) : null}
+                    </VStack>
                   );
                 })}
 
                 {cells.length === 0 ? (
-                  <Text color={subtleText} fontSize="sm">
-                    Add your first work cell to start your job
-                  </Text>
+                  <VStack spacing={3} py={4}>
+                    <Text color={subtleText} fontSize="sm">
+                      Add your first work cell to start your job
+                    </Text>
+                    {renderAddProcessControl(-1)}
+                  </VStack>
                 ) : null}
               </VStack>
             </>
