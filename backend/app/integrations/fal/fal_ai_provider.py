@@ -33,17 +33,33 @@ class FalAIProvider(AIProvider):
 
         return output_url
 
+    
     def generate_from_prompt(
         self,
         *,
         provider_model_id: str,
+        input_image_url: str,
         prompt: str,
     ) -> str:
-        raise HTTPException(
-            status_code=501,
-            detail=f'generate_from_prompt is not implemented yet for provider "fal" and model "{provider_model_id}"',
-        )
-
+        resolved_image_input = resolve_image_input(input_image_url)
+        
+        request_payload = {
+            "image_urls": [resolved_image_input],
+            "prompt": prompt,
+            "output_format": "png",
+        }
+        
+        response = run_model(provider_model_id, request_payload)
+        output_url = self._extract_output_url(response)
+        if not output_url:
+            response_keys = ", ".join(response.keys()) if isinstance(response, dict) else "not-a-dict"
+            raise HTTPException(
+                status_code=502,
+                detail=f"fal generation response does not contain an output url (keys: {response_keys})",
+            )
+        return output_url
+        
+    
     def _extract_output_url(self, response: object) -> str | None:
         if not isinstance(response, dict):
             return None

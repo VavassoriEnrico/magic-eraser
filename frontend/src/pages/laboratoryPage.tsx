@@ -264,11 +264,20 @@ export default function LaboratoryPage() {
       };
     }
 
-    return {
+    if (cell.processType === "generate_from_prompt"){
+      return {
       ...basePayload,
       prompt: cell.prompt,
       model_key: cell.modelKey || undefined,
+      input_image_url: inputImageUrl,
     };
+    }
+
+    return {...basePayload,
+      prompt: cell.prompt, 
+      model_key: cell.modelKey || undefined,
+    };
+    
   }
 
   async function runCell(cellIndex: number) {
