@@ -170,7 +170,9 @@ export default function LaboratoryPage() {
   const [cells, setCells] = useState<LabCell[]>([]);
   const [addProcessTypeByAnchor, setAddProcessTypeByAnchor] = useState<Record<string, string>>({});
   const [runningAll, setRunningAll] = useState(false);
-  const [isSavingFinal, setIsSavingFinal] = useState(false);
+  const [savingCellId, setSavingCellId] = useState("");
+  const [saveMessageByCell, setSaveMessageByCell] = useState<Record<string, string>>({});
+  const [saveErrorByCell, setSaveErrorByCell] = useState<Record<string, string>>({});
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
   const hasInitializedDefaultCell = useRef(false);
@@ -263,9 +265,8 @@ export default function LaboratoryPage() {
   const resetFromLabel = "Reset from here";
   const removeCellLabel = "Remove cell";
   const waitingOutputLabel = "Output will appear here";
-  const saveFinalLabel = "Save final image";
+  const saveToProjectLabel = "Save to project";
 
-  const finalOutputUrl = cells.length ? cells[cells.length - 1].outputUrl : "";
   const notebookExplanationList = useMemo(() => {
     const seen = new Set<string>();
     const items: string[] = [];
@@ -390,24 +391,6 @@ export default function LaboratoryPage() {
   }
 
   function renderLastCellAction(cell: LabCell, index: number) {
-    if (cell.processType === "generate_from_prompt") {
-      return (
-        <VStack align="center" spacing={3} py={2}>
-          <Button
-            onClick={() => void saveFinalImageToProject()}
-            colorScheme="green"
-            variant="outline"
-            borderRadius="lg"
-            px={6}
-            isDisabled={!cell.outputUrl}
-            isLoading={isSavingFinal}
-          >
-            {saveFinalLabel}
-          </Button>
-        </VStack>
-      );
-    }
-
     return renderAddProcessControl(index);
   }
 
@@ -580,7 +563,6 @@ export default function LaboratoryPage() {
     setSaveError("");
 
     for (let i = 0; i < cells.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
       const ok = await runCell(i);
       if (!ok) break;
     }
@@ -588,30 +570,34 @@ export default function LaboratoryPage() {
     setRunningAll(false);
   }
 
-  async function saveFinalImageToProject() {
-    if (!finalOutputUrl || !selectedImage) return;
+  async function saveCellOutputToProject(cell: LabCell) {
+    if (!cell.outputUrl || !selectedImage) return;
 
     const targetProjectId = projectId ? Number(projectId) : selectedImage.project_id;
     if (!targetProjectId) {
-      setSaveError("Project id missing");
+      setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "Project id missing" }));
       return;
     }
 
-    setIsSavingFinal(true);
-    setSaveMessage("");
-    setSaveError("");
+    setSavingCellId(cell.id);
+    setSaveMessageByCell((prev) => ({ ...prev, [cell.id]: "" }));
+    setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "" }));
 
     try {
       await uploadImageFromUrl(
         targetProjectId,
-        toImageUrl(finalOutputUrl),
-        `laboratory-result-${Date.now()}`,
+        toImageUrl(cell.outputUrl),
+        `${cell.processType}-${Date.now()}`,
       );
-      setSaveMessage(`Saved in project #${targetProjectId}`);
+
+      const successMessage = `Saved to project #${targetProjectId}`;
+      setSaveMessageByCell((prev) => ({ ...prev, [cell.id]: successMessage }));
+      setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "" }));
     } catch (error) {
-      setSaveError(getErrorMessage(error));
+      const errorMessage = getErrorMessage(error);
+      setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: errorMessage }));
     } finally {
-      setIsSavingFinal(false);
+      setSavingCellId("");
     }
   }
 
@@ -648,14 +634,6 @@ export default function LaboratoryPage() {
           </Button>
           <Button colorScheme="blue" onClick={() => void runAllCells()} isLoading={runningAll}>
             {runAllLabel}
-          </Button>
-          <Button
-            colorScheme="green"
-            onClick={() => void saveFinalImageToProject()}
-            isDisabled={!finalOutputUrl}
-            isLoading={isSavingFinal}
-          >
-            {saveFinalLabel}
           </Button>
         </HStack>
       </HStack>
@@ -880,6 +858,8 @@ export default function LaboratoryPage() {
 
                           <VStack align="stretch" flex={1} spacing={2}>
                             <Box
+                              role="group"
+                              position="relative"
                               borderRadius="md"
                               overflow="hidden"
                               border="1px solid"
@@ -891,17 +871,62 @@ export default function LaboratoryPage() {
                               minH={cell.outputUrl ? undefined : { base: "220px", md: "280px" }}
                             >
                               {cell.outputUrl ? (
-                                <img
-                                  src={toImageUrl(cell.outputUrl)}
-                                  alt={`Cell ${index + 1} output`}
-                                  style={{ width: "100%", height: "auto", display: "block" }}
-                                />
+                                <>
+                                  <Box
+                                    as="img"
+                                    src={toImageUrl(cell.outputUrl)}
+                                    alt={`Cell ${index + 1} output`}
+                                    w="100%"
+                                    h="auto"
+                                    display="block"
+                                    transition="filter 0.18s ease, transform 0.18s ease"
+                                    _groupHover={{
+                                      filter: "blur(0px)",
+                                      transform: "scale(1.01)",
+                                    }}
+                                  />
+                                  <Box
+                                    position="absolute"
+                                    top={3}
+                                    right={3}
+                                    opacity={{ base: 1, md: 0 }}
+                                    transition="opacity 0.18s ease"
+                                    _groupHover={{ opacity: 1 }}
+                                  >
+                                    <Button
+                                      size="sm"
+                                      colorScheme="blackAlpha"
+                                      bg="blackAlpha.700"
+                                      color="white"
+                                      _hover={{ bg: "blackAlpha.800" }}
+                                      _active={{ bg: "blackAlpha.900" }}
+                                      backdropFilter="blur(8px)"
+                                      borderRadius="full"
+                                      onClick={() => void saveCellOutputToProject(cell)}
+                                      isLoading={savingCellId === cell.id}
+                                    >
+                                      {saveToProjectLabel}
+                                    </Button>
+                                  </Box>
+                                </>
                               ) : (
                                 <Text color={subtleText} fontSize="sm">
                                   {waitingOutputLabel}
                                 </Text>
                               )}
                             </Box>
+
+                            {saveMessageByCell[cell.id] ? (
+                              <Text color="green.400" fontSize="sm">
+                                {saveMessageByCell[cell.id]}
+                              </Text>
+                            ) : null}
+
+                            {saveErrorByCell[cell.id] ? (
+                              <Text color="red.400" fontSize="sm">
+                                {saveErrorByCell[cell.id]}
+                              </Text>
+                            ) : null}
 
                             {cell.error ? (
                               <Text color="red.400" fontSize="sm">
