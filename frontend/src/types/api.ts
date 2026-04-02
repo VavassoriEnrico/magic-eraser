@@ -22,6 +22,7 @@ export interface ProcessRunPayload {
   project_id?: number;
   image_id?: number;
   model_key?: string;
+  additional_settings?: Record<string, string | number | boolean>;
 }
 
 export interface ProcessRunResponse {
@@ -29,10 +30,30 @@ export interface ProcessRunResponse {
   output_image_url: string;
 }
 
+export interface AdditionalSettingOption {
+  value: string;
+  label: string;
+}
+
+export interface AdditionalSettingDefinition {
+  key: string;
+  label: string;
+  type: "boolean" | "select" | "integer";
+  description?: string;
+  depends_on_key?: string;
+  depends_on_value?: string | number | boolean;
+  default_value?: string | number | boolean;
+  options?: AdditionalSettingOption[];
+  min_value?: number;
+  max_value?: number;
+  step?: number;
+}
+
 export interface SegmentModel {
   key: string;
   label: string;
   default: boolean;
+  additional_settings?: AdditionalSettingDefinition[];
 }
 
 export interface ProcessCatalogItem {

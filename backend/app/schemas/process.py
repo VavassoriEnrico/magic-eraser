@@ -3,6 +3,25 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 
+class AdditionalSettingChoice(BaseModel):
+    value: str
+    label: str
+
+
+class AdditionalSettingDefinition(BaseModel):
+    key: str
+    label: str
+    type: Literal["boolean", "select", "integer"]
+    description: str | None = None
+    depends_on_key: str | None = None
+    depends_on_value: bool | int | float | str | None = None
+    default_value: bool | int | float | str | None = None
+    options: list[AdditionalSettingChoice] = []
+    min_value: int | None = None
+    max_value: int | None = None
+    step: int | None = None
+
+
 class BaseProcessRequest(BaseModel):
     process_type: str
     project_id: int | None = None
@@ -24,6 +43,7 @@ class SegmentFromPromptRequest(BaseProcessRequest):
     prompt: str
     input_image_url: str
     model_key: str | None = None
+    additional_settings: dict[str, bool | int | float | str] = Field(default_factory=dict)
 
 
 class GenerateFromPromptRequest(BaseProcessRequest):
@@ -68,6 +88,7 @@ class ProcessModelOption(BaseModel):
     key: str
     label: str
     default: bool = False
+    additional_settings: list[AdditionalSettingDefinition] = []
 
 
 class ProcessCatalogItem(BaseModel):
