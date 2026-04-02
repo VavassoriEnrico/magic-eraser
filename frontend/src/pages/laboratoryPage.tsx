@@ -3,10 +3,13 @@ import {
   Badge,
   Box,
   Button,
+  FormControl,
+  FormLabel,
   HStack,
   Input,
   Select,
   Stack,
+  Switch,
   Text,
   useColorModeValue,
   VStack,
@@ -15,7 +18,13 @@ import { BiChevronRight } from "react-icons/bi";
 
 import { uploadImageFromUrl } from "../api/images";
 import { getProcessCatalog, runProcess } from "../api/processes";
-import type { ImageAsset, ProcessCatalogItem, ProcessRunPayload } from "../types/api";
+import type {
+  AdditionalSettingDefinition,
+  ImageAsset,
+  ProcessCatalogItem,
+  ProcessRunPayload,
+  SegmentModel,
+} from "../types/api";
 import type { ProcessStatus } from "../types/process";
 import { getErrorMessage } from "../utils/errors";
 import { toImageUrl } from "../utils/images";
@@ -28,7 +37,7 @@ const FALLBACK_CATALOG: ProcessCatalogItem[] = [
     title: "Segment",
     priority: 1,
     prompt_required: true,
-    model_options: [{ key: "sam3", label: "SAM 3", default: true }],
+    model_options: [{ key: "sam3", label: "SAM 3.1", default: true }],
   },
   {
     process_type: "remove_with_mask",
@@ -50,13 +59,45 @@ type LabCell = {
   title: string;
   priority: number;
   promptRequired: boolean;
-  modelOptions: { key: string; label: string }[];
+  modelOptions: SegmentModel[];
   prompt: string;
   modelKey: string;
+  additionalSettings: Record<string, string | number | boolean>;
   status: ProcessStatus;
   outputUrl: string;
   error: string;
 };
+
+function getDefaultAdditionalSettings(
+  modelOption: SegmentModel | undefined,
+): Record<string, string | number | boolean> {
+  return (modelOption?.additional_settings ?? []).reduce<Record<string, string | number | boolean>>(
+    (acc, setting) => {
+      if (setting.default_value !== undefined) {
+        acc[setting.key] = setting.default_value;
+      }
+      return acc;
+    },
+    {},
+  );
+}
+
+function getSelectedModelOption(cell: LabCell) {
+  return cell.modelOptions.find((model) => model.key === cell.modelKey);
+}
+
+function getVisibleAdditionalSettings(
+  settingDefinitions: AdditionalSettingDefinition[],
+  currentValues: Record<string, string | number | boolean>,
+) {
+  return settingDefinitions.filter((setting) => {
+    if (!setting.depends_on_key) {
+      return true;
+    }
+
+    return currentValues[setting.depends_on_key] === setting.depends_on_value;
+  });
+}
 
 function getSelectedImageFromSession(): ImageAsset | null {
   try {
@@ -69,7 +110,7 @@ function getSelectedImageFromSession(): ImageAsset | null {
 }
 
 function createCell(def: ProcessCatalogItem): LabCell {
-  const modelOptions = (def.model_options ?? []).map((m) => ({ key: m.key, label: m.label }));
+  const modelOptions = def.model_options ?? [];
   const defaultModel = (def.model_options ?? []).find((m) => m.default) ?? def.model_options?.[0];
 
   return {
@@ -81,6 +122,7 @@ function createCell(def: ProcessCatalogItem): LabCell {
     modelOptions,
     prompt: "",
     modelKey: defaultModel?.key ?? "",
+    additionalSettings: getDefaultAdditionalSettings(defaultModel),
     status: "idle",
     outputUrl: "",
     error: "",
@@ -88,12 +130,15 @@ function createCell(def: ProcessCatalogItem): LabCell {
 }
 
 function syncCellWithDefinition(cell: LabCell, def: ProcessCatalogItem): LabCell {
-  const modelOptions = (def.model_options ?? []).map((model) => ({
-    key: model.key,
-    label: model.label,
-  }));
+  const modelOptions = def.model_options ?? [];
   const defaultModel = (def.model_options ?? []).find((model) => model.default) ?? def.model_options?.[0];
   const hasCurrentModel = modelOptions.some((model) => model.key === cell.modelKey);
+  const nextModelKey = hasCurrentModel ? cell.modelKey : defaultModel?.key ?? "";
+  const selectedModel = modelOptions.find((model) => model.key === nextModelKey);
+  const allowedKeys = new Set((selectedModel?.additional_settings ?? []).map((setting) => setting.key));
+  const filteredAdditionalSettings = Object.fromEntries(
+    Object.entries(cell.additionalSettings).filter(([key]) => allowedKeys.has(key)),
+  );
 
   return {
     ...cell,
@@ -101,7 +146,10 @@ function syncCellWithDefinition(cell: LabCell, def: ProcessCatalogItem): LabCell
     priority: def.priority,
     promptRequired: def.prompt_required,
     modelOptions,
-    modelKey: hasCurrentModel ? cell.modelKey : defaultModel?.key ?? "",
+    modelKey: nextModelKey,
+    additionalSettings: hasCurrentModel
+      ? { ...getDefaultAdditionalSettings(selectedModel), ...filteredAdditionalSettings }
+      : getDefaultAdditionalSettings(selectedModel),
   };
 }
 
@@ -187,8 +235,11 @@ export default function LaboratoryPage() {
           syncedCell.modelOptions.some(
             (modelOption, index) =>
               modelOption.key !== cell.modelOptions[index]?.key ||
-              modelOption.label !== cell.modelOptions[index]?.label
-          )
+              modelOption.label !== cell.modelOptions[index]?.label ||
+              JSON.stringify(modelOption.additional_settings ?? []) !==
+                JSON.stringify(cell.modelOptions[index]?.additional_settings ?? [])
+          ) ||
+          JSON.stringify(syncedCell.additionalSettings) !== JSON.stringify(cell.additionalSettings)
         ) {
           changed = true;
           return syncedCell;
@@ -368,6 +419,43 @@ export default function LaboratoryPage() {
     });
   }
 
+  function updateModelForCell(cellIndex: number, modelKey: string) {
+    setCells((prev) => {
+      const next = [...prev];
+      const cell = next[cellIndex];
+      if (!cell) return prev;
+
+      const selectedModel = cell.modelOptions.find((model) => model.key === modelKey);
+      next[cellIndex] = {
+        ...cell,
+        modelKey,
+        additionalSettings: getDefaultAdditionalSettings(selectedModel),
+      };
+      return next;
+    });
+  }
+
+  function updateAdditionalSetting(
+    cellIndex: number,
+    settingKey: string,
+    value: string | number | boolean,
+  ) {
+    setCells((prev) => {
+      const next = [...prev];
+      const cell = next[cellIndex];
+      if (!cell) return prev;
+
+      next[cellIndex] = {
+        ...cell,
+        additionalSettings: {
+          ...cell.additionalSettings,
+          [settingKey]: value,
+        },
+      };
+      return next;
+    });
+  }
+
   function getInputForCell(cellIndex: number, sourceCells: LabCell[]) {
     if (!selectedImage) return "";
     if (cellIndex === 0) return toImageUrl(selectedImage.filePath);
@@ -409,11 +497,16 @@ export default function LaboratoryPage() {
     };
 
     if (cell.processType === "segment_from_prompt") {
+      const additionalSettings = Object.fromEntries(
+        Object.entries(cell.additionalSettings).filter(([, value]) => value !== ""),
+      );
+
       return {
         ...basePayload,
         prompt: cell.prompt,
         input_image_url: inputImageUrl,
         model_key: cell.modelKey || undefined,
+        additional_settings: Object.keys(additionalSettings).length > 0 ? additionalSettings : undefined,
       };
     }
 
@@ -635,18 +728,20 @@ export default function LaboratoryPage() {
                         <Stack direction={{ base: "column", xl: "row" }} spacing={4}>
                           <VStack align="stretch" flex={1} spacing={3}>
                             <Box
-                              h={{ base: "220px", md: "280px" }}
                               borderRadius="md"
                               overflow="hidden"
                               border="1px solid"
                               borderColor={panelBorder}
                               bg="blackAlpha.500"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
                             >
                               {inputUrl ? (
                                 <img
                                   src={inputUrl}
                                   alt={`Cell ${index + 1} input`}
-                                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                  style={{ width: "100%", height: "auto", display: "block" }}
                                 />
                               ) : null}
                             </Box>
@@ -663,7 +758,7 @@ export default function LaboratoryPage() {
                             {cell.modelOptions.length > 0 ? (
                               <Select
                                 value={cell.modelKey}
-                                onChange={(e) => updateCell(index, { modelKey: e.target.value })}
+                                onChange={(e) => updateModelForCell(index, e.target.value)}
                                 isDisabled={cell.status === "running" || runningAll}
                               >
                                 {cell.modelOptions.map((option) => (
@@ -673,11 +768,118 @@ export default function LaboratoryPage() {
                                 ))}
                               </Select>
                             ) : null}
+
+                            {(() => {
+                              const selectedModel = getSelectedModelOption(cell);
+                              const settingDefinitions = getVisibleAdditionalSettings(
+                                selectedModel?.additional_settings ?? [],
+                                cell.additionalSettings,
+                              );
+
+                              if (settingDefinitions.length === 0) {
+                                return null;
+                              }
+
+                              return (
+                                <VStack align="stretch" spacing={3}>
+                                  <Text fontSize="sm" fontWeight="semibold">
+                                    Additional settings
+                                  </Text>
+
+                                  {settingDefinitions.map((setting) => {
+                                    const currentValue =
+                                      cell.additionalSettings[setting.key] ?? setting.default_value;
+
+                                    if (setting.type === "boolean") {
+                                      return (
+                                        <FormControl
+                                          key={setting.key}
+                                          display="flex"
+                                          alignItems="center"
+                                          justifyContent="space-between"
+                                        >
+                                          <Box pr={4}>
+                                            <FormLabel mb={0} fontSize="sm">
+                                              {setting.label}
+                                            </FormLabel>
+                                            {setting.description ? (
+                                              <Text color={subtleText} fontSize="xs">
+                                                {setting.description}
+                                              </Text>
+                                            ) : null}
+                                          </Box>
+                                          <Switch
+                                            isChecked={Boolean(currentValue)}
+                                            onChange={(event) =>
+                                              updateAdditionalSetting(index, setting.key, event.target.checked)
+                                            }
+                                            isDisabled={cell.status === "running" || runningAll}
+                                          />
+                                        </FormControl>
+                                      );
+                                    }
+
+                                    if (setting.type === "select") {
+                                      return (
+                                        <FormControl key={setting.key}>
+                                          <FormLabel fontSize="sm">{setting.label}</FormLabel>
+                                          <Select
+                                            value={String(currentValue ?? "")}
+                                            onChange={(event) =>
+                                              updateAdditionalSetting(index, setting.key, event.target.value)
+                                            }
+                                            isDisabled={cell.status === "running" || runningAll}
+                                          >
+                                            {(setting.options ?? []).map((option) => (
+                                              <option key={option.value} value={option.value}>
+                                                {option.label}
+                                              </option>
+                                            ))}
+                                          </Select>
+                                          {setting.description ? (
+                                            <Text color={subtleText} fontSize="xs" mt={1}>
+                                              {setting.description}
+                                            </Text>
+                                          ) : null}
+                                        </FormControl>
+                                      );
+                                    }
+
+                                    return (
+                                      <FormControl key={setting.key}>
+                                        <FormLabel fontSize="sm">{setting.label}</FormLabel>
+                                        <Input
+                                          type="number"
+                                          min={setting.min_value}
+                                          max={setting.max_value}
+                                          step={setting.step ?? 1}
+                                          value={String(currentValue ?? "")}
+                                          onChange={(event) =>
+                                            updateAdditionalSetting(
+                                              index,
+                                              setting.key,
+                                              event.target.value === ""
+                                                ? ""
+                                                : Number(event.target.value),
+                                            )
+                                          }
+                                          isDisabled={cell.status === "running" || runningAll}
+                                        />
+                                        {setting.description ? (
+                                          <Text color={subtleText} fontSize="xs" mt={1}>
+                                            {setting.description}
+                                          </Text>
+                                        ) : null}
+                                      </FormControl>
+                                    );
+                                  })}
+                                </VStack>
+                              );
+                            })()}
                           </VStack>
 
                           <VStack align="stretch" flex={1} spacing={2}>
                             <Box
-                              h={{ base: "220px", md: "280px" }}
                               borderRadius="md"
                               overflow="hidden"
                               border="1px solid"
@@ -686,12 +888,13 @@ export default function LaboratoryPage() {
                               display="flex"
                               alignItems="center"
                               justifyContent="center"
+                              minH={cell.outputUrl ? undefined : { base: "220px", md: "280px" }}
                             >
                               {cell.outputUrl ? (
                                 <img
                                   src={toImageUrl(cell.outputUrl)}
                                   alt={`Cell ${index + 1} output`}
-                                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                  style={{ width: "100%", height: "auto", display: "block" }}
                                 />
                               ) : (
                                 <Text color={subtleText} fontSize="sm">

@@ -8,6 +8,8 @@ class AIProvider(Protocol):
         provider_model_id: str,
         input_image_url: str,
         prompt: str,
+        project_id: int | None = None,
+        additional_settings: dict[str, object] | None = None,
     ) -> str:
         ...
 
