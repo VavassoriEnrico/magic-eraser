@@ -1,6 +1,7 @@
-from app.catalogs.segment_models import SEGMENT_MODEL_REGISTRY
+from app.catalogs.segment_models import iter_segment_model_definitions
 from app.catalogs.generation_models import GENERATION_MODEL_REGISTRY
 from app.schemas.process import (
+    AdditionalSettingDefinition,
     GenerateFromPromptRequest,
     ProcessCatalogItem,
     ProcessModelOption,
@@ -12,12 +13,14 @@ from app.schemas.process import (
 def get_segment_model_options() -> list[ProcessModelOption]:
     options: list[ProcessModelOption] = []
 
-    for key, info in SEGMENT_MODEL_REGISTRY.items():
+    for key, info in iter_segment_model_definitions():
+        raw_settings = info.get("additional_settings", [])
         options.append(
             ProcessModelOption(
                 key=key,
                 label=str(info.get("label", key)),
                 default=bool(info.get("default", False)),
+                additional_settings=[AdditionalSettingDefinition.model_validate(item) for item in raw_settings],
             )
         )
 
