@@ -55,7 +55,7 @@ class GenerateFromPromptRequest(BaseProcessRequest):
         "Generation process can be executed one or more times, but only at the end of the workflow"
     ] = "Generation process can be executed one or more times, but only at the end of the workflow"
     priority: Literal[3]
-    prompt: str
+    prompt: str | None = None
     input_image_url: str
     model_key: str | None = None
 

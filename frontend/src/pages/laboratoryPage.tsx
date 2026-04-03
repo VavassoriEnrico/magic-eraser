@@ -60,6 +60,7 @@ type LabCell = {
   priority: number;
   promptRequired: boolean;
   modelOptions: SegmentModel[];
+  enableCustomPrompt: boolean;
   prompt: string;
   modelKey: string;
   additionalSettings: Record<string, string | number | boolean>;
@@ -120,6 +121,7 @@ function createCell(def: ProcessCatalogItem): LabCell {
     priority: def.priority,
     promptRequired: def.prompt_required,
     modelOptions,
+    enableCustomPrompt: false,
     prompt: "",
     modelKey: defaultModel?.key ?? "",
     additionalSettings: getDefaultAdditionalSettings(defaultModel),
@@ -504,7 +506,7 @@ export default function LaboratoryPage() {
     if (cell.processType === "generate_from_prompt"){
       return {
       ...basePayload,
-      prompt: cell.prompt,
+      prompt: cell.enableCustomPrompt ? cell.prompt : undefined,
       model_key: cell.modelKey || undefined,
       input_image_url: inputImageUrl,
     };
@@ -724,7 +726,27 @@ export default function LaboratoryPage() {
                               ) : null}
                             </Box>
 
-                            {cell.promptRequired ? (
+                            {cell.processType === "generate_from_prompt" ? (
+                              <FormControl
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                              >
+                                <FormLabel mb={0} fontSize="sm">
+                                  Choose what you like to place in free spot.
+                                </FormLabel>
+                                <Switch
+                                  isChecked={cell.enableCustomPrompt}
+                                  onChange={(event) =>
+                                    updateCell(index, { enableCustomPrompt: event.target.checked })
+                                  }
+                                  isDisabled={cell.status === "running" || runningAll}
+                                />
+                              </FormControl>
+                            ) : null}
+
+                            {cell.promptRequired &&
+                            (cell.processType !== "generate_from_prompt" || cell.enableCustomPrompt) ? (
                               <Input
                                 placeholder="Write prompt..."
                                 value={cell.prompt}

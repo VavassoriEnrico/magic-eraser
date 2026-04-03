@@ -51,15 +51,16 @@ class FalAIProvider(AIProvider):
         *,
         provider_model_id: str,
         input_image_url: str,
-        prompt: str,
+        prompt: str | None = None,
     ) -> str:
         resolved_image_input = resolve_image_input(input_image_url)
         
         request_payload = {
             "image_urls": [resolved_image_input],
-            "prompt": prompt,
             "output_format": "png",
         }
+        if prompt:
+            request_payload["prompt"] = prompt
         
         response = run_model(provider_model_id, request_payload)
         output_url = self._extract_output_url(response)

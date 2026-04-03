@@ -4,11 +4,11 @@ from app.catalogs.generation_models import GENERATION_MODEL_REGISTRY
 from app.providers.ai_provider import get_ai_provider
 from app.schemas.process import GenerateFromPromptRequest
 
+DEFAULT_GENERATION_PROMPT = "Fill the missing area naturally using the surrounding background."
+
 
 def generate_from_prompt(payload: GenerateFromPromptRequest) -> str:
-    prompt = payload.prompt.strip()
-    if not prompt:
-        raise HTTPException(status_code = 400, detail = "prompt is required")
+    prompt = (payload.prompt or "").strip()
 
     input_image_url = payload.input_image_url.strip()
     if not input_image_url:
@@ -38,5 +38,5 @@ def generate_from_prompt(payload: GenerateFromPromptRequest) -> str:
     return provider.generate_from_prompt(
         provider_model_id=provider_model_id,
         input_image_url=input_image_url,
-        prompt=prompt,
+        prompt=prompt or DEFAULT_GENERATION_PROMPT,
     )
