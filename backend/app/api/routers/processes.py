@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.catalogs.process_catalog import PROCESS_CATALOG, get_segment_model_options, get_generation_model_options
+from app.dependencies import get_db
 from app.schemas.process import ProcessCatalogItem, ProcessModelOption, ProcessRunRequest, ProcessRunResponse
 from app.services import process_service
 
@@ -26,5 +28,5 @@ def list_generation_models():
 
 #Run a process
 @router.post("/run", response_model=ProcessRunResponse)
-def run_process(payload: ProcessRunRequest):
-    return process_service.run_process(payload)
+def run_process(payload: ProcessRunRequest, db: Session = Depends(get_db)):
+    return process_service.run_process(db, payload)
