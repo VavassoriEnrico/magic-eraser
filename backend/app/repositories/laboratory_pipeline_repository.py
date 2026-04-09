@@ -28,6 +28,10 @@ def get_pipeline_by_id(db: Session, pipeline_id: int) -> LaboratoryPipeline | No
     return db.query(LaboratoryPipeline).filter(LaboratoryPipeline.id == pipeline_id).first()
 
 
+def list_pipelines(db: Session) -> list[LaboratoryPipeline]:
+    return db.query(LaboratoryPipeline).order_by(LaboratoryPipeline.updated_at.desc()).all()
+
+
 def update_pipeline_status(
     db: Session,
     *,
@@ -43,6 +47,24 @@ def update_pipeline_status(
     db.commit()
     db.refresh(pipeline)
     return pipeline
+
+
+def update_pipeline_name(
+    db: Session,
+    *,
+    pipeline: LaboratoryPipeline,
+    name: str | None,
+) -> LaboratoryPipeline:
+    pipeline.name = name
+    db.add(pipeline)
+    db.commit()
+    db.refresh(pipeline)
+    return pipeline
+
+
+def delete_pipeline(db: Session, pipeline: LaboratoryPipeline) -> None:
+    db.delete(pipeline)
+    db.commit()
 
 
 def create_step(

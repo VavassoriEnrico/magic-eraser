@@ -1,8 +1,11 @@
 from app.schemas.image import ImageFromUrlCreate, ImageRead
 from app.schemas.laboratory_pipeline import (
     PipelineFinishRequest,
+    PipelineRead,
+    PipelineRenameRequest,
     PipelineStartRequest,
     PipelineStartResponse,
+    PipelineStepCreateRequest,
     PipelineStepRead,
 )
 from app.schemas.process import ProcessRunRequest, ProcessRunResponse
@@ -16,7 +19,10 @@ __all__ = [
     "ImageFromUrlCreate",
     "PipelineStartRequest",
     "PipelineStartResponse",
+    "PipelineRead",
     "PipelineFinishRequest",
+    "PipelineRenameRequest",
+    "PipelineStepCreateRequest",
     "PipelineStepRead",
     "ProcessRunRequest",
     "ProcessRunResponse",

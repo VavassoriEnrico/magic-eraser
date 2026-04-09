@@ -33,6 +33,10 @@ def get_pipeline(db: Session, pipeline_id: int) -> LaboratoryPipeline:
     return pipeline
 
 
+def list_pipelines(db: Session) -> list[LaboratoryPipeline]:
+    return laboratory_pipeline_repository.list_pipelines(db)
+
+
 def update_pipeline_status(
     db: Session,
     *,
@@ -48,6 +52,35 @@ def update_pipeline_status(
             status=status,
             final_image_url=final_image_url,
         )
+    except Exception:
+        db.rollback()
+        raise
+
+
+def update_pipeline_name(
+    db: Session,
+    *,
+    pipeline_id: int,
+    name: str | None,
+) -> LaboratoryPipeline:
+    pipeline = get_pipeline(db, pipeline_id)
+    clean_name = name.strip() if isinstance(name, str) else None
+    clean_name = clean_name or None
+    try:
+        return laboratory_pipeline_repository.update_pipeline_name(
+            db,
+            pipeline=pipeline,
+            name=clean_name,
+        )
+    except Exception:
+        db.rollback()
+        raise
+
+
+def delete_pipeline(db: Session, pipeline_id: int) -> None:
+    pipeline = get_pipeline(db, pipeline_id)
+    try:
+        laboratory_pipeline_repository.delete_pipeline(db, pipeline)
     except Exception:
         db.rollback()
         raise

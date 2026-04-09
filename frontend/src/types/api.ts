@@ -16,6 +16,8 @@ export interface ImageAsset {
 export interface ProcessRunPayload {
   process_type: string;
   priority: number;
+  pipeline_id?: number;
+  step_index?: number;
   prompt?: string;
   input_image_url?: string;
   mask_image_url?: string;
@@ -64,4 +66,46 @@ export interface ProcessCatalogItem {
   explanation?: string;
   priority_explanation?: string;
   model_options?: SegmentModel[];
+}
+
+export interface Pipeline {
+  id: number;
+  project_id: number;
+  source_image_id: number;
+  name?: string;
+  start_image_url: string;
+  final_image_url?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PipelineStep {
+  id: number;
+  pipeline_id: number;
+  step_index: number;
+  process_type: string;
+  priority: number;
+  model_key?: string;
+  prompt?: string;
+  additional_settings_json?: Record<string, string | number | boolean>;
+  input_image_url: string;
+  mask_image_url?: string;
+  output_image_url?: string;
+  status: string;
+  error_message?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PipelineStartPayload {
+  project_id: number;
+  source_image_id: number;
+  start_image_url: string;
+  name?: string;
+}
+
+export interface PipelineFinishPayload {
+  status: string;
+  final_image_url?: string;
 }
