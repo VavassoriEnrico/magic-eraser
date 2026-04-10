@@ -368,7 +368,7 @@ export default function LaboratoryPage() {
   const descriptionLabel = "Notebook workflow: add cells, run them in order, and save final output.";
   const selectedImageLabel = "Input image";
   const noImageLabel = "No image selected yet. Open this page from Home > Edit.";
-  const backToHomeLabel = "Back to home";
+  const savePipelineLabel = "Save pipeline";
   const runAllLabel = "Run all cells";
   const runCellLabel = "Run cell";
   const resetFromLabel = "Reset from here";
@@ -392,11 +392,6 @@ export default function LaboratoryPage() {
 
     return items;
   }, [catalog]);
-
-  function goHome() {
-    window.history.pushState({}, "", "/");
-    window.dispatchEvent(new PopStateEvent("popstate"));
-  }
 
   async function savePipelineName() {
     if (!selectedImage) {
@@ -866,8 +861,8 @@ export default function LaboratoryPage() {
           {" "}pipeline #{activePipelineId ?? "-"}
         </Badge>
         <HStack>
-          <Button variant="outline" onClick={goHome}>
-            {backToHomeLabel}
+          <Button variant="outline" onClick={() => void savePipelineName()} isDisabled={runningAll}>
+            {savePipelineLabel}
           </Button>
           <Button colorScheme="blue" onClick={() => void runAllCells()} isLoading={runningAll}>
             {runAllLabel}
@@ -925,14 +920,6 @@ export default function LaboratoryPage() {
                               isDisabled={runningAll}
                             >
                               {runCellLabel}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => void savePipelineName()}
-                              isDisabled={runningAll}
-                            >
-                              Save pipeline
                             </Button>
                             <Button
                               size="sm"
