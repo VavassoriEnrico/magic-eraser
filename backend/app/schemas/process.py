@@ -26,6 +26,8 @@ class BaseProcessRequest(BaseModel):
     process_type: str
     project_id: int | None = None
     image_id: int | None = None
+    pipeline_id: int | None = None
+    step_index: int | None = None
     priority: int
     explanation: str | None = None
     priority_explanation: str | None = None

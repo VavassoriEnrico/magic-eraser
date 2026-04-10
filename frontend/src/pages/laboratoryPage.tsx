@@ -8,6 +8,7 @@ import {
   HStack,
   Input,
   Select,
+  Spinner,
   Stack,
   Switch,
   Text,
@@ -17,10 +18,20 @@ import {
 import { BiChevronRight } from "react-icons/bi";
 
 import { uploadImageFromUrl } from "../api/images";
-import { getProcessCatalog, runProcess } from "../api/processes";
+import {
+  createPipelineStep,
+  finishPipeline,
+  getPipeline,
+  getPipelineSteps,
+  getProcessCatalog,
+  renamePipeline,
+  runProcess,
+  startPipeline,
+} from "../api/processes";
 import type {
   AdditionalSettingDefinition,
   ImageAsset,
+  PipelineStep,
   ProcessCatalogItem,
   ProcessRunPayload,
   SegmentModel,
@@ -131,6 +142,25 @@ function createCell(def: ProcessCatalogItem): LabCell {
   };
 }
 
+function createCellFromStep(def: ProcessCatalogItem, step: PipelineStep): LabCell {
+  const baseCell = createCell(def);
+  const additionalSettings = step.additional_settings_json ?? {};
+
+  return {
+    ...baseCell,
+    prompt: step.prompt ?? "",
+    modelKey: step.model_key ?? baseCell.modelKey,
+    additionalSettings: {
+      ...baseCell.additionalSettings,
+      ...additionalSettings,
+    },
+    enableCustomPrompt: Boolean(step.prompt?.trim()),
+    status: step.status === "done" ? "done" : "failed",
+    outputUrl: step.output_image_url ?? "",
+    error: step.error_message ?? "",
+  };
+}
+
 function syncCellWithDefinition(cell: LabCell, def: ProcessCatalogItem): LabCell {
   const modelOptions = def.model_options ?? [];
   const defaultModel = (def.model_options ?? []).find((model) => model.default) ?? def.model_options?.[0];
@@ -164,9 +194,15 @@ export default function LaboratoryPage() {
   const outputBg = useColorModeValue("gray.100", "whiteAlpha.100");
 
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
-  const projectId = urlParams.get("projectId");
-  const imageId = urlParams.get("imageId");
-  const selectedImage = useMemo(() => getSelectedImageFromSession(), []);
+  const queryProjectId = urlParams.get("projectId");
+  const queryImageId = urlParams.get("imageId");
+  const queryPipelineId = urlParams.get("pipelineId");
+  const [selectedImage, setSelectedImage] = useState<ImageAsset | null>(() =>
+    getSelectedImageFromSession(),
+  );
+  const [activePipelineId, setActivePipelineId] = useState<number | null>(() =>
+    queryPipelineId ? Number(queryPipelineId) : null,
+  );
 
   const [catalog, setCatalog] = useState<ProcessCatalogItem[]>(FALLBACK_CATALOG);
   const [cells, setCells] = useState<LabCell[]>([]);
@@ -177,6 +213,7 @@ export default function LaboratoryPage() {
   const [saveErrorByCell, setSaveErrorByCell] = useState<Record<string, string>>({});
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [loadingPipeline, setLoadingPipeline] = useState(false);
   const hasInitializedDefaultCell = useRef(false);
 
   useEffect(() => {
@@ -200,6 +237,62 @@ export default function LaboratoryPage() {
   }, []);
 
   useEffect(() => {
+    if (!queryPipelineId || Number.isNaN(Number(queryPipelineId)) || catalog.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    const pipelineId = Number(queryPipelineId);
+
+    async function loadPipelineData() {
+      setLoadingPipeline(true);
+      try {
+        const [pipeline, steps] = await Promise.all([
+          getPipeline(pipelineId),
+          getPipelineSteps(pipelineId),
+        ]);
+        if (cancelled) {
+          return;
+        }
+
+        setActivePipelineId(pipeline.id);
+        setSelectedImage({
+          id: pipeline.source_image_id,
+          project_id: pipeline.project_id,
+          fileName: pipeline.name?.trim() || `Pipeline #${pipeline.id} input`,
+          filePath: pipeline.start_image_url,
+          created_at: pipeline.created_at,
+        });
+
+        const loadedCells = [...steps]
+          .sort((a, b) => a.step_index - b.step_index || a.id - b.id)
+          .map((step) => {
+            const definition = catalog.find(
+              (item) => item.process_type === step.process_type,
+            );
+            if (!definition) return null;
+            return createCellFromStep(definition, step);
+          })
+          .filter((cell): cell is LabCell => cell !== null);
+
+        setCells(loadedCells);
+        hasInitializedDefaultCell.current = true;
+      } catch {
+        // keep default laboratory behavior
+      } finally {
+        if (!cancelled) {
+          setLoadingPipeline(false);
+        }
+      }
+    }
+
+    void loadPipelineData();
+    return () => {
+      cancelled = true;
+    };
+  }, [catalog, queryPipelineId]);
+
+  useEffect(() => {
     if (!selectedImage || hasInitializedDefaultCell.current || cells.length > 0) {
       return;
     }
@@ -214,6 +307,20 @@ export default function LaboratoryPage() {
     setCells([createCell(defaultProcess)]);
     hasInitializedDefaultCell.current = true;
   }, [catalog, cells.length, selectedImage]);
+
+  useEffect(() => {
+    if (activePipelineId === null) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("pipelineId") === String(activePipelineId)) {
+      return;
+    }
+
+    params.set("pipelineId", String(activePipelineId));
+    window.history.replaceState({}, "", `/laboratory?${params.toString()}`);
+  }, [activePipelineId]);
 
   useEffect(() => {
     if (catalog.length === 0) {
@@ -261,7 +368,7 @@ export default function LaboratoryPage() {
   const descriptionLabel = "Notebook workflow: add cells, run them in order, and save final output.";
   const selectedImageLabel = "Input image";
   const noImageLabel = "No image selected yet. Open this page from Home > Edit.";
-  const backToHomeLabel = "Back to home";
+  const savePipelineLabel = "Save pipeline";
   const runAllLabel = "Run all cells";
   const runCellLabel = "Run cell";
   const resetFromLabel = "Reset from here";
@@ -286,9 +393,99 @@ export default function LaboratoryPage() {
     return items;
   }, [catalog]);
 
-  function goHome() {
-    window.history.pushState({}, "", "/");
-    window.dispatchEvent(new PopStateEvent("popstate"));
+  async function savePipelineName() {
+    if (!selectedImage) {
+      setSaveError("Select an image first");
+      return;
+    }
+
+    const latestOutputUrl = [...cells]
+      .reverse()
+      .find((cell) => cell.outputUrl && cell.status === "done")?.outputUrl;
+
+    if (!latestOutputUrl) {
+      setSaveError("Run at least one cell before saving");
+      return;
+    }
+
+    const currentName = selectedImage.fileName?.startsWith("Pipeline #")
+      ? ""
+      : selectedImage.fileName ?? "";
+    const nextName = window.prompt("Choose a name for this pipeline", currentName);
+    if (nextName === null) {
+      return;
+    }
+
+    try {
+      let pipelineId = activePipelineId;
+      let isNewPipeline = false;
+      if (!pipelineId) {
+        const projectId = queryProjectId ? Number(queryProjectId) : selectedImage.project_id;
+        const imageId = queryImageId ? Number(queryImageId) : selectedImage.id;
+        if (!projectId || !imageId) {
+          setSaveError("Project or image id missing");
+          return;
+        }
+
+        const created = await startPipeline({
+          project_id: projectId,
+          source_image_id: imageId,
+          start_image_url: toImageUrl(selectedImage.filePath),
+          name: nextName.trim() || undefined,
+        });
+        pipelineId = created.id;
+        isNewPipeline = true;
+        setActivePipelineId(created.id);
+      } else {
+        await renamePipeline(pipelineId, nextName.trim());
+      }
+
+      if (isNewPipeline) {
+        for (let i = 0; i < cells.length; i += 1) {
+          const cell = cells[i];
+          if (cell.status !== "done" && cell.status !== "failed") {
+            continue;
+          }
+
+          const inputImageUrl = getInputForCell(i, cells);
+          const previousOutputUrl = i > 0 ? cells[i - 1].outputUrl : "";
+
+          await createPipelineStep(pipelineId, {
+            step_index: i + 1,
+            process_type: cell.processType,
+            priority: cell.priority,
+            model_key: cell.modelKey || undefined,
+            prompt: cell.prompt || undefined,
+            additional_settings_json: cell.additionalSettings,
+            input_image_url: inputImageUrl,
+            mask_image_url:
+              cell.processType === "remove_with_mask" ? previousOutputUrl || undefined : undefined,
+            output_image_url: cell.outputUrl || undefined,
+            status: cell.status === "done" ? "done" : "failed",
+            error_message: cell.error || undefined,
+          });
+        }
+      }
+
+      const updated = await finishPipeline(pipelineId, {
+        status: "done",
+        final_image_url: latestOutputUrl,
+      });
+
+      setSelectedImage((prev) =>
+        prev
+          ? {
+              ...prev,
+              fileName: updated.name?.trim() || prev.fileName,
+            }
+          : prev,
+      );
+      setSaveError("");
+      setSaveMessage("Pipeline saved");
+    } catch (error) {
+      setSaveMessage("");
+      setSaveError(getErrorMessage(error));
+    }
   }
 
   function getAddAnchorKey(afterIndex: number) {
@@ -470,6 +667,7 @@ export default function LaboratoryPage() {
   }
 
   function buildPayload(
+    cellIndex: number,
     cell: LabCell,
     inputImageUrl: string,
     previousOutputUrl: string,
@@ -477,8 +675,10 @@ export default function LaboratoryPage() {
     const basePayload: ProcessRunPayload = {
       process_type: cell.processType,
       priority: cell.priority,
-      project_id: projectId ? Number(projectId) : undefined,
-      image_id: imageId ? Number(imageId) : undefined,
+      pipeline_id: activePipelineId ?? undefined,
+      step_index: cellIndex + 1,
+      project_id: queryProjectId ? Number(queryProjectId) : selectedImage?.project_id,
+      image_id: queryImageId ? Number(queryImageId) : selectedImage?.id,
     };
 
     if (cell.processType === "segment_from_prompt") {
@@ -520,23 +720,23 @@ export default function LaboratoryPage() {
   }
 
   async function runCell(cellIndex: number) {
-    if (!selectedImage) return false;
+    if (!selectedImage) return null;
 
     const currentCells = [...cells];
     const cell = currentCells[cellIndex];
-    if (!cell) return false;
+    if (!cell) return null;
 
     const inputImageUrl = getInputForCell(cellIndex, currentCells);
     const previousOutputUrl = cellIndex > 0 ? currentCells[cellIndex - 1].outputUrl : "";
 
     if (!inputImageUrl) {
       updateCell(cellIndex, { status: "failed", error: "Previous cell output missing" });
-      return false;
+      return null;
     }
 
     if (cell.processType === "remove_with_mask" && !previousOutputUrl) {
       updateCell(cellIndex, { status: "failed", error: "Mask image missing from previous cell" });
-      return false;
+      return null;
     }
 
     updateCell(cellIndex, { status: "running", error: "" });
@@ -544,16 +744,16 @@ export default function LaboratoryPage() {
     setSaveError("");
 
     try {
-      const payload = buildPayload(cell, inputImageUrl, previousOutputUrl);
+      const payload = buildPayload(cellIndex, cell, inputImageUrl, previousOutputUrl);
       const response = await runProcess(payload);
       updateCell(cellIndex, { status: "done", outputUrl: response.output_image_url, error: "" });
-      return true;
+      return response.output_image_url;
     } catch (error) {
       updateCell(cellIndex, {
         status: "failed",
         error: error instanceof Error ? error.message : "Unexpected error",
       });
-      return false;
+      return null;
     }
   }
 
@@ -564,9 +764,27 @@ export default function LaboratoryPage() {
     setSaveMessage("");
     setSaveError("");
 
+    let allSuccessful = true;
+    let lastOutputUrl = "";
+
     for (let i = 0; i < cells.length; i += 1) {
-      const ok = await runCell(i);
-      if (!ok) break;
+      const outputUrl = await runCell(i);
+      if (!outputUrl) {
+        allSuccessful = false;
+        break;
+      }
+      lastOutputUrl = outputUrl;
+    }
+
+    if (activePipelineId) {
+      try {
+        await finishPipeline(activePipelineId, {
+          status: allSuccessful ? "done" : "failed",
+          final_image_url: allSuccessful ? lastOutputUrl : undefined,
+        });
+      } catch {
+        // no-op
+      }
     }
 
     setRunningAll(false);
@@ -575,7 +793,7 @@ export default function LaboratoryPage() {
   async function saveCellOutputToProject(cell: LabCell) {
     if (!cell.outputUrl || !selectedImage) return;
 
-    const targetProjectId = projectId ? Number(projectId) : selectedImage.project_id;
+    const targetProjectId = queryProjectId ? Number(queryProjectId) : selectedImage.project_id;
     if (!targetProjectId) {
       setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "Project id missing" }));
       return;
@@ -591,6 +809,17 @@ export default function LaboratoryPage() {
         toImageUrl(cell.outputUrl),
         `${cell.processType}-${Date.now()}`,
       );
+
+      if (activePipelineId) {
+        try {
+          await finishPipeline(activePipelineId, {
+            status: "done",
+            final_image_url: cell.outputUrl,
+          });
+        } catch {
+          // no-op
+        }
+      }
 
       const successMessage = `Saved to project #${targetProjectId}`;
       setSaveMessageByCell((prev) => ({ ...prev, [cell.id]: successMessage }));
@@ -628,11 +857,12 @@ export default function LaboratoryPage() {
 
       <HStack justify="space-between" align="center" flexWrap="wrap">
         <Badge width="fit-content" colorScheme="blue" variant="subtle">
-          project #{projectId ?? "-"} • image #{imageId ?? "-"}
+          project #{queryProjectId ?? selectedImage?.project_id ?? "-"} • image #{queryImageId ?? selectedImage?.id ?? "-"} •
+          {" "}pipeline #{activePipelineId ?? "-"}
         </Badge>
         <HStack>
-          <Button variant="outline" onClick={goHome}>
-            {backToHomeLabel}
+          <Button variant="outline" onClick={() => void savePipelineName()} isDisabled={runningAll}>
+            {savePipelineLabel}
           </Button>
           <Button colorScheme="blue" onClick={() => void runAllCells()} isLoading={runningAll}>
             {runAllLabel}
@@ -653,6 +883,12 @@ export default function LaboratoryPage() {
 
       <Box p={5} borderRadius="xl" border="1px solid" borderColor={panelBorder} bg={panelBg}>
         <VStack align="stretch" spacing={4}>
+          {loadingPipeline ? (
+            <HStack color={subtleText}>
+              <Spinner size="sm" />
+              <Text fontSize="sm">Loading saved pipeline...</Text>
+            </HStack>
+          ) : null}
           <Text fontWeight="semibold" fontSize="lg">
             {selectedImageLabel} • {selectedImage?.fileName ?? "N/A"}
           </Text>

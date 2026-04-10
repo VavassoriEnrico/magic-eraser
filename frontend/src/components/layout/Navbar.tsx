@@ -14,7 +14,7 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
 
   const titleLabel = "Magic Eraser";
   const homeLabel = "Home";
-  const galleryLabel = "Gallery";
+  const pipelinesLabel = "Pipelines";
   const profileLabel = "Profile";
 
   return (
@@ -38,11 +38,11 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
             {homeLabel}
           </a>
           <a
-            href="/gallery"
-            className={navClass(currentPath === "/gallery")}
-            onClick={(event) => onLinkClick(event, "/gallery", onNavigate)}
+            href="/pipelines"
+            className={navClass(currentPath === "/pipelines")}
+            onClick={(event) => onLinkClick(event, "/pipelines", onNavigate)}
           >
-            {galleryLabel}
+            {pipelinesLabel}
           </a>
         </nav>
 
