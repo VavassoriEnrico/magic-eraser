@@ -367,13 +367,17 @@ export default function HomePage() {
                               Delete
                             </Button>
                           </ButtonGroup>
+                          {/*
                           <Box h={1} />
                           <ButtonGroup size="xs" variant="outline">
+                            
                             <Button onClick={() => openMoveDialog(image, project.id)}>Move</Button>
                             <Button onClick={() => onDuplicateImage(image, project.id)}>
                               Duplicate
                             </Button>
+                            
                           </ButtonGroup>
+                          */}
                         </MenuList>
                       </Portal>
                     </Menu>
@@ -1069,6 +1073,7 @@ export default function HomePage() {
             <Button variant="ghost" mr={3} onClick={closeMoveDialog}>
               Cancel
             </Button>
+            
             <Button
               colorScheme="blue"
               onClick={() => void confirmMoveImage()}
@@ -1077,6 +1082,8 @@ export default function HomePage() {
             >
               Move
             </Button>
+            
+
           </ModalFooter>
         </ModalContent>
       </Modal>
