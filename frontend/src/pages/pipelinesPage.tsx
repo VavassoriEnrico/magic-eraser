@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   HStack,
-  Spinner,
   Stack,
   Text,
   VStack,
@@ -12,6 +11,9 @@ import {
 } from "@chakra-ui/react";
 
 import { deletePipeline, listPipelines } from "../api/processes";
+import { GlassPanel } from "../components/common/GlassPanel";
+import { LoadingState, MessagePanel } from "../components/common/PageState";
+import { PageHeader } from "../components/common/PageHeader";
 import type { Pipeline } from "../types/api";
 import { formatRelativeTime } from "../utils/date";
 import { getErrorMessage } from "../utils/errors";
@@ -97,54 +99,40 @@ export default function PipelinesPage() {
   }
 
   if (loading) {
-    return (
-      <VStack py={12} spacing={3} color={subtleText}>
-        <Spinner />
-        <Text>Loading pipelines...</Text>
-      </VStack>
-    );
+    return <LoadingState label="Loading pipelines..." color={subtleText} />;
   }
 
   if (error) {
-    return (
-      <Box p={4} borderRadius="md" bg="red.900" color="white" border="1px solid" borderColor="red.700">
-        {error}
-      </Box>
-    );
+    return <MessagePanel message={error} tone="error" />;
   }
 
   return (
     <Stack spacing={6} color={pageText}>
-      <Box>
-        <Text color={sectionLabel} fontSize="sm" letterSpacing="0.12em" textTransform="uppercase">
-          Workspace
-        </Text>
-        <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em">
-          Pipelines
-        </Text>
-        <Text color={subtleText}>
-          Open a previous pipeline and continue from the saved steps.
-        </Text>
-      </Box>
+      <PageHeader
+        title="Pipelines"
+        description="Open a previous pipeline and continue from the saved steps."
+        eyebrowColor={sectionLabel}
+        descriptionColor={subtleText}
+      />
 
       <Badge width="fit-content" colorScheme="blue" variant="subtle">
         {sortedPipelines.length} pipeline{sortedPipelines.length === 1 ? "" : "s"}
       </Badge>
 
       {sortedPipelines.length === 0 ? (
-        <Box p={5} borderRadius="xl" border="1px solid" borderColor={panelBorder} bg={panelBg}>
+        <GlassPanel p={5} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
           <Text color={subtleText}>No pipelines available yet.</Text>
-        </Box>
+        </GlassPanel>
       ) : (
         <VStack align="stretch" spacing={4}>
           {sortedPipelines.map((pipeline) => (
-            <Box
+            <GlassPanel
               key={pipeline.id}
               p={4}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={panelBorder}
-              bg={panelBg}
+              lightBg={panelBg}
+              darkBg={panelBg}
+              lightBorder={panelBorder}
+              darkBorder={panelBorder}
             >
               <HStack justify="space-between" align="center" mb={3} flexWrap="wrap" gap={2}>
                 <VStack align="start" spacing={0}>
@@ -227,7 +215,7 @@ export default function PipelinesPage() {
                   </Box>
                 </Box>
               </HStack>
-            </Box>
+            </GlassPanel>
           ))}
         </VStack>
       )}

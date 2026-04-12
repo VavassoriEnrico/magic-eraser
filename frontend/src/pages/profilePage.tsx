@@ -1,6 +1,6 @@
 import {
-  Box,
   Button,
+  Box,
   Grid,
   Input,
   SimpleGrid,
@@ -10,6 +10,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 
+import { PageHeader } from "../components/common/PageHeader";
 import type { FieldBlockProps } from "../types/ui";
 
 const favorites = [
@@ -26,9 +27,6 @@ export default function ProfilePage() {
   const inputBg = useColorModeValue("whiteAlpha.900", "whiteAlpha.100");
   const inputBorder = useColorModeValue("gray.300", "whiteAlpha.200");
 
-  const workspaceLabel = "Workspace";
-  const profileTitleLabel = "Profile";
-  const profileDescriptionLabel = "Manage your account info and favorite edits.";
   const logoutLabel = "Logout";
   const usernameLabel = "Username";
   const nameLabel = "Name";
@@ -40,17 +38,12 @@ export default function ProfilePage() {
 
   return (
     <Stack spacing={6} color={textColor}>
-      <Box>
-        <Text color={sectionLabel} fontSize="sm" letterSpacing="0.12em" textTransform="uppercase">
-          {workspaceLabel}
-        </Text>
-        <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em">
-          {profileTitleLabel}
-        </Text>
-        <Text color={mutedColor} mt={1}>
-          {profileDescriptionLabel}
-        </Text>
-      </Box>
+      <PageHeader
+        title="Profile"
+        description="Manage your account info and favorite edits."
+        eyebrowColor={sectionLabel}
+        descriptionColor={mutedColor}
+      />
 
       <Grid templateColumns={{ base: "1fr", lg: "220px 1.2fr 1fr" }} gap={8} alignItems="start">
         <VStack align="stretch" spacing={4}>
