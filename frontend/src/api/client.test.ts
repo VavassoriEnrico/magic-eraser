@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it as test, vi } from "vitest";
 import { request } from "./client";
 
 
@@ -11,7 +11,7 @@ describe("request", () => {
     });
 
     //if response is ok with status 200, return JSON
-    it("return JSON when response is ok with 200", async () => {
+    test("return JSON when response is ok with 200", async () => {
         //this is a fake http fetch response (thats why we use spyOn)
         vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
             new Response(JSON.stringify({ ok: true }), {
@@ -26,7 +26,7 @@ describe("request", () => {
     });
 
     //if response is not ok, throw error with status and statusText
-    it("throw error when response is not ok", async () => {
+    test("throw error when response is not ok", async () => {
         vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
             new Response("Error", {
                 status: 500,
@@ -40,7 +40,7 @@ describe("request", () => {
     });
 
     //if response is ok with status 204, return null
-    it("returns null when response is ok with 204", async () => {
+    test("returns null when response is ok with 204", async () => {
         vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
             new Response(null, { status: 204, })
         );
@@ -51,7 +51,7 @@ describe("request", () => {
 
 
     //if body is JSON, set Content-Type to application/json (row 9 of client.ts)
-    it("sets Content-Type to application/json for JSON bodies", async () => {
+    test("sets Content-Type to application/json for JSON bodies", async () => {
         const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
             new Response(JSON.stringify({ ok: true }), {
                 status: 200,
@@ -77,7 +77,7 @@ describe("request", () => {
 
 
     //if body is FormData, do not set Content-Type (row 9 of client.ts)
-    it("does not force Content-Type for FormData bodies", async () => {
+    test("does not force Content-Type for FormData bodies", async () => {
         const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
             new Response(JSON.stringify({ ok: true }), {
                 status: 200,
