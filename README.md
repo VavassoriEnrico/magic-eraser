@@ -64,6 +64,20 @@ docker compose down
 docker compose down -v
 ```
 
+
+## TESTS
+### frontend
+```bash
+cd frontend
+npm run test
+```
+
+### backend (to implement)
+```bash
+cd backend
+npm run test
+```
+
 ## Notes
 
 - Database data is persisted in the `postgres_data` Docker volume.
