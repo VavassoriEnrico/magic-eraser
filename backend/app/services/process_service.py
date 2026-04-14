@@ -1,17 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.services.delete_from_mask_service import remove_with_mask
+from app.processes.executor import ProcessExecutor
 from app.schemas.process import ProcessRunRequest, ProcessRunResponse
-from app.services.generation_service import generate_from_prompt
 from app.services import laboratory_pipeline_service
-from app.services.segmentation_service import segment_from_prompt
 
-PROCESS_HANDLERS = {
-    "segment_from_prompt": segment_from_prompt,
-    "remove_with_mask": remove_with_mask,
-    "generate_from_prompt": generate_from_prompt,
-}
+process_executor = ProcessExecutor()
 
 
 def _resolve_step_index(payload: ProcessRunRequest) -> int:
@@ -76,15 +70,9 @@ def _log_step_failure(
 
 
 def run_process(db: Session, payload: ProcessRunRequest) -> ProcessRunResponse:
-    process_type = payload.process_type
-    handler = PROCESS_HANDLERS.get(process_type)
-
-    if handler is None:
-        raise HTTPException(status_code=400, detail="unsupported process type")
-
     try:
-        output_image_url = handler(payload)
-        _log_step_success(db, payload, output_image_url)
+        result = process_executor.execute(payload)
+        _log_step_success(db, payload, result.output_image_url)
     except ValueError as exc:
         _log_step_failure(db, payload, str(exc))
         raise HTTPException(status_code=400, detail=str(exc))
@@ -96,6 +84,6 @@ def run_process(db: Session, payload: ProcessRunRequest) -> ProcessRunResponse:
         raise
 
     return ProcessRunResponse(
-        process_type=process_type,
-        output_image_url=output_image_url,
+        process_type=result.process_type,
+        output_image_url=result.output_image_url,
     )
