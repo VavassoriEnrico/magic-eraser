@@ -25,7 +25,6 @@ def list_generation_models():
     return get_generation_model_options()
 
 
-
 #Run a process
 @router.post("/run", response_model=ProcessRunResponse)
 def run_process(payload: ProcessRunRequest, db: Session = Depends(get_db)):
