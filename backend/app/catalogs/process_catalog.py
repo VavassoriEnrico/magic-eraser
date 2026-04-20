@@ -63,7 +63,7 @@ PROCESS_CATALOG: list[ProcessCatalogItem] = [
     ),
     ProcessCatalogItem(
         process_type="generate_from_prompt",
-        title="Generate",
+        title="Fill",
         priority=3,
         prompt_required=True,
         explanation=GenerateFromPromptRequest.model_fields["explanation"].default,

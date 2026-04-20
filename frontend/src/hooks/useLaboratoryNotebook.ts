@@ -24,6 +24,7 @@ import { getErrorMessage } from "../utils/errors";
 import { toImageUrl } from "../utils/images";
 
 const STORAGE_KEY = "laboratory:selected-image";
+const DEFAULT_FILL_PROMPT = "Fill the missing area naturally using the surrounding background.";
 
 const FALLBACK_CATALOG: ProcessCatalogItem[] = [
   {
@@ -41,7 +42,7 @@ const FALLBACK_CATALOG: ProcessCatalogItem[] = [
   },
   {
     process_type: "generate_from_prompt",
-    title: "Generate",
+    title: "Fill",
     priority: 3,
     prompt_required: true,
   },
@@ -74,6 +75,8 @@ function getSelectedImageFromSession(): ImageAsset | null {
 function createCell(def: ProcessCatalogItem): LabCell {
   const modelOptions = def.model_options ?? [];
   const defaultModel = (def.model_options ?? []).find((m) => m.default) ?? def.model_options?.[0];
+  const defaultPrompt =
+    def.process_type === "generate_from_prompt" ? DEFAULT_FILL_PROMPT : "";
 
   return {
     id: `${def.process_type}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -82,8 +85,7 @@ function createCell(def: ProcessCatalogItem): LabCell {
     priority: def.priority,
     promptRequired: def.prompt_required,
     modelOptions,
-    enableCustomPrompt: false,
-    prompt: "",
+    prompt: defaultPrompt,
     modelKey: defaultModel?.key ?? "",
     additionalSettings: getDefaultAdditionalSettings(defaultModel),
     status: "idle",
@@ -92,19 +94,80 @@ function createCell(def: ProcessCatalogItem): LabCell {
   };
 }
 
+function getSegmentationContext(cellIndex: number, sourceCells: LabCell[], selectedImage: ImageAsset | null) {
+  for (let i = cellIndex - 1; i >= 0; i -= 1) {
+    const candidate = sourceCells[i];
+    if (candidate.processType !== "segment_from_prompt") {
+      continue;
+    }
+
+    const maskOutputUrl = candidate.outputUrl.trim();
+    if (!maskOutputUrl) {
+      return null;
+    }
+
+    const inputImageUrl =
+      i === 0
+        ? selectedImage
+          ? toImageUrl(selectedImage.filePath)
+          : ""
+        : toImageUrl(sourceCells[i - 1].outputUrl);
+
+    if (!inputImageUrl) {
+      return null;
+    }
+
+    return {
+      inputImageUrl,
+      maskImageUrl: toImageUrl(maskOutputUrl),
+    };
+  }
+
+  return null;
+}
+
+function getEffectiveInputForCell(
+  cellIndex: number,
+  sourceCells: LabCell[],
+  selectedImage: ImageAsset | null,
+) {
+  if (!selectedImage) {
+    return "";
+  }
+
+  const cell = sourceCells[cellIndex];
+  if (!cell) {
+    return "";
+  }
+
+  if (cell.processType === "generate_from_prompt") {
+    const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
+    return segmentationContext?.inputImageUrl ?? "";
+  }
+
+  if (cellIndex === 0) {
+    return toImageUrl(selectedImage.filePath);
+  }
+
+  return toImageUrl(sourceCells[cellIndex - 1].outputUrl);
+}
+
 function createCellFromStep(def: ProcessCatalogItem, step: PipelineStep): LabCell {
   const baseCell = createCell(def);
   const additionalSettings = step.additional_settings_json ?? {};
+  const prompt =
+    def.process_type === "generate_from_prompt"
+      ? step.prompt?.trim() || DEFAULT_FILL_PROMPT
+      : step.prompt ?? "";
 
   return {
     ...baseCell,
-    prompt: step.prompt ?? "",
+    prompt,
     modelKey: step.model_key ?? baseCell.modelKey,
     additionalSettings: {
       ...baseCell.additionalSettings,
       ...additionalSettings,
     },
-    enableCustomPrompt: Boolean(step.prompt?.trim()),
     status: step.status === "done" ? "done" : "failed",
     outputUrl: step.output_image_url ?? "",
     error: step.error_message ?? "",
@@ -428,9 +491,7 @@ export function useLaboratoryNotebook() {
   }
 
   function getInputForCell(cellIndex: number, sourceCells: LabCell[]) {
-    if (!selectedImage) return "";
-    if (cellIndex === 0) return toImageUrl(selectedImage.filePath);
-    return toImageUrl(sourceCells[cellIndex - 1].outputUrl);
+    return getEffectiveInputForCell(cellIndex, sourceCells, selectedImage);
   }
 
   function resetFromCell(cellIndex: number) {
@@ -458,6 +519,7 @@ export function useLaboratoryNotebook() {
   function buildPayload(
     cellIndex: number,
     cell: LabCell,
+    sourceCells: LabCell[],
     inputImageUrl: string,
     previousOutputUrl: string,
   ): ProcessRunPayload {
@@ -493,11 +555,13 @@ export function useLaboratoryNotebook() {
     }
 
     if (cell.processType === "generate_from_prompt") {
+      const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
       return {
         ...basePayload,
-        prompt: cell.enableCustomPrompt ? cell.prompt : undefined,
+        prompt: cell.prompt,
         model_key: cell.modelKey || undefined,
-        input_image_url: inputImageUrl,
+        input_image_url: segmentationContext?.inputImageUrl || inputImageUrl,
+        mask_image_url: segmentationContext?.maskImageUrl,
       };
     }
 
@@ -528,12 +592,30 @@ export function useLaboratoryNotebook() {
       return null;
     }
 
+    if (cell.processType === "generate_from_prompt") {
+      const segmentationContext = getSegmentationContext(cellIndex, currentCells, selectedImage);
+      if (!segmentationContext?.maskImageUrl) {
+        updateCell(cellIndex, {
+          status: "failed",
+          error: "Generation requires a mask from a previous segmentation cell",
+        });
+        return null;
+      }
+    }
+
+    if (cell.promptRequired && !cell.prompt.trim()) {
+      const message = "Il prompt e' obbligatorio per questo processo.";
+      window.alert(message);
+      updateCell(cellIndex, { status: "failed", error: message });
+      return null;
+    }
+
     updateCell(cellIndex, { status: "running", error: "" });
     setSaveMessage("");
     setSaveError("");
 
     try {
-      const payload = buildPayload(cellIndex, cell, inputImageUrl, previousOutputUrl);
+      const payload = buildPayload(cellIndex, cell, currentCells, inputImageUrl, previousOutputUrl);
       const response = await runProcess(payload);
       updateCell(cellIndex, { status: "done", outputUrl: response.output_image_url, error: "" });
       return response.output_image_url;
@@ -631,6 +713,7 @@ export function useLaboratoryNotebook() {
 
           const inputImageUrl = getInputForCell(i, cells);
           const previousOutputUrl = i > 0 ? cells[i - 1].outputUrl : "";
+          const segmentationContext = getSegmentationContext(i, cells, selectedImage);
 
           await createPipelineStep(pipelineId, {
             step_index: i + 1,
@@ -639,8 +722,16 @@ export function useLaboratoryNotebook() {
             model_key: cell.modelKey || undefined,
             prompt: cell.prompt || undefined,
             additional_settings_json: cell.additionalSettings,
-            input_image_url: inputImageUrl,
-            mask_image_url: cell.processType === "remove_with_mask" ? previousOutputUrl || undefined : undefined,
+            input_image_url:
+              cell.processType === "generate_from_prompt"
+                ? segmentationContext?.inputImageUrl || inputImageUrl
+                : inputImageUrl,
+            mask_image_url:
+              cell.processType === "remove_with_mask"
+                ? previousOutputUrl || undefined
+                : cell.processType === "generate_from_prompt"
+                  ? segmentationContext?.maskImageUrl
+                  : undefined,
             output_image_url: cell.outputUrl || undefined,
             status: cell.status === "done" ? "done" : "failed",
             error_message: cell.error || undefined,

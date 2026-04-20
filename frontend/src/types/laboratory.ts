@@ -8,7 +8,6 @@ export interface LabCell {
   priority: number;
   promptRequired: boolean;
   modelOptions: SegmentModel[];
-  enableCustomPrompt: boolean;
   prompt: string;
   modelKey: string;
   additionalSettings: Record<string, string | number | boolean>;

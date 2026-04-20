@@ -123,21 +123,7 @@ export function LabCellCard({
               />
             ) : null}
           </Box>
-
-          {cell.processType === "generate_from_prompt" ? (
-            <FormControl display="flex" alignItems="center" justifyContent="space-between">
-              <FormLabel mb={0} fontSize="sm">
-                Choose what you like to place in free spot.
-              </FormLabel>
-              <Switch
-                isChecked={cell.enableCustomPrompt}
-                onChange={(event) => onUpdateCell({ enableCustomPrompt: event.target.checked })}
-                isDisabled={cell.status === "running" || runningAll}
-              />
-            </FormControl>
-          ) : null}
-
-          {cell.promptRequired && (cell.processType !== "generate_from_prompt" || cell.enableCustomPrompt) ? (
+          {cell.promptRequired ? (
             <Input
               placeholder="Write prompt..."
               value={cell.prompt}

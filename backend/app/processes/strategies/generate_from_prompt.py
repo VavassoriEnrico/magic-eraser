@@ -5,21 +5,25 @@ from app.processes.base import ProcessStrategy
 from app.providers.ai_provider import get_ai_provider
 from app.schemas.process import GenerateFromPromptRequest
 
-DEFAULT_GENERATION_PROMPT = "Fill the missing area naturally using the surrounding background."
-
 
 class GenerateFromPromptStrategy(ProcessStrategy[GenerateFromPromptRequest]):
     process_type = "generate_from_prompt"
     request_model = GenerateFromPromptRequest
 
     def execute(self, payload: GenerateFromPromptRequest) -> str:
-        prompt = (payload.prompt or "").strip()
+        prompt = payload.prompt.strip()
+        if not prompt:
+            raise HTTPException(status_code=400, detail="prompt is required")
 
         input_image_url = payload.input_image_url.strip()
         if not input_image_url:
             raise HTTPException(status_code=400, detail="input image url is required")
 
-        model_key = (payload.model_key or "flux-2-pro").strip()
+        mask_image_url = payload.mask_image_url.strip()
+        if not mask_image_url:
+            raise HTTPException(status_code=400, detail="mask image url is required")
+
+        model_key = (payload.model_key or "flux-fill-pro").strip()
         definition = GENERATION_MODEL_REGISTRY.get(model_key)
         if definition is None:
             raise HTTPException(status_code=400, detail="unsupported generation model")
@@ -43,5 +47,6 @@ class GenerateFromPromptStrategy(ProcessStrategy[GenerateFromPromptRequest]):
         return provider.generate_from_prompt(
             provider_model_id=provider_model_id,
             input_image_url=input_image_url,
-            prompt=prompt or DEFAULT_GENERATION_PROMPT,
+            mask_image_url=mask_image_url,
+            prompt=prompt,
         )

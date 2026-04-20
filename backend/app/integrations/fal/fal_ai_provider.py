@@ -51,12 +51,15 @@ class FalAIProvider(AIProvider):
         *,
         provider_model_id: str,
         input_image_url: str,
+        mask_image_url: str,
         prompt: str | None = None,
     ) -> str:
         resolved_image_input = resolve_image_input(input_image_url)
+        resolved_mask_input = resolve_image_input(mask_image_url)
         
         request_payload = {
-            "image_urls": [resolved_image_input],
+            "image_url": resolved_image_input,
+            "mask_url": resolved_mask_input,
             "output_format": "png",
         }
         if prompt:
