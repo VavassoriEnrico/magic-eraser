@@ -4,7 +4,7 @@ SEGMENT_MODEL_DEFAULT_ADDITIONAL_SETTINGS = [
         "label": "Apply mask",
         "type": "boolean",
         "description": "Return the image with the segmentation mask already applied.",
-        "default_value": True,
+        "default_value": False,
     },
     {
         "key": "return_multiple_masks",

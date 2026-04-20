@@ -50,15 +50,16 @@ class SegmentFromPromptRequest(BaseProcessRequest):
 
 class GenerateFromPromptRequest(BaseProcessRequest):
     process_type: Literal["generate_from_prompt"]
-    explanation: Literal["Generation is a process that generate a part of an image from a prompt"] = (
-        "Generation is a process that generate a part of an image from a prompt"
+    explanation: Literal["Fill uses the source image and a mask to inpaint the selected area from a prompt"] = (
+        "Fill uses the source image and a mask to inpaint the selected area from a prompt"
     )
     priority_explanation: Literal[
         "Generation process can be executed one or more times, but only at the end of the workflow"
     ] = "Generation process can be executed one or more times, but only at the end of the workflow"
     priority: Literal[3]
-    prompt: str | None = None
+    prompt: str
     input_image_url: str
+    mask_image_url: str
     model_key: str | None = None
 
 

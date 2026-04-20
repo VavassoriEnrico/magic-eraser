@@ -18,6 +18,7 @@ class AIProvider(Protocol):
         *,
         provider_model_id: str,
         input_image_url: str,
+        mask_image_url: str,
         prompt: str | None = None,
     ) -> str:
         ...
