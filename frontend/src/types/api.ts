@@ -109,3 +109,18 @@ export interface PipelineFinishPayload {
   status: string;
   final_image_url?: string;
 }
+
+export interface Profile {
+  id: string;
+  created_at: string;
+  name?: string;
+  surname?: string;
+  username?: string;
+  email?: string;
+}
+
+export interface ProfileUpdatePayload {
+  name?: string;
+  surname?: string;
+  username?: string;
+}
