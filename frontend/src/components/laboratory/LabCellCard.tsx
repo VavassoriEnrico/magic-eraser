@@ -2,11 +2,13 @@ import {
   Badge,
   Box,
   Button,
+  ButtonGroup,
   FormControl,
   FormLabel,
   HStack,
   Input,
   Select,
+  Spinner,
   Stack,
   Switch,
   Text,
@@ -15,7 +17,7 @@ import {
 import { useEffect, useState } from "react";
 import { BiChevronRight } from "react-icons/bi";
 
-import type { LabCell } from "../../types/laboratory";
+import type { ConvexHullPreviewMode, LabCell } from "../../types/laboratory";
 import { getSelectedModelOption, getVisibleAdditionalSettings } from "../../hooks/useLaboratoryNotebook";
 import { toImageUrl } from "../../utils/images";
 
@@ -40,6 +42,8 @@ interface LabCellCardProps {
   onRunCell: () => void;
   onReset: () => void;
   onRemove: () => void;
+  onSetSegmentOutputConvexHull: (enabled: boolean) => void;
+  onSetSegmentOutputConvexHullMode: (mode: ConvexHullPreviewMode) => void;
   onUpdateCell: (patch: Partial<LabCell>) => void;
   onUpdateModel: (modelKey: string) => void;
   onUpdateAdditionalSetting: (settingKey: string, value: string | number | boolean) => void;
@@ -67,17 +71,25 @@ export function LabCellCard({
   onRunCell,
   onReset,
   onRemove,
+  onSetSegmentOutputConvexHull,
+  onSetSegmentOutputConvexHullMode,
   onUpdateCell,
   onUpdateModel,
   onUpdateAdditionalSetting,
   onSaveOutput,
 }: LabCellCardProps) {
   const selectedModel = getSelectedModelOption(cell);
+  const segmentOutputMode = !cell.outputConvexHullEnabled
+    ? "original"
+    : cell.outputConvexHullMode === "rectangle"
+      ? "rectangle"
+      : "simple";
   const settingDefinitions = getVisibleAdditionalSettings(
     selectedModel?.additional_settings ?? [],
     cell.additionalSettings,
-  );
+  ).filter((setting) => !["use_convex_hull_mask", "convex_hull_expand_px"].includes(setting.key));
   const [showMaskOverlay, setShowMaskOverlay] = useState(true);
+  const isWorking = cell.status === "running" || cell.outputPreviewLoading;
 
   useEffect(() => {
     if (cell.processType !== "generate_from_prompt" || !maskOverlayUrl) {
@@ -153,21 +165,23 @@ export function LabCellCard({
             ) : null}
           </Box>
           {maskOverlayUrl && cell.processType === "generate_from_prompt" ? (
-            <FormControl display="flex" alignItems="center" justifyContent="space-between">
-              <Box pr={4}>
-                <FormLabel mb={0} fontSize="sm">
-                  Show mask overlay
-                </FormLabel>
-                <Text color={subtleText} fontSize="xs">
-                  Overlay the white masked area on top of the fill input preview.
-                </Text>
-              </Box>
-              <Switch
-                isChecked={showMaskOverlay}
-                onChange={(event) => setShowMaskOverlay(event.target.checked)}
-                isDisabled={cell.status === "running" || runningAll}
-              />
-            </FormControl>
+            <VStack align="stretch" spacing={3}>
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <Box pr={4}>
+                  <FormLabel mb={0} fontSize="sm">
+                    Show mask overlay
+                  </FormLabel>
+                  <Text color={subtleText} fontSize="xs">
+                    Overlay the white masked area on top of the fill input preview.
+                  </Text>
+                </Box>
+                <Switch
+                  isChecked={showMaskOverlay}
+                  onChange={(event) => setShowMaskOverlay(event.target.checked)}
+                  isDisabled={cell.status === "running" || runningAll}
+                />
+              </FormControl>
+            </VStack>
           ) : null}
           {cell.promptRequired ? (
             <Input
@@ -319,6 +333,22 @@ export function LabCellCard({
                     transform: "scale(1.01)",
                   }}
                 />
+                {isWorking ? (
+                  <VStack
+                    position="absolute"
+                    inset={0}
+                    bg="blackAlpha.700"
+                    justify="center"
+                    align="center"
+                    spacing={3}
+                    zIndex={1}
+                  >
+                    <Spinner size="xl" thickness="4px" color="white" />
+                    <Text color="white" fontSize="sm" fontWeight="medium">
+                      {cell.outputPreviewLoading ? "Building convex hull preview..." : "Processing image..."}
+                    </Text>
+                  </VStack>
+                ) : null}
                 <Box
                   position="absolute"
                   top={3}
@@ -344,9 +374,20 @@ export function LabCellCard({
                 </Box>
               </>
             ) : (
-              <Text color={subtleText} fontSize="sm">
-                {waitingOutputLabel}
-              </Text>
+              <VStack spacing={3}>
+                {isWorking ? (
+                  <>
+                    <Spinner size="xl" thickness="4px" />
+                    <Text color={subtleText} fontSize="sm">
+                      {cell.outputPreviewLoading ? "Building convex hull preview..." : "Processing image..."}
+                    </Text>
+                  </>
+                ) : (
+                  <Text color={subtleText} fontSize="sm">
+                    {waitingOutputLabel}
+                  </Text>
+                )}
+              </VStack>
             )}
           </Box>
 
@@ -360,6 +401,44 @@ export function LabCellCard({
             <Text color="red.400" fontSize="sm">
               {saveError}
             </Text>
+          ) : null}
+
+          {cell.processType === "segment_from_prompt" && cell.originalOutputUrl ? (
+            <VStack align="stretch" spacing={3} pt={2}>
+              <FormControl>
+                <Box pr={4} mb={2}>
+                  <FormLabel mb={0} fontSize="sm">
+                    Output mask mode
+                  </FormLabel>
+                  <Text color={subtleText} fontSize="xs">
+                    Choose the original mask, the light convex hull, or the bounding box.
+                  </Text>
+                </Box>
+                <ButtonGroup isAttached size="sm" variant="outline">
+                  <Button
+                    variant={segmentOutputMode === "original" ? "solid" : "outline"}
+                    onClick={() => onSetSegmentOutputConvexHull(false)}
+                    isDisabled={isWorking || runningAll}
+                  >
+                    Original
+                  </Button>
+                  <Button
+                    variant={segmentOutputMode === "simple" ? "solid" : "outline"}
+                    onClick={() => onSetSegmentOutputConvexHullMode("simple")}
+                    isDisabled={isWorking || runningAll}
+                  >
+                    ConvexHull
+                  </Button>
+                  <Button
+                    variant={segmentOutputMode === "rectangle" ? "solid" : "outline"}
+                    onClick={() => onSetSegmentOutputConvexHullMode("rectangle")}
+                    isDisabled={isWorking || runningAll}
+                  >
+                    Box
+                  </Button>
+                </ButtonGroup>
+              </FormControl>
+            </VStack>
           ) : null}
 
           {cell.error ? (

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { uploadImageFromUrl } from "../api/images";
 import {
+  buildConvexHullPreview,
   createPipelineStep,
   finishPipeline,
   getPipeline,
@@ -19,12 +20,13 @@ import type {
   ProcessRunPayload,
   SegmentModel,
 } from "../types/api";
-import type { LabCell } from "../types/laboratory";
+import type { ConvexHullPreviewMode, LabCell } from "../types/laboratory";
 import { getErrorMessage } from "../utils/errors";
 import { toImageUrl } from "../utils/images";
 
 const STORAGE_KEY = "laboratory:selected-image";
 const DEFAULT_FILL_PROMPT = "Fill the missing area naturally using the surrounding background.";
+const DEFAULT_OUTPUT_CONVEX_HULL_MODE: ConvexHullPreviewMode = "medium";
 
 const FALLBACK_CATALOG: ProcessCatalogItem[] = [
   {
@@ -32,7 +34,13 @@ const FALLBACK_CATALOG: ProcessCatalogItem[] = [
     title: "Segment",
     priority: 1,
     prompt_required: true,
-    model_options: [{ key: "sam3", label: "SAM 3.1", default: true }],
+    model_options: [{
+      key: "sam3",
+      label: "SAM 3.1",
+      default: true,
+      additional_settings: [
+      ],
+    }],
   },
   {
     process_type: "remove_with_mask",
@@ -45,8 +53,7 @@ const FALLBACK_CATALOG: ProcessCatalogItem[] = [
     title: "Fill",
     priority: 3,
     prompt_required: true,
-    model_options: [{ key: "flux-fill-pro", label: "FLUX.1 [pro] Fill", default: true },
-    { key: "flux-lora-fill", label: "FLUX.1 [dev] Fill with LoRAs", default: false }],
+    model_options: [{ key: "flux-fill-pro", label: "FLUX.1 [pro] Fill", default: true }],
   },
 ];
 
@@ -98,6 +105,10 @@ function createCell(def: ProcessCatalogItem): LabCell {
     prompt: defaultPrompt,
     modelKey: defaultModel?.key ?? "",
     additionalSettings: getDefaultAdditionalSettings(defaultModel),
+    originalOutputUrl: "",
+    outputConvexHullEnabled: false,
+    outputConvexHullMode: DEFAULT_OUTPUT_CONVEX_HULL_MODE,
+    outputPreviewLoading: false,
     status: "idle",
     outputUrl: "",
     error: "",
@@ -178,6 +189,10 @@ function createCellFromStep(def: ProcessCatalogItem, step: PipelineStep): LabCel
       ...baseCell.additionalSettings,
       ...additionalSettings,
     },
+    originalOutputUrl: step.output_image_url ?? "",
+    outputConvexHullEnabled: false,
+    outputConvexHullMode: DEFAULT_OUTPUT_CONVEX_HULL_MODE,
+    outputPreviewLoading: false,
     status: step.status === "done" ? "done" : "failed",
     outputUrl: step.output_image_url ?? "",
     error: step.error_message ?? "",
@@ -483,7 +498,15 @@ export function useLaboratoryNotebook() {
 
       for (let i = insertAt; i < next.length; i += 1) {
         if (i === insertAt) continue;
-        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
+        next[i] = {
+          ...next[i],
+          status: "idle",
+          outputUrl: "",
+          originalOutputUrl: "",
+          outputConvexHullEnabled: false,
+          outputPreviewLoading: false,
+          error: "",
+        };
       }
 
       return next;
@@ -555,12 +578,96 @@ export function useLaboratoryNotebook() {
     setCells((prev) => {
       const next = prev.filter((_, index) => index !== cellIndex);
       for (let i = cellIndex; i < next.length; i += 1) {
-        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
+        next[i] = {
+          ...next[i],
+          status: "idle",
+          outputUrl: "",
+          originalOutputUrl: "",
+          outputConvexHullEnabled: false,
+          outputPreviewLoading: false,
+          error: "",
+        };
       }
       return next;
     });
     setSaveMessage("");
     setSaveError("");
+  }
+
+  async function setSegmentOutputConvexHull(
+    cellIndex: number,
+    enabled: boolean,
+    mode?: ConvexHullPreviewMode,
+  ) {
+    const currentCells = [...cells];
+    const cell = currentCells[cellIndex];
+    if (!cell || cell.processType !== "segment_from_prompt") {
+      return;
+    }
+
+    const baseOutputUrl = cell.originalOutputUrl || cell.outputUrl;
+    if (!baseOutputUrl) {
+      return;
+    }
+
+    const nextMode = mode ?? cell.outputConvexHullMode ?? DEFAULT_OUTPUT_CONVEX_HULL_MODE;
+
+    if (!enabled) {
+      updateCell(cellIndex, {
+        outputConvexHullEnabled: false,
+        outputPreviewLoading: false,
+        outputUrl: baseOutputUrl,
+        error: "",
+      });
+      return;
+    }
+
+    updateCell(cellIndex, {
+      outputPreviewLoading: true,
+      error: "",
+      outputConvexHullMode: nextMode,
+    });
+
+    try {
+      const response = await buildConvexHullPreview({
+        mask_image_url: toImageUrl(baseOutputUrl),
+        mode: nextMode,
+      });
+      updateCell(cellIndex, {
+        outputConvexHullEnabled: true,
+        outputConvexHullMode: nextMode,
+        outputPreviewLoading: false,
+        outputUrl: response.output_image_url,
+        error: "",
+      });
+    } catch {
+      updateCell(cellIndex, {
+        outputConvexHullEnabled: false,
+        outputPreviewLoading: false,
+        outputUrl: baseOutputUrl,
+        error: "Unable to build convex hull preview from the current mask",
+      });
+    }
+  }
+
+  async function setSegmentOutputConvexHullMode(cellIndex: number, mode: ConvexHullPreviewMode) {
+    setCells((prev) => {
+      const next = [...prev];
+      const cell = next[cellIndex];
+      if (!cell) return prev;
+      next[cellIndex] = {
+        ...cell,
+        outputConvexHullMode: mode,
+      };
+      return next;
+    });
+
+    const currentCell = cells[cellIndex];
+    if (!currentCell) {
+      return;
+    }
+
+    await setSegmentOutputConvexHull(cellIndex, true, mode);
   }
 
   function buildPayload(
@@ -665,7 +772,15 @@ export function useLaboratoryNotebook() {
     try {
       const payload = buildPayload(cellIndex, cell, currentCells, inputImageUrl, previousOutputUrl);
       const response = await runProcess(payload);
-      updateCell(cellIndex, { status: "done", outputUrl: response.output_image_url, error: "" });
+      updateCell(cellIndex, {
+        status: "done",
+        outputUrl: response.output_image_url,
+        originalOutputUrl: response.output_image_url,
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: DEFAULT_OUTPUT_CONVEX_HULL_MODE,
+        outputPreviewLoading: false,
+        error: "",
+      });
       return response.output_image_url;
     } catch (error) {
       updateCell(cellIndex, {
@@ -877,5 +992,7 @@ export function useLaboratoryNotebook() {
     runAllCells,
     savePipelineName,
     saveCellOutputToProject,
+    setSegmentOutputConvexHull,
+    setSegmentOutputConvexHullMode,
   };
 }

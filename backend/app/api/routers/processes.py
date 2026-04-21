@@ -7,7 +7,14 @@ from app.catalogs.process_catalog import (
     get_segment_model_options,
 )
 from app.dependencies import get_db
-from app.schemas.process import ProcessCatalogItem, ProcessModelOption, ProcessRunRequest, ProcessRunResponse
+from app.schemas.process import (
+    ConvexHullMaskRequest,
+    ConvexHullMaskResponse,
+    ProcessCatalogItem,
+    ProcessModelOption,
+    ProcessRunRequest,
+    ProcessRunResponse,
+)
 from app.services import process_service
 
 #API endpoints for the process entity
@@ -33,3 +40,11 @@ def list_generation_models():
 @router.post("/run", response_model=ProcessRunResponse)
 def run_process(payload: ProcessRunRequest, db: Session = Depends(get_db)):
     return process_service.run_process(db, payload)
+
+
+@router.post("/convex-hull-preview", response_model=ConvexHullMaskResponse)
+def build_convex_hull_preview(payload: ConvexHullMaskRequest):
+    return process_service.build_convex_hull_preview(
+        mask_image_url=payload.mask_image_url,
+        mode=payload.mode,
+    )

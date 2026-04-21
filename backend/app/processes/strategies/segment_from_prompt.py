@@ -23,15 +23,17 @@ class SegmentFromPromptStrategy(ProcessStrategy[SegmentFromPromptRequest]):
         if definition is None:
             raise HTTPException(status_code=400, detail="unsupported segmentation model")
 
+        resolved_additional_settings = validate_additional_settings(
+            definition.additional_settings,
+            payload.additional_settings,
+        )
+
         adapter = definition.adapter
         return adapter.run(
             SegmentModelRequest(
-            input_image_url=input_image_url,
-            prompt=prompt,
-            project_id=payload.project_id,
-            additional_settings=validate_additional_settings(
-                definition.additional_settings,
-                payload.additional_settings,
+                input_image_url=input_image_url,
+                prompt=prompt,
+                project_id=payload.project_id,
+                additional_settings=resolved_additional_settings,
             ),
-            )
         )

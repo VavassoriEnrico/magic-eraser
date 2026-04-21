@@ -8,7 +8,6 @@ from app.models_registry.fal_adapters import (
     FalFluxFillAdapter,
     FalMoondreamSegmentationAdapter,
     FalSamSegmentationAdapter,
-    FalFluxLoraFillAdapter,
     FalBriaGenFillAdapter,
 )
 from app.models_registry.fal_gateway import FalModelGateway
@@ -133,15 +132,6 @@ GENERATION_MODELS: dict[str, ProcessModelDefinition] = {
         default=True,
     ),
 
-
-    "flux-lora-fill": ProcessModelDefinition(
-    key="flux-lora-fill",
-    label="FLUX.1 [dev] Fill with LoRAs",
-    process_type="generate_from_prompt",
-    provider="fal",
-    provider_model_id="fal-ai/flux-lora-fill",
-    adapter=FalFluxLoraFillAdapter(fal_gateway, "fal-ai/flux-lora-fill"),
-),
 
 
 

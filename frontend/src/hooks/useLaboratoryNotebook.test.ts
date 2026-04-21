@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it as test, vi } from "vitest"
 
 import { uploadImageFromUrl } from "../api/images";
 import {
+  buildConvexHullPreview,
   createPipelineStep,
   finishPipeline,
   getPipeline,
@@ -20,6 +21,7 @@ vi.mock("../api/images", () => ({
 }));
 
 vi.mock("../api/processes", () => ({
+  buildConvexHullPreview: vi.fn(),
   createPipelineStep: vi.fn(),
   finishPipeline: vi.fn(),
   getPipeline: vi.fn(),
@@ -113,6 +115,10 @@ describe("useLaboratoryNotebook helpers", () => {
         prompt: "object",
         modelKey: "sam3",
         additionalSettings: {},
+        originalOutputUrl: "/uploads/mask.png",
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: "medium",
+        outputPreviewLoading: false,
         status: "done",
         outputUrl: "/uploads/mask.png",
         error: "",
@@ -127,6 +133,28 @@ describe("useLaboratoryNotebook helpers", () => {
         prompt: "fill it",
         modelKey: "flux-fill-pro",
         additionalSettings: {},
+        originalOutputUrl: "/uploads/mask.png",
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: "medium",
+        outputPreviewLoading: false,
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        error: "",
+      },
+      {
+        id: "fill-1",
+        processType: "generate_from_prompt",
+        title: "Fill",
+        priority: 3,
+        promptRequired: true,
+        modelOptions: [],
+        prompt: "fill it",
+        modelKey: "flux-fill-pro",
+        additionalSettings: {},
+        originalOutputUrl: "",
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: "medium",
+        outputPreviewLoading: false,
         status: "idle",
         outputUrl: "",
         error: "",
@@ -162,6 +190,7 @@ describe("useLaboratoryNotebook", () => {
       process_type: "segment_from_prompt",
       output_image_url: "/uploads/output-mask.png",
     });
+    vi.mocked(buildConvexHullPreview).mockResolvedValue({ output_image_url: "data:image/png;base64,convex" });
     vi.mocked(uploadImageFromUrl).mockResolvedValue({} as never);
   });
 
@@ -183,8 +212,126 @@ describe("useLaboratoryNotebook", () => {
       prompt: "",
       modelKey: "sam3",
       additionalSettings: { refine: true, passes: 2 },
+      originalOutputUrl: "",
+      outputConvexHullEnabled: false,
+      outputConvexHullMode: "medium",
+      outputPreviewLoading: false,
     });
     expect(result.current.notebookExplanationList).toContain("Create a mask");
+  });
+
+  test("stores the original segmentation output when a cell completes", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        prompt: "Select the object",
+        additionalSettings: { refine: true, passes: 2 },
+      });
+    });
+
+    vi.mocked(runProcess).mockResolvedValueOnce({
+      process_type: "segment_from_prompt",
+      output_image_url: "/uploads/mask.png",
+    });
+
+    await act(async () => {
+      await result.current.runCell(0);
+    });
+
+    expect(runProcess).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        process_type: "segment_from_prompt",
+        input_image_url: "http://127.0.0.1:8000/uploads/source.png",
+        additional_settings: { refine: true, passes: 2 },
+      }),
+    );
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "/uploads/mask.png",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: false,
+      outputConvexHullMode: "medium",
+      outputPreviewLoading: false,
+    });
+  });
+
+  test("can switch a segmentation output to a convex hull variant", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    await act(async () => {
+      await result.current.setSegmentOutputConvexHull(0, true);
+    });
+
+    expect(buildConvexHullPreview).toHaveBeenCalledWith({
+      mask_image_url: "http://127.0.0.1:8000/uploads/mask.png",
+      mode: "medium",
+    });
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "data:image/png;base64,convex",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: true,
+      outputConvexHullMode: "medium",
+      outputPreviewLoading: false,
+    });
+
+    await act(async () => {
+      await result.current.setSegmentOutputConvexHull(0, false);
+    });
+
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "/uploads/mask.png",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: false,
+      outputPreviewLoading: false,
+    });
+  });
+
+  test("can activate a segmentation preview directly by choosing a hull mode", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    await act(async () => {
+      await result.current.setSegmentOutputConvexHullMode(0, "simple");
+    });
+
+    expect(buildConvexHullPreview).toHaveBeenCalledWith({
+      mask_image_url: "http://127.0.0.1:8000/uploads/mask.png",
+      mode: "simple",
+    });
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "data:image/png;base64,convex",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: true,
+      outputConvexHullMode: "simple",
+      outputPreviewLoading: false,
+    });
   });
 
   test("fails a required prompt cell when the prompt is empty", async () => {

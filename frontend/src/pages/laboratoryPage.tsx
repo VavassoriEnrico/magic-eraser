@@ -45,6 +45,8 @@ export default function LaboratoryPage() {
     runAllCells,
     savePipelineName,
     saveCellOutputToProject,
+    setSegmentOutputConvexHull,
+    setSegmentOutputConvexHullMode,
   } = useLaboratoryNotebook();
 
   return (
@@ -122,6 +124,10 @@ export default function LaboratoryPage() {
                     onRunCell={() => void runCell(index)}
                     onReset={() => resetFromCell(index)}
                     onRemove={() => removeCell(index)}
+                    onSetSegmentOutputConvexHull={(enabled) => void setSegmentOutputConvexHull(index, enabled)}
+                    onSetSegmentOutputConvexHullMode={(mode) =>
+                      void setSegmentOutputConvexHullMode(index, mode)
+                    }
                     onUpdateCell={(patch) => updateCell(index, patch)}
                     onUpdateModel={(modelKey) => updateModelForCell(index, modelKey)}
                     onUpdateAdditionalSetting={(settingKey, value) =>

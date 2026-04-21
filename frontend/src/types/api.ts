@@ -32,6 +32,15 @@ export interface ProcessRunResponse {
   output_image_url: string;
 }
 
+export interface ConvexHullPreviewPayload {
+  mask_image_url: string;
+  mode: "simple" | "medium" | "rectangle";
+}
+
+export interface ConvexHullPreviewResponse {
+  output_image_url: string;
+}
+
 export interface AdditionalSettingOption {
   value: string;
   label: string;
