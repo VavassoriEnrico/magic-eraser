@@ -45,6 +45,8 @@ const FALLBACK_CATALOG: ProcessCatalogItem[] = [
     title: "Fill",
     priority: 3,
     prompt_required: true,
+    model_options: [{ key: "flux-fill-pro", label: "FLUX.1 [pro] Fill", default: true },
+    { key: "flux-lora-fill", label: "FLUX.1 [dev] Fill with LoRAs", default: false }],
   },
 ];
 
@@ -53,13 +55,21 @@ function getDefaultAdditionalSettings(
 ): Record<string, string | number | boolean> {
   return (modelOption?.additional_settings ?? []).reduce<Record<string, string | number | boolean>>(
     (acc, setting) => {
-      if (setting.default_value !== undefined) {
+      if (setting.default_value !== undefined && setting.default_value !== null) {
         acc[setting.key] = setting.default_value;
       }
       return acc;
     },
     {},
   );
+}
+
+function sanitizeAdditionalSettings(
+  settings: Record<string, string | number | boolean | null | undefined>,
+): Record<string, string | number | boolean> {
+  return Object.fromEntries(
+    Object.entries(settings).filter(([, value]) => value !== "" && value !== null && value !== undefined),
+  ) as Record<string, string | number | boolean>;
 }
 
 function getSelectedImageFromSession(): ImageAsset | null {
@@ -200,6 +210,20 @@ function syncCellWithDefinition(cell: LabCell, def: ProcessCatalogItem): LabCell
 
 export function getSelectedModelOption(cell: LabCell) {
   return cell.modelOptions.find((model) => model.key === cell.modelKey);
+}
+
+export function getMaskOverlayForCell(
+  cellIndex: number,
+  sourceCells: LabCell[],
+  selectedImage: ImageAsset | null,
+) {
+  const cell = sourceCells[cellIndex];
+  if (!cell || cell.processType !== "generate_from_prompt") {
+    return "";
+  }
+
+  const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
+  return segmentationContext?.maskImageUrl ?? "";
 }
 
 export function getVisibleAdditionalSettings(
@@ -363,7 +387,7 @@ export function useLaboratoryNotebook() {
               modelOption.key !== cell.modelOptions[index]?.key ||
               modelOption.label !== cell.modelOptions[index]?.label ||
               JSON.stringify(modelOption.additional_settings ?? []) !==
-                JSON.stringify(cell.modelOptions[index]?.additional_settings ?? []),
+              JSON.stringify(cell.modelOptions[index]?.additional_settings ?? []),
           ) ||
           JSON.stringify(syncedCell.additionalSettings) !== JSON.stringify(cell.additionalSettings)
         ) {
@@ -418,9 +442,28 @@ export function useLaboratoryNotebook() {
 
     const anchorKey = getAddAnchorKey(afterIndex);
     const selected = addProcessTypeByAnchor[anchorKey];
-    return available.some((processItem) => processItem.process_type === selected)
-      ? selected
-      : available[0].process_type;
+    if (available.some((processItem) => processItem.process_type === selected)) {
+      return selected;
+    }
+
+    const previousProcessType = afterIndex >= 0 ? cells[afterIndex]?.processType : undefined;
+    if (previousProcessType === "segment_from_prompt") {
+      const preferredFill = available.find((processItem) => processItem.process_type === "generate_from_prompt");
+      if (preferredFill) {
+        return preferredFill.process_type;
+      }
+    }
+
+    return available[0].process_type;
+  }
+
+  function canAddProcessAfter(afterIndex: number, sourceCells: LabCell[] = cells) {
+    if (afterIndex < 0) {
+      return Boolean(selectedImage);
+    }
+
+    const previousCell = sourceCells[afterIndex];
+    return previousCell?.status === "done";
   }
 
   function setSelectedProcessTypeFor(afterIndex: number, processType: string) {
@@ -494,6 +537,10 @@ export function useLaboratoryNotebook() {
     return getEffectiveInputForCell(cellIndex, sourceCells, selectedImage);
   }
 
+  function getMaskOverlayUrlForCell(cellIndex: number, sourceCells: LabCell[]) {
+    return getMaskOverlayForCell(cellIndex, sourceCells, selectedImage);
+  }
+
   function resetFromCell(cellIndex: number) {
     setCells((prev) => prev.slice(0, cellIndex + 1));
     setSaveMessage("");
@@ -533,9 +580,7 @@ export function useLaboratoryNotebook() {
     };
 
     if (cell.processType === "segment_from_prompt") {
-      const additionalSettings = Object.fromEntries(
-        Object.entries(cell.additionalSettings).filter(([, value]) => value !== ""),
-      );
+      const additionalSettings = sanitizeAdditionalSettings(cell.additionalSettings);
 
       return {
         ...basePayload,
@@ -555,11 +600,14 @@ export function useLaboratoryNotebook() {
     }
 
     if (cell.processType === "generate_from_prompt") {
+      const additionalSettings = sanitizeAdditionalSettings(cell.additionalSettings);
+
       const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
       return {
         ...basePayload,
         prompt: cell.prompt,
         model_key: cell.modelKey || undefined,
+        additional_settings: Object.keys(additionalSettings).length > 0 ? additionalSettings : undefined,
         input_image_url: segmentationContext?.inputImageUrl || inputImageUrl,
         mask_image_url: segmentationContext?.maskImageUrl,
       };
@@ -604,7 +652,7 @@ export function useLaboratoryNotebook() {
     }
 
     if (cell.promptRequired && !cell.prompt.trim()) {
-      const message = "Il prompt e' obbligatorio per questo processo.";
+      const message = "Prompt is required for this process.";
       window.alert(message);
       updateCell(cellIndex, { status: "failed", error: message });
       return null;
@@ -721,7 +769,7 @@ export function useLaboratoryNotebook() {
             priority: cell.priority,
             model_key: cell.modelKey || undefined,
             prompt: cell.prompt || undefined,
-            additional_settings_json: cell.additionalSettings,
+            additional_settings_json: sanitizeAdditionalSettings(cell.additionalSettings),
             input_image_url:
               cell.processType === "generate_from_prompt"
                 ? segmentationContext?.inputImageUrl || inputImageUrl
@@ -747,9 +795,9 @@ export function useLaboratoryNotebook() {
       setSelectedImage((prev) =>
         prev
           ? {
-              ...prev,
-              fileName: updated.name?.trim() || prev.fileName,
-            }
+            ...prev,
+            fileName: updated.name?.trim() || prev.fileName,
+          }
           : prev,
       );
       setSaveError("");
@@ -815,12 +863,14 @@ export function useLaboratoryNotebook() {
     notebookExplanationList,
     getAvailableProcessesAfter,
     getSelectedProcessTypeFor,
+    canAddProcessAfter,
     setSelectedProcessTypeFor,
     addCell,
     updateCell,
     updateModelForCell,
     updateAdditionalSetting,
     getInputForCell,
+    getMaskOverlayUrlForCell,
     resetFromCell,
     removeCell,
     runCell,

@@ -40,7 +40,7 @@ export interface AdditionalSettingOption {
 export interface AdditionalSettingDefinition {
   key: string;
   label: string;
-  type: "boolean" | "select" | "integer";
+  type: "boolean" | "select" | "integer" | "number" | "text";
   description?: string;
   depends_on_key?: string;
   depends_on_value?: string | number | boolean;

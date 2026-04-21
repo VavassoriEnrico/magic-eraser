@@ -12,6 +12,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { BiChevronRight } from "react-icons/bi";
 
 import type { LabCell } from "../../types/laboratory";
@@ -23,6 +24,7 @@ interface LabCellCardProps {
   index: number;
   cellsLength: number;
   inputUrl: string;
+  maskOverlayUrl?: string;
   panelBorder: string;
   outputBg: string;
   subtleText: string;
@@ -49,6 +51,7 @@ export function LabCellCard({
   index,
   cellsLength,
   inputUrl,
+  maskOverlayUrl,
   panelBorder,
   outputBg,
   subtleText,
@@ -74,6 +77,16 @@ export function LabCellCard({
     selectedModel?.additional_settings ?? [],
     cell.additionalSettings,
   );
+  const [showMaskOverlay, setShowMaskOverlay] = useState(true);
+
+  useEffect(() => {
+    if (cell.processType !== "generate_from_prompt" || !maskOverlayUrl) {
+      setShowMaskOverlay(false);
+      return;
+    }
+
+    setShowMaskOverlay(true);
+  }, [cell.processType, maskOverlayUrl]);
 
   return (
     <Box p={4} borderRadius="lg" border="1px solid" borderColor={panelBorder}>
@@ -106,6 +119,7 @@ export function LabCellCard({
       <Stack direction={{ base: "column", xl: "row" }} spacing={4}>
         <VStack align="stretch" flex={1} spacing={3}>
           <Box
+            position="relative"
             borderRadius="md"
             overflow="hidden"
             border="1px solid"
@@ -122,7 +136,39 @@ export function LabCellCard({
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
             ) : null}
+            {inputUrl && maskOverlayUrl && cell.processType === "generate_from_prompt" && showMaskOverlay ? (
+              <Box
+                as="img"
+                src={maskOverlayUrl}
+                alt={`Cell ${index + 1} mask overlay`}
+                position="absolute"
+                inset={0}
+                w="100%"
+                h="100%"
+                objectFit="contain"
+                opacity={0.92}
+                pointerEvents="none"
+                mixBlendMode="screen"
+              />
+            ) : null}
           </Box>
+          {maskOverlayUrl && cell.processType === "generate_from_prompt" ? (
+            <FormControl display="flex" alignItems="center" justifyContent="space-between">
+              <Box pr={4}>
+                <FormLabel mb={0} fontSize="sm">
+                  Show mask overlay
+                </FormLabel>
+                <Text color={subtleText} fontSize="xs">
+                  Overlay the white masked area on top of the fill input preview.
+                </Text>
+              </Box>
+              <Switch
+                isChecked={showMaskOverlay}
+                onChange={(event) => setShowMaskOverlay(event.target.checked)}
+                isDisabled={cell.status === "running" || runningAll}
+              />
+            </FormControl>
+          ) : null}
           {cell.promptRequired ? (
             <Input
               placeholder="Write prompt..."
@@ -188,6 +234,24 @@ export function LabCellCard({
                           </option>
                         ))}
                       </Select>
+                      {setting.description ? (
+                        <Text color={subtleText} fontSize="xs" mt={1}>
+                          {setting.description}
+                        </Text>
+                      ) : null}
+                    </FormControl>
+                  );
+                }
+
+                if (setting.type === "text") {
+                  return (
+                    <FormControl key={setting.key}>
+                      <FormLabel fontSize="sm">{setting.label}</FormLabel>
+                      <Input
+                        value={String(currentValue ?? "")}
+                        onChange={(event) => onUpdateAdditionalSetting(setting.key, event.target.value)}
+                        isDisabled={cell.status === "running" || runningAll}
+                      />
                       {setting.description ? (
                         <Text color={subtleText} fontSize="xs" mt={1}>
                           {setting.description}

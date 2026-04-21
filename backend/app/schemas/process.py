@@ -11,15 +11,15 @@ class AdditionalSettingChoice(BaseModel):
 class AdditionalSettingDefinition(BaseModel):
     key: str
     label: str
-    type: Literal["boolean", "select", "integer"]
+    type: Literal["boolean", "select", "integer", "number", "text"]
     description: str | None = None
     depends_on_key: str | None = None
     depends_on_value: bool | int | float | str | None = None
     default_value: bool | int | float | str | None = None
     options: list[AdditionalSettingChoice] = []
-    min_value: int | None = None
-    max_value: int | None = None
-    step: int | None = None
+    min_value: int | float | None = None
+    max_value: int | float | None = None
+    step: int | float | None = None
 
 
 class BaseProcessRequest(BaseModel):
@@ -61,6 +61,7 @@ class GenerateFromPromptRequest(BaseProcessRequest):
     input_image_url: str
     mask_image_url: str
     model_key: str | None = None
+    additional_settings: dict[str, bool | int | float | str] = Field(default_factory=dict)
 
 
 class RemoveWithMaskRequest(BaseProcessRequest):

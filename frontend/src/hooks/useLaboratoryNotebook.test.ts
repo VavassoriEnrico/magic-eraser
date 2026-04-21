@@ -13,7 +13,7 @@ import {
   startPipeline,
 } from "../api/processes";
 import type { ImageAsset, ProcessCatalogItem } from "../types/api";
-import { getSelectedModelOption, getVisibleAdditionalSettings, useLaboratoryNotebook } from "./useLaboratoryNotebook";
+import { getMaskOverlayForCell, getSelectedModelOption, getVisibleAdditionalSettings, useLaboratoryNotebook } from "./useLaboratoryNotebook";
 
 vi.mock("../api/images", () => ({
   uploadImageFromUrl: vi.fn(),
@@ -100,6 +100,41 @@ describe("useLaboratoryNotebook helpers", () => {
 
     expect(visible.map((setting) => setting.key)).toEqual(["refine", "passes"]);
   });
+
+  test("returns the segmentation mask overlay for a fill cell", () => {
+    const cells = [
+      {
+        id: "segment-1",
+        processType: "segment_from_prompt",
+        title: "Segment",
+        priority: 1,
+        promptRequired: true,
+        modelOptions: [],
+        prompt: "object",
+        modelKey: "sam3",
+        additionalSettings: {},
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        error: "",
+      },
+      {
+        id: "fill-1",
+        processType: "generate_from_prompt",
+        title: "Fill",
+        priority: 3,
+        promptRequired: true,
+        modelOptions: [],
+        prompt: "fill it",
+        modelKey: "flux-fill-pro",
+        additionalSettings: {},
+        status: "idle",
+        outputUrl: "",
+        error: "",
+      },
+    ];
+
+    expect(getMaskOverlayForCell(1, cells as never, selectedImage)).toBe("http://127.0.0.1:8000/uploads/mask.png");
+  });
 });
 
 describe("useLaboratoryNotebook", () => {
@@ -163,10 +198,10 @@ describe("useLaboratoryNotebook", () => {
       await result.current.runCell(0);
     });
 
-    expect(window.alert).toHaveBeenCalledWith("Il prompt e' obbligatorio per questo processo.");
+    expect(window.alert).toHaveBeenCalledWith("Prompt is required for this process.");
     expect(result.current.cells[0]).toMatchObject({
       status: "failed",
-      error: "Il prompt e' obbligatorio per questo processo.",
+      error: "Prompt is required for this process.",
     });
     expect(runProcess).not.toHaveBeenCalled();
   });

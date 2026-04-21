@@ -1,8 +1,7 @@
 from fastapi import HTTPException
 
-from app.catalogs.generation_models import GENERATION_MODEL_REGISTRY
+from app.models_registry import GENERATION_MODELS, GenerationModelRequest, validate_additional_settings
 from app.processes.base import ProcessStrategy
-from app.providers.ai_provider import get_ai_provider
 from app.schemas.process import GenerateFromPromptRequest
 
 
@@ -24,29 +23,20 @@ class GenerateFromPromptStrategy(ProcessStrategy[GenerateFromPromptRequest]):
             raise HTTPException(status_code=400, detail="mask image url is required")
 
         model_key = (payload.model_key or "flux-fill-pro").strip()
-        definition = GENERATION_MODEL_REGISTRY.get(model_key)
+        definition = GENERATION_MODELS.get(model_key)
         if definition is None:
             raise HTTPException(status_code=400, detail="unsupported generation model")
 
-        provider_model_id = str(definition.get("provider_model_id", "")).strip()
-        if not provider_model_id:
-            raise HTTPException(
-                status_code=500,
-                detail=f'provider_model_id is not configured for model "{model_key}"',
+        adapter = definition.adapter
+        return adapter.run(
+            GenerationModelRequest(
+                input_image_url=input_image_url,
+                mask_image_url=mask_image_url,
+                prompt=prompt,
+                project_id=payload.project_id,
+                additional_settings=validate_additional_settings(
+                    definition.additional_settings,
+                    payload.additional_settings,
+                ),
             )
-
-        provider_key = str(definition.get("provider", "")).strip()
-        if not provider_key:
-            raise HTTPException(
-                status_code=500,
-                detail=f'provider is not configured for model "{model_key}"',
-            )
-
-        provider = get_ai_provider(provider_key)
-
-        return provider.generate_from_prompt(
-            provider_model_id=provider_model_id,
-            input_image_url=input_image_url,
-            mask_image_url=mask_image_url,
-            prompt=prompt,
         )

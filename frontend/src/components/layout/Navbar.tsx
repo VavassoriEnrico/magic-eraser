@@ -2,6 +2,8 @@ import type { MouseEvent } from "react";
 
 import { IconButton, useColorMode } from "@chakra-ui/react";
 import { BiSolidMoon, BiSolidSun } from "react-icons/bi";
+import logoBlack from "../../assets/me_logo_black.png";
+import logoWhite from "../../assets/me_logo_white.png";
 import type { AppPath } from "../../types/ui";
 
 interface NavbarProps {
@@ -13,6 +15,7 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
   const { colorMode, toggleColorMode } = useColorMode();
 
   const titleLabel = "Magic Eraser";
+  const logoSource = colorMode === "dark" ? logoWhite : logoBlack;
   const homeLabel = "Home";
   const pipelinesLabel = "Pipelines";
   const profileLabel = "Profile";
@@ -24,9 +27,9 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
           href="/"
           className="app-navbar__brand"
           onClick={(event) => onLinkClick(event, "/", onNavigate)}
+          aria-label={titleLabel}
         >
-          <span className="app-navbar__logo">◈</span>
-          <span>{titleLabel}</span>
+          <img className="app-navbar__logo-image" src={logoSource} alt={titleLabel} />
         </a>
 
         <nav className="app-navbar__nav" aria-label="Main navigation">
