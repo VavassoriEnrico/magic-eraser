@@ -2,7 +2,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.exc import NoSuchTableError
 
 from app.db.session import Base, engine
-from app.models import image, laboratory_pipeline, laboratory_pipeline_step, project  # noqa: F401
+from app.models import image, laboratory_pipeline, laboratory_pipeline_step, profile, project  # noqa: F401
 
 
 # databse initialization
@@ -27,5 +27,4 @@ def init_db() -> None:
 #        connection.execute(
 #            text("UPDATE projects SET updated_at = created_at WHERE updated_at IS NULL")
 #        )
-
 

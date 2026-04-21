@@ -1,9 +1,9 @@
+import { useEffect, useState } from "react";
 import {
   Button,
   Box,
   Grid,
   Input,
-  SimpleGrid,
   Stack,
   Text,
   VStack,
@@ -11,13 +11,14 @@ import {
 } from "@chakra-ui/react";
 
 import { PageHeader } from "../components/common/PageHeader";
-import type { FieldBlockProps } from "../types/ui";
+import { supabase } from "../lib/supabase";
+import { getErrorMessage } from "../utils/errors";
 
-const favorites = [
-  { id: 1, bg: "linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%)" },
-  { id: 2, bg: "linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)" },
-  { id: 3, bg: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)" },
-];
+async function onLogout() {
+  await supabase.auth.signOut();
+  window.history.pushState({}, "", "/login");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
 
 export default function ProfilePage() {
   const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
@@ -27,25 +28,133 @@ export default function ProfilePage() {
   const inputBg = useColorModeValue("whiteAlpha.900", "whiteAlpha.100");
   const inputBorder = useColorModeValue("gray.300", "whiteAlpha.200");
 
-  const logoutLabel = "Logout";
-  const usernameLabel = "Username";
-  const nameLabel = "Name";
-  const surnameLabel = "Surname";
-  const emailAddressLabel = "Email address";
-  const passwordLabel = "Password";
-  const favoriteImagesLabel = "Favorite images";
-  const favoriteImagesDescriptionLabel = "Your favorite edits will show up here.";
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProfile() {
+      setLoading(true);
+      setError("");
+      setMessage("");
+
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          throw authError;
+        }
+        if (!authData.user) {
+          throw new Error("User not authenticated");
+        }
+
+        const user = authData.user;
+        const fallbackEmail = user.email ?? "";
+        setEmail(fallbackEmail);
+
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .upsert(
+            {
+              id: user.id,
+              email: fallbackEmail || null,
+            },
+            { onConflict: "id" },
+          )
+          .select("name, surname, username, email")
+          .single();
+
+        if (profileError) {
+          throw profileError;
+        }
+
+        if (cancelled) return;
+        setUsername(profile.username ?? "");
+        setName(profile.name ?? "");
+        setSurname(profile.surname ?? "");
+        setEmail(profile.email ?? fallbackEmail);
+      } catch (caughtError) {
+        if (cancelled) return;
+        setError(getErrorMessage(caughtError));
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function onSaveProfile() {
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        throw authError;
+      }
+      if (!authData.user) {
+        throw new Error("User not authenticated");
+      }
+
+      const user = authData.user;
+      const normalizedName = name.trim() || null;
+      const normalizedSurname = surname.trim() || null;
+      const normalizedUsername = username.trim() || null;
+
+      const { data: updated, error: profileError } = await supabase
+        .from("profiles")
+        .upsert(
+          {
+            id: user.id,
+            email: user.email ?? email ?? null,
+            name: normalizedName,
+            surname: normalizedSurname,
+            username: normalizedUsername,
+          },
+          { onConflict: "id" },
+        )
+        .select("name, surname, username, email")
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      setUsername(updated.username ?? "");
+      setName(updated.name ?? "");
+      setSurname(updated.surname ?? "");
+      setEmail(updated.email ?? user.email ?? "");
+      setMessage("Profile saved");
+    } catch (caughtError) {
+      setError(getErrorMessage(caughtError));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <Stack spacing={6} color={textColor}>
       <PageHeader
         title="Profile"
-        description="Manage your account info and favorite edits."
+        description="Manage your account info."
         eyebrowColor={sectionLabel}
         descriptionColor={mutedColor}
       />
 
-      <Grid templateColumns={{ base: "1fr", lg: "220px 1.2fr 1fr" }} gap={8} alignItems="start">
+      <Grid templateColumns={{ base: "1fr", lg: "220px 1fr" }} gap={8} alignItems="start">
         <VStack align="stretch" spacing={4}>
           <Box
             h="210px"
@@ -85,67 +194,104 @@ export default function ProfilePage() {
             />
           </Box>
 
-          <Button alignSelf="start" bg="#B00000" color="white" _hover={{ bg: "#8f0000" }} px={6}>
-            {logoutLabel}
+          <Button
+            alignSelf="start"
+            bg="#B00000"
+            color="white"
+            _hover={{ bg: "#8f0000" }}
+            px={6}
+            onClick={() => void onLogout()}
+          >
+            Logout
           </Button>
         </VStack>
 
         <VStack align="stretch" spacing={3}>
-          <FieldBlock label={usernameLabel} textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
+          <FieldBlock
+            label="Username"
+            value={username}
+            onChange={setUsername}
+            textColor={textColor}
+            inputBg={inputBg}
+            inputBorder={inputBorder}
+            disabled={loading || saving}
+          />
 
           <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
-            <FieldBlock label={nameLabel} textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
-            <FieldBlock label={surnameLabel} textColor={textColor} inputBg={inputBg} inputBorder={inputBorder} />
+            <FieldBlock
+              label="Name"
+              value={name}
+              onChange={setName}
+              textColor={textColor}
+              inputBg={inputBg}
+              inputBorder={inputBorder}
+              disabled={loading || saving}
+            />
+            <FieldBlock
+              label="Surname"
+              value={surname}
+              onChange={setSurname}
+              textColor={textColor}
+              inputBg={inputBg}
+              inputBorder={inputBorder}
+              disabled={loading || saving}
+            />
           </Grid>
 
           <FieldBlock
-            label={emailAddressLabel}
+            label="Email address"
+            value={email}
+            onChange={() => {}}
             textColor={textColor}
             inputBg={inputBg}
             inputBorder={inputBorder}
+            disabled
           />
-          <FieldBlock
-            label={passwordLabel}
-            type="password"
-            textColor={textColor}
-            inputBg={inputBg}
-            inputBorder={inputBorder}
-          />
-        </VStack>
 
-        <Box>
-          <Text mb={3} fontSize="lg" color={textColor}>
-            {favoriteImagesLabel}
-          </Text>
-          <SimpleGrid columns={3} gap={3}>
-            {favorites.map((item) => (
-              <Box
-                key={item.id}
-                h="112px"
-                borderRadius="sm"
-                bg={item.bg}
-                border="1px solid"
-                borderColor={panelBorder}
-                boxShadow="0 6px 18px rgba(0,0,0,0.25)"
-              />
-            ))}
-          </SimpleGrid>
-          <Text mt={3} fontSize="sm" color={mutedColor}>
-            {favoriteImagesDescriptionLabel}
-          </Text>
-        </Box>
+          {message ? (
+            <Text color="green.400" fontSize="sm">
+              {message}
+            </Text>
+          ) : null}
+          {error ? (
+            <Text color="red.400" fontSize="sm">
+              {error}
+            </Text>
+          ) : null}
+
+          <Button
+            alignSelf="start"
+            colorScheme="blue"
+            onClick={() => void onSaveProfile()}
+            isLoading={saving}
+            isDisabled={loading}
+          >
+            Save profile
+          </Button>
+        </VStack>
       </Grid>
     </Stack>
   );
 }
 
+interface FieldBlockProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  textColor: string;
+  inputBg: string;
+  inputBorder: string;
+  disabled?: boolean;
+}
+
 function FieldBlock({
   label,
-  defaultValue,
-  type = "text",
+  value,
+  onChange,
   textColor,
   inputBg,
   inputBorder,
+  disabled = false,
 }: FieldBlockProps) {
   return (
     <VStack align="stretch" spacing={1}>
@@ -153,12 +299,13 @@ function FieldBlock({
         {label}
       </Text>
       <Input
-        type={type}
-        defaultValue={defaultValue}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
         size="sm"
         bg={inputBg}
         borderColor={inputBorder}
         color={textColor}
+        disabled={disabled}
         _hover={{ borderColor: inputBorder }}
         _focusVisible={{
           borderColor: "cyan.300",

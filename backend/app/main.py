@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routers import images, laboratory_pipelines, processes, projects
+from app.api.routers import images, laboratory_pipelines, processes, profile, projects
 from app.core.config import settings
 from app.db.init_db import init_db
 
@@ -22,6 +22,7 @@ app.include_router(projects.router)
 app.include_router(images.router)
 app.include_router(processes.router)
 app.include_router(laboratory_pipelines.router)
+app.include_router(profile.router)
 
 settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=settings.uploads_dir), name="uploads")

@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 
 import { IconButton, useColorMode } from "@chakra-ui/react";
 import { BiSolidMoon, BiSolidSun } from "react-icons/bi";
@@ -13,12 +13,28 @@ interface NavbarProps {
 
 export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
   const { colorMode, toggleColorMode } = useColorMode();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const titleLabel = "Magic Eraser";
   const logoSource = colorMode === "dark" ? logoWhite : logoBlack;
   const homeLabel = "Home";
   const pipelinesLabel = "Pipelines";
+  const loginLabel = "Login";
   const profileLabel = "Profile";
+
+  useEffect(() => {
+    const checkAuth = () => setIsLoggedIn(hasSupabaseSession());
+    checkAuth();
+
+    window.addEventListener("storage", checkAuth);
+    window.addEventListener("focus", checkAuth);
+    window.addEventListener("popstate", checkAuth);
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      window.removeEventListener("focus", checkAuth);
+      window.removeEventListener("popstate", checkAuth);
+    };
+  }, []);
 
   return (
     <header className="app-navbar">
@@ -62,14 +78,24 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
               </span>
             }
           />
-          <a
-            href="/profile"
-            className="app-navbar__profile"
-            onClick={(event) => onLinkClick(event, "/profile", onNavigate)}
-          >
-            <span>{profileLabel}</span>
-            <span className="app-navbar__avatar" aria-hidden="true" />
-          </a>
+          {isLoggedIn ? (
+            <a
+              href="/profile"
+              className="app-navbar__profile"
+              onClick={(event) => onLinkClick(event, "/profile", onNavigate)}
+            >
+              <span>{profileLabel}</span>
+              <span className="app-navbar__avatar" aria-hidden="true" />
+            </a>
+          ) : (
+            <a
+              href="/login"
+              className="app-navbar__login-btn"
+              onClick={(event) => onLinkClick(event, "/login", onNavigate)}
+            >
+              {loginLabel}
+            </a>
+          )}
         </div>
       </div>
     </header>
@@ -87,4 +113,29 @@ function onLinkClick(
 ) {
   event.preventDefault();
   onNavigate(path);
+}
+
+function hasSupabaseSession() {
+  try {
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith("sb-") || !key.endsWith("-auth-token")) {
+        continue;
+      }
+
+      const raw = window.localStorage.getItem(key);
+      if (!raw) {
+        continue;
+      }
+
+      const parsed = JSON.parse(raw) as { access_token?: string };
+      if (parsed?.access_token) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
 }
