@@ -120,31 +120,6 @@ class FalFluxFillAdapter:
 
 
 
-
-class FalFluxLoraFillAdapter:
-    def __init__(self, gateway: FalModelGateway, provider_model_id: str) -> None:
-        self.gateway = gateway
-        self.provider_model_id = provider_model_id
-
-    def run(self, request: GenerationModelRequest) -> str:
-        request_payload: dict[str, object] = {
-            "image_url": self.gateway.resolve_image(request.input_image_url),
-            "mask_url": self.gateway.resolve_image(request.mask_image_url),
-            "output_format": "png",
-            **request.additional_settings,
-        }
-        if request.prompt:
-            request_payload["prompt"] = request.prompt
-
-        response = self.gateway.run(self.provider_model_id, request_payload)
-        output_url = self.gateway.extract_first_image_url(response)
-        if output_url:
-            return output_url
-
-        raise HTTPException(status_code=502, detail="...")
-    
-
-
     
 class FalBriaGenFillAdapter:
     def __init__(self, gateway: FalModelGateway, provider_model_id: str) -> None:

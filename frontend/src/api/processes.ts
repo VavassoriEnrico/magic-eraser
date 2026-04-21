@@ -1,5 +1,7 @@
 import { request } from "./client";
 import type {
+  ConvexHullPreviewPayload,
+  ConvexHullPreviewResponse,
   Pipeline,
   PipelineFinishPayload,
   PipelineStartPayload,
@@ -12,6 +14,13 @@ import type {
 
 export function runProcess(payload: ProcessRunPayload) {
   return request<ProcessRunResponse>("/processes/run", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function buildConvexHullPreview(payload: ConvexHullPreviewPayload) {
+  return request<ConvexHullPreviewResponse>("/processes/convex-hull-preview", {
     method: "POST",
     body: JSON.stringify(payload),
   });

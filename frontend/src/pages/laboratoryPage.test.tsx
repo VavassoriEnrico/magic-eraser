@@ -91,6 +91,8 @@ describe("LaboratoryPage", () => {
   const resetFromCell = vi.fn();
   const removeCell = vi.fn();
   const saveCellOutputToProject = vi.fn();
+  const setSegmentOutputConvexHull = vi.fn();
+  const setSegmentOutputConvexHullMode = vi.fn();
   const updateCell = vi.fn();
   const updateModelForCell = vi.fn();
   const updateAdditionalSetting = vi.fn();
@@ -127,6 +129,10 @@ describe("LaboratoryPage", () => {
           prompt: "Select object",
           modelKey: "",
           additionalSettings: {},
+          originalOutputUrl: "/uploads/mask.png",
+          outputConvexHullEnabled: false,
+          outputConvexHullMode: "medium",
+          outputPreviewLoading: false,
           status: "done",
           outputUrl: "/uploads/mask.png",
           error: "",
@@ -156,6 +162,8 @@ describe("LaboratoryPage", () => {
       runAllCells,
       savePipelineName,
       saveCellOutputToProject,
+      setSegmentOutputConvexHull,
+      setSegmentOutputConvexHullMode,
     });
   });
 
@@ -231,6 +239,8 @@ describe("LaboratoryPage", () => {
       runAllCells,
       savePipelineName,
       saveCellOutputToProject,
+      setSegmentOutputConvexHull,
+      setSegmentOutputConvexHullMode,
     });
 
     renderPage();
@@ -270,6 +280,8 @@ describe("LaboratoryPage", () => {
       runAllCells,
       savePipelineName,
       saveCellOutputToProject,
+      setSegmentOutputConvexHull,
+      setSegmentOutputConvexHullMode,
     });
 
     renderPage();

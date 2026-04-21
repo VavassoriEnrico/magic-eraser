@@ -88,6 +88,15 @@ class ProcessRunResponse(BaseModel):
     output_image_url: str
 
 
+class ConvexHullMaskRequest(BaseModel):
+    mask_image_url: str
+    mode: Literal["simple", "medium", "rectangle"] = "medium"
+
+
+class ConvexHullMaskResponse(BaseModel):
+    output_image_url: str
+
+
 class ProcessModelOption(BaseModel):
     key: str
     label: str
