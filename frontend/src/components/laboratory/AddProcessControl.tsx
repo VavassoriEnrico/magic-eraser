@@ -5,6 +5,7 @@ import type { ProcessCatalogItem } from "../../types/api";
 interface AddProcessControlProps {
   availableProcesses: ProcessCatalogItem[];
   selectedProcessType: string;
+  isAddDisabled?: boolean;
   onProcessTypeChange: (value: string) => void;
   onAdd: () => void;
 }
@@ -12,6 +13,7 @@ interface AddProcessControlProps {
 export function AddProcessControl({
   availableProcesses,
   selectedProcessType,
+  isAddDisabled = false,
   onProcessTypeChange,
   onAdd,
 }: AddProcessControlProps) {
@@ -30,7 +32,12 @@ export function AddProcessControl({
       >
         {availableProcesses.length > 1 ? (
           <Box w={{ base: "100%", md: "280px" }}>
-            <Select value={selectedProcessType} onChange={(event) => onProcessTypeChange(event.target.value)} borderRadius="lg">
+            <Select
+              value={selectedProcessType}
+              onChange={(event) => onProcessTypeChange(event.target.value)}
+              borderRadius="lg"
+              isDisabled={isAddDisabled}
+            >
               {availableProcesses.map((processItem) => (
                 <option key={processItem.process_type} value={processItem.process_type}>
                   {processItem.title}
@@ -40,7 +47,14 @@ export function AddProcessControl({
           </Box>
         ) : null}
 
-        <Button onClick={onAdd} colorScheme="teal" variant="outline" borderRadius="lg" px={6} isDisabled={!selectedProcessType}>
+        <Button
+          onClick={onAdd}
+          colorScheme="teal"
+          variant="outline"
+          borderRadius="lg"
+          px={6}
+          isDisabled={!selectedProcessType || isAddDisabled}
+        >
           + Add process
         </Button>
       </HStack>

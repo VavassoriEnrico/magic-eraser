@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.catalogs.process_catalog import PROCESS_CATALOG, get_segment_model_options, get_generation_model_options
+from app.catalogs.process_catalog import (
+    get_generation_model_options,
+    get_process_catalog as build_process_catalog,
+    get_segment_model_options,
+)
 from app.dependencies import get_db
 from app.schemas.process import ProcessCatalogItem, ProcessModelOption, ProcessRunRequest, ProcessRunResponse
 from app.services import process_service
@@ -13,7 +17,7 @@ router = APIRouter(prefix="/processes", tags=["processes"])
 
 @router.get("/catalog", response_model=list[ProcessCatalogItem])
 def get_process_catalog():
-    return PROCESS_CATALOG
+    return build_process_catalog()
 
 
 @router.get("/segment-models", response_model=list[ProcessModelOption])

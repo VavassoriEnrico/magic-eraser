@@ -31,12 +31,14 @@ export default function LaboratoryPage() {
     notebookExplanationList,
     getAvailableProcessesAfter,
     getSelectedProcessTypeFor,
+    canAddProcessAfter,
     setSelectedProcessTypeFor,
     addCell,
     updateCell,
     updateModelForCell,
     updateAdditionalSetting,
     getInputForCell,
+    getMaskOverlayUrlForCell,
     resetFromCell,
     removeCell,
     runCell,
@@ -104,6 +106,7 @@ export default function LaboratoryPage() {
                     index={index}
                     cellsLength={cells.length}
                     inputUrl={getInputForCell(index, cells)}
+                    maskOverlayUrl={getMaskOverlayUrlForCell(index, cells) || undefined}
                     panelBorder={panelBorder}
                     outputBg={outputBg}
                     subtleText={subtleText}
@@ -131,6 +134,7 @@ export default function LaboratoryPage() {
                     <AddProcessControl
                       availableProcesses={getAvailableProcessesAfter(index)}
                       selectedProcessType={getSelectedProcessTypeFor(index)}
+                      isAddDisabled={!canAddProcessAfter(index)}
                       onProcessTypeChange={(value) => setSelectedProcessTypeFor(index, value)}
                       onAdd={() => addCell(index)}
                     />
@@ -146,6 +150,7 @@ export default function LaboratoryPage() {
                   <AddProcessControl
                     availableProcesses={getAvailableProcessesAfter(-1)}
                     selectedProcessType={getSelectedProcessTypeFor(-1)}
+                    isAddDisabled={!canAddProcessAfter(-1)}
                     onProcessTypeChange={(value) => setSelectedProcessTypeFor(-1, value)}
                     onAdd={() => addCell(-1)}
                   />

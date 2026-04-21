@@ -38,11 +38,13 @@ vi.mock("../components/common/StatusNotice", () => ({
 vi.mock("../components/laboratory/AddProcessControl", () => ({
   AddProcessControl: (props: {
     selectedProcessType: string;
+    isAddDisabled?: boolean;
     onProcessTypeChange: (value: string) => void;
     onAdd: () => void;
   }) => (
     <div>
       <div data-testid="selected-process">{props.selectedProcessType}</div>
+      <div data-testid="add-disabled">{String(Boolean(props.isAddDisabled))}</div>
       <button onClick={() => props.onProcessTypeChange("remove_with_mask")}>Select process</button>
       <button onClick={props.onAdd}>Add process</button>
     </div>
@@ -93,10 +95,12 @@ describe("LaboratoryPage", () => {
   const updateModelForCell = vi.fn();
   const updateAdditionalSetting = vi.fn();
   const getInputForCell = vi.fn(() => "http://127.0.0.1:8000/uploads/source.png");
+  const getMaskOverlayUrlForCell = vi.fn(() => "");
   const getAvailableProcessesAfter = vi.fn(() => [
     { process_type: "remove_with_mask", title: "Remove", priority: 2, prompt_required: false },
   ]);
   const getSelectedProcessTypeFor = vi.fn(() => "segment_from_prompt");
+  const canAddProcessAfter = vi.fn(() => true);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -138,12 +142,14 @@ describe("LaboratoryPage", () => {
       notebookExplanationList: ["Create a mask"],
       getAvailableProcessesAfter,
       getSelectedProcessTypeFor,
+      canAddProcessAfter,
       setSelectedProcessTypeFor,
       addCell,
       updateCell,
       updateModelForCell,
       updateAdditionalSetting,
       getInputForCell,
+      getMaskOverlayUrlForCell,
       resetFromCell,
       removeCell,
       runCell,
@@ -163,6 +169,7 @@ describe("LaboratoryPage", () => {
     expect(screen.getByText(/pipeline #21/i)).toBeInTheDocument();
     expect(screen.getByText(/Input image/i)).toBeInTheDocument();
     expect(screen.getByText("Pipeline saved")).toBeInTheDocument();
+    expect(screen.getAllByTestId("add-disabled")[0]).toHaveTextContent("false");
 
     await user.click(screen.getByRole("button", { name: "Save pipeline" }));
     await user.click(screen.getByRole("button", { name: "Run all cells" }));
@@ -210,12 +217,14 @@ describe("LaboratoryPage", () => {
       notebookExplanationList: [],
       getAvailableProcessesAfter,
       getSelectedProcessTypeFor,
+      canAddProcessAfter,
       setSelectedProcessTypeFor,
       addCell,
       updateCell,
       updateModelForCell,
       updateAdditionalSetting,
       getInputForCell,
+      getMaskOverlayUrlForCell,
       resetFromCell,
       removeCell,
       runCell,
@@ -248,6 +257,7 @@ describe("LaboratoryPage", () => {
       notebookExplanationList: [],
       getAvailableProcessesAfter,
       getSelectedProcessTypeFor,
+      canAddProcessAfter,
       setSelectedProcessTypeFor,
       addCell,
       updateCell,
