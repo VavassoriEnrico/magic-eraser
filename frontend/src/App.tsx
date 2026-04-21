@@ -4,9 +4,10 @@ import AppLayout from "./components/layout/AppLayout";
 import GalleryPage from "./pages/galleryPage";
 import HomePage from "./pages/homePage";
 import LaboratoryPage from "./pages/laboratoryPage";
+import PipelinesPage from "./pages/pipelinesPage";
 import ProfilePage from "./pages/profilePage";
 
-type AppPath = "/" | "/gallery" | "/profile" | "/laboratory";
+type AppPath = "/" | "/gallery" | "/pipelines" | "/profile" | "/laboratory";
 
 function normalizePath(pathname: string): AppPath {
   if (!pathname || pathname === "/") {
@@ -19,6 +20,8 @@ function normalizePath(pathname: string): AppPath {
   switch (normalized) {
     case "/gallery":
       return "/gallery";
+    case "/pipelines":
+      return "/pipelines";
     case "/profile":
       return "/profile";
     case "/laboratory":
@@ -58,6 +61,8 @@ export default function App() {
     switch (currentPath) {
       case "/gallery":
         return <GalleryPage />;
+      case "/pipelines":
+        return <PipelinesPage />;
       case "/profile":
         return <ProfilePage />;
       case "/laboratory":

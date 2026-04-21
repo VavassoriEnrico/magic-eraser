@@ -63,13 +63,15 @@ body {
   border-top: 1px solid var(--line);
 }
 
-.app-footbar__logo {
-  border: 3px solid var(--footbar-title);
-}
-
 .app-footbar__title,
 .app-footbar__column-title {
   color: var(--footbar-title);
+}
+
+.app-footbar__logo-image {
+  height: clamp(52px, 8vw, 88px);
+  width: auto;
+  display: block;
 }
 
 .app-footbar__grid {
@@ -109,6 +111,12 @@ body {
 .app-navbar__logo {
   color: var(--text);
   font-size: 1rem;
+}
+
+.app-navbar__logo-image {
+  height: 34px;
+  width: auto;
+  display: block;
 }
 
 .app-navbar__nav {

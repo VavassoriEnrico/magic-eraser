@@ -3,7 +3,6 @@ import {
   Badge,
   Box,
   HStack,
-  Spinner,
   Stack,
   Text,
   VStack,
@@ -12,6 +11,9 @@ import {
 
 import { getProjectImages } from "../api/images";
 import { getProjects } from "../api/projects";
+import { GlassPanel } from "../components/common/GlassPanel";
+import { LoadingState, MessagePanel } from "../components/common/PageState";
+import { PageHeader } from "../components/common/PageHeader";
 import type { ImageAsset, Project } from "../types/api";
 import { getErrorMessage } from "../utils/errors";
 import { toImageUrl } from "../utils/images";
@@ -49,10 +51,7 @@ export default function GalleryPage() {
   const scrollThumb = useColorModeValue("rgba(55,65,81,0.35)", "rgba(255,255,255,0.25)");
   const scrollTrack = useColorModeValue("rgba(0,0,0,0.08)", "rgba(255,255,255,0.08)");
 
-  const workspaceLabel = "Workspace";
   const loadingGalleryLabel = "Loading gallery...";
-  const galleryLabel = "Gallery";
-  const galleryDescriptionLabel = "Images are grouped by project.";
   const projectsLabel = "Projects";
   const imagesLabel = "Images";
   const noProjectsLabel = "There are no projects available yet.";
@@ -87,33 +86,21 @@ export default function GalleryPage() {
   }, []);
 
   if (loading) {
-    return (
-      <VStack py={12} spacing={3} color={subtleText}>
-        <Spinner />
-        <Text>{loadingGalleryLabel}</Text>
-      </VStack>
-    );
+    return <LoadingState label={loadingGalleryLabel} color={subtleText} />;
   }
 
   if (error) {
-    return (
-      <Box p={4} borderRadius="md" bg="red.900" color="white" border="1px solid" borderColor="red.700">
-        {error}
-      </Box>
-    );
+    return <MessagePanel message={error} tone="error" />;
   }
 
   return (
     <Stack spacing={7} color={pageText}>
-      <VStack align="stretch" spacing={1}>
-        <Text color={sectionLabel} fontSize="sm" letterSpacing="0.12em" textTransform="uppercase">
-          {workspaceLabel}
-        </Text>
-        <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em">
-          {galleryLabel}
-        </Text>
-        <Text color={subtleText}>{galleryDescriptionLabel}</Text>
-      </VStack>
+      <PageHeader
+        title="Gallery"
+        description="Images are grouped by project."
+        eyebrowColor={sectionLabel}
+        descriptionColor={subtleText}
+      />
 
       <HStack spacing={3}>
         <Badge colorScheme="blue" variant="subtle" px={2} py={1} borderRadius="md">
@@ -127,9 +114,9 @@ export default function GalleryPage() {
       <Box h="1px" bg={dividerColor} />
 
       {groups.length === 0 ? (
-        <Box p={5} borderRadius="xl" border="1px solid" borderColor={panelBorder} bg={panelBg}>
+        <GlassPanel p={5} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
           <Text color={subtleText}>{noProjectsLabel}</Text>
-        </Box>
+        </GlassPanel>
       ) : (
         groups.map(({ project, images }) => (
           <ProjectRow
@@ -166,7 +153,7 @@ function ProjectRow({
   imageLabel,
 }: ProjectRowProps) {
   return (
-    <Box p={5} borderRadius="xl" border="1px solid" borderColor={panelBorder} bg={panelBg}>
+    <GlassPanel p={5} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
       <HStack justify="space-between" mb={4} align="start" flexWrap="wrap" gap={2}>
         <VStack align="start" spacing={0.5}>
           <Text fontSize="xl" fontWeight="semibold" lineHeight="1.1">
@@ -220,6 +207,6 @@ function ProjectRow({
           </HStack>
         </Box>
       )}
-    </Box>
+    </GlassPanel>
   );
 }

@@ -2,7 +2,7 @@ import type { ReactNode, FormEvent } from "react";
 
 import type { ImageAsset, Project } from "./api";
 
-export type AppPath = "/" | "/gallery" | "/profile" | "/laboratory";
+export type AppPath = "/" | "/gallery" | "/pipelines" | "/profile" | "/laboratory";
 
 export interface AppLayoutProps {
   children: ReactNode;

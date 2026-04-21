@@ -1,62 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-  Badge,
-  Box,
-  Button,
-  HStack,
-  Input,
-  Select,
-  Stack,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
-import { BiArrowToBottom, BiChevronRight } from "react-icons/bi";
+import { Badge, Box, Button, HStack, Spinner, Stack, Text, VStack, useColorModeValue } from "@chakra-ui/react";
 
-import { uploadImageFromUrl } from "../api/images";
-import { getSegmentModels, runProcess } from "../api/processes";
-import type { ImageAsset } from "../types/api";
-import type { ProcessStatus, ProcessStep } from "../types/process";
-import { getErrorMessage } from "../utils/errors";
-import { toImageUrl } from "../utils/images";
-
-const STORAGE_KEY = "laboratory:selected-image";
-const BASE_PROCESS_STEPS: ProcessStep[] = [
-  {
-    id: "segment-step",
-    kind: "segment_from_prompt",
-    title: "Segment",
-    promptPlaceholder: "Write what object to segment...",
-    promptRequired: true,
-    modelOptions: [],
-  },
-  {
-    id: "remove-step",
-    kind: "remove_with_mask",
-    title: "Remove",
-    promptPlaceholder: "Write how to remove the selected object...",
-    promptRequired: false,
-  },
-  {
-    id: "generate-step",
-    kind: "generate_from_prompt",
-    title: "Generate",
-    promptPlaceholder: "Write what you want to generate...",
-    promptRequired: true,
-  },
-];
-
-function getSelectedImageFromSession(): ImageAsset | null {
-  try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-    return JSON.parse(raw) as ImageAsset;
-  } catch {
-    return null;
-  }
-}
+import { AddProcessControl } from "../components/laboratory/AddProcessControl";
+import { LabCellCard } from "../components/laboratory/LabCellCard";
+import { GlassPanel } from "../components/common/GlassPanel";
+import { PageHeader } from "../components/common/PageHeader";
+import { StatusNotice } from "../components/common/StatusNotice";
+import { useLaboratoryNotebook } from "../hooks/useLaboratoryNotebook";
 
 export default function LaboratoryPage() {
   const pageText = useColorModeValue("gray.800", "white");
@@ -66,445 +15,151 @@ export default function LaboratoryPage() {
   const panelBorder = useColorModeValue("gray.200", "whiteAlpha.200");
   const outputBg = useColorModeValue("gray.100", "whiteAlpha.100");
 
-  const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
-  const projectId = urlParams.get("projectId");
-  const imageId = urlParams.get("imageId");
-  const selectedImage = useMemo(() => getSelectedImageFromSession(), []);
-  const [segmentModelOptions, setSegmentModelOptions] = useState(
-    BASE_PROCESS_STEPS[0].modelOptions ?? []
-  );
-  const processes = useMemo<ProcessStep[]>(
-    () =>
-      BASE_PROCESS_STEPS.map((step) =>
-        step.kind === "segment_from_prompt" ? { ...step, modelOptions: segmentModelOptions } : step
-      ),
-    [segmentModelOptions]
-  );
-
-  const [promptsById, setPromptsById] = useState<Record<string, string>>({});
-  const [modelKeyByStepId, setModelKeyByStepId] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      BASE_PROCESS_STEPS.flatMap((step) =>
-        step.modelOptions?.[0] ? [[step.id, step.modelOptions[0].key]] : []
-      )
-    )
-  );
-  const [statusById, setStatusById] = useState<Record<string, ProcessStatus>>({});
-  const [outputById, setOutputById] = useState<Record<string, string>>({});
-  const [errorById, setErrorById] = useState<Record<string, string>>({});
-  const [runningAll, setRunningAll] = useState(false);
-  const [isSavingFinal, setIsSavingFinal] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
-  const [saveError, setSaveError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadModels() {
-      try {
-        const models = await getSegmentModels();
-        if (cancelled || !models.length) {
-          return;
-        }
-
-        const options = models.map((model) => ({
-          key: model.key,
-          label: model.label,
-        }));
-        setSegmentModelOptions(options);
-
-        const defaultModel = models.find((model) => model.default) ?? models[0];
-        if (defaultModel) {
-          setModelKeyByStepId((prev) => ({ ...prev, "segment-step": defaultModel.key }));
-        }
-      } catch {
-        // fallback to local options
-      }
-    }
-
-    void loadModels();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const workspaceLabel = "Workspace";
-  const titleLabel = "Laboratory";
-  const descriptionLabel = "Build and run your processing chain step by step.";
-  const selectedImageLabel = "Input image";
-  const noImageLabel =
-    "No image selected yet. Open this page from the Edit button of an image in Home.";
-  const backToHomeLabel = "Back to home";
-  const runAllLabel = "Run all";
-  const operateLabel = "Operate";
-  const backLabel = "Back";
-  const outputLabel = "Output";
-  const waitingOutputLabel = "Output will appear here";
-  const saveFinalLabel = "Save final image";
-  const finalReadyLabel = "Final result ready";
-
-  const lastProcess = processes[processes.length - 1];
-  const finalOutputUrl = outputById[lastProcess.id];
-
-  function goHome() {
-    window.history.pushState({}, "", "/");
-    window.dispatchEvent(new PopStateEvent("popstate"));
-  }
-
-  function getInputForStep(stepIndex: number): string {
-    if (!selectedImage) {
-      return "";
-    }
-    if (stepIndex === 0) {
-      return toImageUrl(selectedImage.filePath);
-    }
-
-    const previousStep = processes[stepIndex - 1];
-    return outputById[previousStep.id] ?? "";
-  }
-
-  function isStepReady(stepIndex: number): boolean {
-    if (!selectedImage) {
-      return false;
-    }
-    if (stepIndex === 0) {
-      return true;
-    }
-    const previousStep = processes[stepIndex - 1];
-    return Boolean(outputById[previousStep.id]);
-  }
-
-  function getModelKeyForStep(step: ProcessStep): string | undefined {
-    const selectedModelKey = modelKeyByStepId[step.id];
-    if (selectedModelKey) {
-      return selectedModelKey;
-    }
-
-    return step.modelOptions?.[0]?.key;
-  }
-
-  async function runSingleStep(step: ProcessStep, stepIndex: number) {
-    const inputImageUrl = getInputForStep(stepIndex);
-    if (!inputImageUrl) {
-      setErrorById((prev) => ({
-        ...prev,
-        [step.id]: "Previous step output missing",
-      }));
-      return;
-    }
-
-    setStatusById((prev) => ({ ...prev, [step.id]: "running" }));
-    setErrorById((prev) => ({ ...prev, [step.id]: "" }));
-    setSaveMessage("");
-    setSaveError("");
-
-    try {
-      const response = await runProcess({
-        process_type: step.kind,
-        prompt: promptsById[step.id] ?? "",
-        input_image_url: inputImageUrl,
-        model_key: getModelKeyForStep(step),
-        project_id: projectId ? Number(projectId) : undefined,
-        image_id: imageId ? Number(imageId) : undefined,
-      });
-      setOutputById((prev) => ({ ...prev, [step.id]: response.output_image_url }));
-      setStatusById((prev) => ({ ...prev, [step.id]: "done" }));
-    } catch (caughtError) {
-      const message = caughtError instanceof Error ? caughtError.message : "Unexpected error";
-      setStatusById((prev) => ({ ...prev, [step.id]: "failed" }));
-      setErrorById((prev) => ({ ...prev, [step.id]: message }));
-    }
-  }
-
-  async function runAllSteps() {
-    if (!selectedImage) {
-      return;
-    }
-
-    const inputImageUrl = toImageUrl(selectedImage.filePath);
-    setRunningAll(true);
-    setErrorById({});
-    setSaveMessage("");
-    setSaveError("");
-
-    let currentInput = inputImageUrl;
-    for (const step of processes) {
-      setStatusById((prev) => ({ ...prev, [step.id]: "running" }));
-      setErrorById((prev) => ({ ...prev, [step.id]: "" }));
-
-      try {
-        const response = await runProcess({
-          process_type: step.kind,
-          prompt: promptsById[step.id] ?? "",
-          input_image_url: currentInput,
-          model_key: getModelKeyForStep(step),
-          project_id: projectId ? Number(projectId) : undefined,
-          image_id: imageId ? Number(imageId) : undefined,
-        });
-        setOutputById((prev) => ({ ...prev, [step.id]: response.output_image_url }));
-        setStatusById((prev) => ({ ...prev, [step.id]: "done" }));
-        currentInput = response.output_image_url;
-      } catch (caughtError) {
-        const message = caughtError instanceof Error ? caughtError.message : "Unexpected error";
-        setStatusById((prev) => ({ ...prev, [step.id]: "failed" }));
-        setErrorById((prev) => ({ ...prev, [step.id]: message }));
-        break;
-      }
-    }
-    setRunningAll(false);
-  }
-
-  function resetFromStep(stepIndex: number) {
-    const stepsToClear = processes.slice(stepIndex);
-
-    setOutputById((prev) => {
-      const next = { ...prev };
-      for (const step of stepsToClear) {
-        delete next[step.id];
-      }
-      return next;
-    });
-
-    setStatusById((prev) => {
-      const next = { ...prev };
-      for (const step of stepsToClear) {
-        next[step.id] = "idle";
-      }
-      return next;
-    });
-
-    setErrorById((prev) => {
-      const next = { ...prev };
-      for (const step of stepsToClear) {
-        delete next[step.id];
-      }
-      return next;
-    });
-
-    setSaveMessage("");
-    setSaveError("");
-  }
-
-  async function saveFinalImageToProject() {
-    if (!finalOutputUrl || !selectedImage) {
-      return;
-    }
-
-    const targetProjectId = projectId ? Number(projectId) : selectedImage.project_id;
-    if (!targetProjectId) {
-      setSaveError("Project id missing");
-      return;
-    }
-
-    setIsSavingFinal(true);
-    setSaveMessage("");
-    setSaveError("");
-
-    try {
-      await uploadImageFromUrl(
-        targetProjectId,
-        toImageUrl(finalOutputUrl),
-        `laboratory-result-${Date.now()}`
-      );
-      setSaveMessage(`Saved in project #${targetProjectId}`);
-    } catch (caughtError) {
-      setSaveError(getErrorMessage(caughtError));
-    } finally {
-      setIsSavingFinal(false);
-    }
-  }
+  const {
+    queryProjectId,
+    queryImageId,
+    selectedImage,
+    activePipelineId,
+    cells,
+    runningAll,
+    savingCellId,
+    saveMessageByCell,
+    saveErrorByCell,
+    saveMessage,
+    saveError,
+    loadingPipeline,
+    notebookExplanationList,
+    getAvailableProcessesAfter,
+    getSelectedProcessTypeFor,
+    canAddProcessAfter,
+    setSelectedProcessTypeFor,
+    addCell,
+    updateCell,
+    updateModelForCell,
+    updateAdditionalSetting,
+    getInputForCell,
+    getMaskOverlayUrlForCell,
+    resetFromCell,
+    removeCell,
+    runCell,
+    runAllCells,
+    savePipelineName,
+    saveCellOutputToProject,
+  } = useLaboratoryNotebook();
 
   return (
     <Stack spacing={6} color={pageText}>
-      <Box>
-        <Text color={sectionLabel} fontSize="sm" letterSpacing="0.12em" textTransform="uppercase">
-          {workspaceLabel}
-        </Text>
-        <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em">
-          {titleLabel}
-        </Text>
-        <Text color={subtleText} mt={1}>
-          {descriptionLabel}
-        </Text>
-      </Box>
+      <PageHeader
+        title="Laboratory"
+        description="Notebook workflow: add cells, run them in order, and save final output."
+        eyebrowColor={sectionLabel}
+        descriptionColor={subtleText}
+      >
+        {notebookExplanationList.length > 0 ? (
+          <VStack align="start" spacing={1} mt={2}>
+            {notebookExplanationList.map((itemText) => (
+              <Text key={itemText} color={subtleText} fontSize="sm">
+                • {itemText}
+              </Text>
+            ))}
+          </VStack>
+        ) : null}
+      </PageHeader>
 
       <HStack justify="space-between" align="center" flexWrap="wrap">
         <Badge width="fit-content" colorScheme="blue" variant="subtle">
-          project #{projectId ?? "-"} • image #{imageId ?? "-"}
+          project #{queryProjectId ?? selectedImage?.project_id ?? "-"} • image #{queryImageId ?? selectedImage?.id ?? "-"} • pipeline #{activePipelineId ?? "-"}
         </Badge>
         <HStack>
-          <Button width="fit-content" variant="outline" onClick={goHome}>
-            {backToHomeLabel}
+          <Button variant="outline" onClick={() => void savePipelineName()} isDisabled={runningAll}>
+            Save pipeline
           </Button>
-          <Button colorScheme="blue" onClick={() => void runAllSteps()} isLoading={runningAll}>
-            {runAllLabel}
-          </Button>
-          <Button
-            colorScheme="green"
-            onClick={() => void saveFinalImageToProject()}
-            isDisabled={!finalOutputUrl}
-            isLoading={isSavingFinal}
-          >
-            {saveFinalLabel}
+          <Button colorScheme="blue" onClick={() => void runAllCells()} isLoading={runningAll}>
+            Run all cells
           </Button>
         </HStack>
       </HStack>
 
-      {finalOutputUrl ? (
-        <Badge width="fit-content" colorScheme="green" variant="subtle">
-          {finalReadyLabel}
-        </Badge>
-      ) : null}
-      {saveMessage ? (
-        <Text color="green.400" fontSize="sm">
-          {saveMessage}
-        </Text>
-      ) : null}
-      {saveError ? (
-        <Text color="red.400" fontSize="sm">
-          {saveError}
-        </Text>
-      ) : null}
+      {saveMessage ? <StatusNotice tone="success" variant="text">{saveMessage}</StatusNotice> : null}
+      {saveError ? <StatusNotice tone="error" variant="text">{saveError}</StatusNotice> : null}
 
-      <Box p={5} borderRadius="xl" border="1px solid" borderColor={panelBorder} bg={panelBg}>
+      <GlassPanel p={5} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
         <VStack align="stretch" spacing={4}>
+          {loadingPipeline ? (
+            <HStack color={subtleText}>
+              <Spinner size="sm" />
+              <Text fontSize="sm">Loading saved pipeline...</Text>
+            </HStack>
+          ) : null}
           <Text fontWeight="semibold" fontSize="lg">
-            {selectedImageLabel} • {selectedImage?.fileName ?? "N/A"}
+            Input image • {selectedImage?.fileName ?? "N/A"}
           </Text>
 
           {!selectedImage ? (
-            <Text color={subtleText}>{noImageLabel}</Text>
+            <Text color={subtleText}>No image selected yet. Open this page from Home &gt; Edit.</Text>
           ) : (
-            <VStack align="stretch" spacing={8}>
-              {processes.map((step, stepIndex) => {
-                const inputImageUrl = getInputForStep(stepIndex);
-                const outputImageUrl = outputById[step.id];
-                const isReady = isStepReady(stepIndex);
-                const status = statusById[step.id] ?? "idle";
+            <VStack align="stretch" spacing={5} mt={2}>
+              {cells.map((cell, index) => (
+                <VStack key={cell.id} align="stretch" spacing={4}>
+                  <LabCellCard
+                    cell={cell}
+                    index={index}
+                    cellsLength={cells.length}
+                    inputUrl={getInputForCell(index, cells)}
+                    maskOverlayUrl={getMaskOverlayUrlForCell(index, cells) || undefined}
+                    panelBorder={panelBorder}
+                    outputBg={outputBg}
+                    subtleText={subtleText}
+                    runningAll={runningAll}
+                    savingCellId={savingCellId}
+                    saveMessage={saveMessageByCell[cell.id]}
+                    saveError={saveErrorByCell[cell.id]}
+                    runCellLabel="Run cell"
+                    resetFromLabel="Reset from here"
+                    removeCellLabel="Remove cell"
+                    waitingOutputLabel="Output will appear here"
+                    saveToProjectLabel="Save to project"
+                    onRunCell={() => void runCell(index)}
+                    onReset={() => resetFromCell(index)}
+                    onRemove={() => removeCell(index)}
+                    onUpdateCell={(patch) => updateCell(index, patch)}
+                    onUpdateModel={(modelKey) => updateModelForCell(index, modelKey)}
+                    onUpdateAdditionalSetting={(settingKey, value) =>
+                      updateAdditionalSetting(index, settingKey, value)
+                    }
+                    onSaveOutput={() => void saveCellOutputToProject(cell)}
+                  />
 
-                return (
-                  <VStack key={step.id} align="stretch" spacing={4}>
-                    <Text fontWeight="semibold">{stepIndex + 1}. {step.title}</Text>
+                  {index === cells.length - 1 ? (
+                    <AddProcessControl
+                      availableProcesses={getAvailableProcessesAfter(index)}
+                      selectedProcessType={getSelectedProcessTypeFor(index)}
+                      isAddDisabled={!canAddProcessAfter(index)}
+                      onProcessTypeChange={(value) => setSelectedProcessTypeFor(index, value)}
+                      onAdd={() => addCell(index)}
+                    />
+                  ) : null}
+                </VStack>
+              ))}
 
-                    <HStack align="start" spacing={5} flexWrap={{ base: "wrap", xl: "nowrap" }}>
-                      <VStack align="stretch" flex={1} minW={{ base: "100%", xl: "40%" }} spacing={3}>
-                        <Box
-                          h={{ base: "220px", md: "280px" }}
-                          borderRadius="md"
-                          overflow="hidden"
-                          border="1px solid"
-                          borderColor={panelBorder}
-                          bg="blackAlpha.500"
-                        >
-                          {inputImageUrl ? (
-                            <img
-                              src={inputImageUrl}
-                              alt={`Input step ${stepIndex + 1}`}
-                              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                            />
-                          ) : null}
-                        </Box>
-                        {step.promptRequired ? (
-                          <Input
-                            placeholder={step.promptPlaceholder}
-                            value={promptsById[step.id] ?? ""}
-                            onChange={(event) =>
-                              setPromptsById((prev) => ({ ...prev, [step.id]: event.target.value }))
-                            }
-                            isDisabled={!isReady || status === "running" || runningAll}
-                          />
-                        ) : null}
-                        {/* Multiple choice between models */}
-                        {step.modelOptions?.length ? (
-                          <Select
-                            value={getModelKeyForStep(step) ?? ""}
-                            onChange={(event) =>
-                              setModelKeyByStepId((prev) => ({
-                                ...prev,
-                                [step.id]: event.target.value,
-                              }))
-                            }
-                            isDisabled={!isReady || status === "running" || runningAll}
-                          >
-                            {step.modelOptions.map((modelOption) => (
-                              <option key={modelOption.key} value={modelOption.key}>
-                                {modelOption.label}
-                              </option>
-                            ))}
-                          </Select>
-                        ) : null}
-                      </VStack>
-
-                      <VStack justify="center" align="center" minW="120px" spacing={2}>
-                        <Button
-                          colorScheme="blue"
-                          leftIcon={<BiChevronRight />}
-                          onClick={() => void runSingleStep(step, stepIndex)}
-                          isDisabled={!isReady || runningAll}
-                          isLoading={status === "running"}
-                        >
-                          {operateLabel}
-                        </Button>
-                        {stepIndex > 0 ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => resetFromStep(stepIndex)}
-                            isDisabled={runningAll}
-                          >
-                            {backLabel}
-                          </Button>
-                        ) : null}
-                        <Badge variant="subtle">{status}</Badge>
-                      </VStack>
-
-                      <VStack align="stretch" flex={1} minW={{ base: "100%", xl: "40%" }} spacing={3}>
-                        <Box
-                          h={{ base: "220px", md: "280px" }}
-                          borderRadius="md"
-                          overflow="hidden"
-                          border="1px solid"
-                          borderColor={panelBorder}
-                          bg={outputBg}
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                        >
-                          {outputImageUrl ? (
-                            <img
-                              src={outputImageUrl}
-                              alt={`Output step ${stepIndex + 1}`}
-                              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                            />
-                          ) : (
-                            <Text color={subtleText} fontSize="sm">
-                              {waitingOutputLabel}
-                            </Text>
-                          )}
-                        </Box>
-                        <Text color={subtleText} fontSize="sm">
-                          {outputLabel}
-                        </Text>
-                        {errorById[step.id] ? (
-                          <Text color="red.400" fontSize="sm">
-                            {errorById[step.id]}
-                          </Text>
-                        ) : null}
-                      </VStack>
-                    </HStack>
-
-                    {stepIndex < processes.length - 1 ? (
-                      <HStack justify="center">
-                        <BiArrowToBottom />
-                      </HStack>
-                    ) : null}
-                  </VStack>
-                );
-              })}
+              {cells.length === 0 ? (
+                <VStack spacing={3} py={4}>
+                  <Text color={subtleText} fontSize="sm">
+                    Add your first work cell to start your job
+                  </Text>
+                  <AddProcessControl
+                    availableProcesses={getAvailableProcessesAfter(-1)}
+                    selectedProcessType={getSelectedProcessTypeFor(-1)}
+                    isAddDisabled={!canAddProcessAfter(-1)}
+                    onProcessTypeChange={(value) => setSelectedProcessTypeFor(-1, value)}
+                    onAdd={() => addCell(-1)}
+                  />
+                </VStack>
+              ) : null}
             </VStack>
           )}
         </VStack>
-      </Box>
+      </GlassPanel>
     </Stack>
   );
 }
