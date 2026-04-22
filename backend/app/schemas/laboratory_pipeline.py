@@ -1,19 +1,20 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
 
 class PipelineStartRequest(BaseModel):
-    project_id: int
-    source_image_id: int
+    project_id: UUID
+    source_image_id: UUID
     start_image_url: str
     name: str | None = None
 
 
 class PipelineStartResponse(BaseModel):
-    id: int
-    project_id: int
-    source_image_id: int
+    id: UUID
+    project_id: UUID
+    source_image_id: UUID
     start_image_url: str
     final_image_url: str | None = None
     status: str
@@ -24,9 +25,9 @@ class PipelineStartResponse(BaseModel):
 
 
 class PipelineRead(BaseModel):
-    id: int
-    project_id: int
-    source_image_id: int
+    id: UUID
+    project_id: UUID
+    source_image_id: UUID
     name: str | None = None
     start_image_url: str
     final_image_url: str | None = None
@@ -47,8 +48,8 @@ class PipelineRenameRequest(BaseModel):
 
 
 class PipelineStepRead(BaseModel):
-    id: int
-    pipeline_id: int
+    id: UUID
+    pipeline_id: UUID
     step_index: int
     process_type: str
     priority: int

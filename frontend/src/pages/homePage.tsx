@@ -134,7 +134,7 @@ export default function HomePage() {
     setEditingProjectName("");
   }
 
-  async function saveInlineProjectEdit(projectId: number) {
+  async function saveInlineProjectEdit(projectId: string) {
     const success = await onRenameProject(projectId, editingProjectName);
     if (success) {
       cancelInlineProjectEdit();

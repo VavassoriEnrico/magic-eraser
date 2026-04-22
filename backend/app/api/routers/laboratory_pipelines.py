@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from app.dependencies import get_db
 from app.schemas.laboratory_pipeline import (
@@ -22,7 +23,7 @@ def list_pipelines(db: Session = Depends(get_db)):
 
 
 @router.get("/{pipeline_id}", response_model=PipelineRead)
-def get_pipeline(pipeline_id: int, db: Session = Depends(get_db)):
+def get_pipeline(pipeline_id: UUID, db: Session = Depends(get_db)):
     return laboratory_pipeline_service.get_pipeline(db, pipeline_id)
 
 
@@ -39,7 +40,7 @@ def start_pipeline(payload: PipelineStartRequest, db: Session = Depends(get_db))
 
 @router.post("/{pipeline_id}/finish", response_model=PipelineStartResponse)
 def finish_pipeline(
-    pipeline_id: int,
+    pipeline_id: UUID,
     payload: PipelineFinishRequest,
     db: Session = Depends(get_db),
 ):
@@ -53,7 +54,7 @@ def finish_pipeline(
 
 @router.patch("/{pipeline_id}/name", response_model=PipelineStartResponse)
 def rename_pipeline(
-    pipeline_id: int,
+    pipeline_id: UUID,
     payload: PipelineRenameRequest,
     db: Session = Depends(get_db),
 ):
@@ -65,19 +66,19 @@ def rename_pipeline(
 
 
 @router.delete("/{pipeline_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_pipeline(pipeline_id: int, db: Session = Depends(get_db)):
+def delete_pipeline(pipeline_id: UUID, db: Session = Depends(get_db)):
     laboratory_pipeline_service.delete_pipeline(db, pipeline_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/{pipeline_id}/steps", response_model=list[PipelineStepRead])
-def list_pipeline_steps(pipeline_id: int, db: Session = Depends(get_db)):
+def list_pipeline_steps(pipeline_id: UUID, db: Session = Depends(get_db)):
     return laboratory_pipeline_service.list_steps(db, pipeline_id)
 
 
 @router.post("/{pipeline_id}/steps", response_model=PipelineStepRead)
 def create_pipeline_step(
-    pipeline_id: int,
+    pipeline_id: UUID,
     payload: PipelineStepCreateRequest,
     db: Session = Depends(get_db),
 ):

@@ -23,7 +23,7 @@ export default function PipelinesPage() {
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deletingPipelineId, setDeletingPipelineId] = useState<number | null>(null);
+  const [deletingPipelineId, setDeletingPipelineId] = useState<string | null>(null);
 
   const pageText = useColorModeValue("gray.800", "white");
   const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
@@ -80,7 +80,7 @@ export default function PipelinesPage() {
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
-  async function onDeletePipeline(pipelineId: number) {
+  async function onDeletePipeline(pipelineId: string) {
     const shouldDelete = window.confirm("Delete this pipeline?");
     if (!shouldDelete) {
       return;

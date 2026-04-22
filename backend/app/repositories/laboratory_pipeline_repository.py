@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models import LaboratoryPipeline, LaboratoryPipelineStep
@@ -6,8 +8,8 @@ from app.models import LaboratoryPipeline, LaboratoryPipelineStep
 def create_pipeline(
     db: Session,
     *,
-    project_id: int,
-    source_image_id: int,
+    project_id: UUID,
+    source_image_id: UUID,
     start_image_url: str,
     name: str | None = None,
 ) -> LaboratoryPipeline:
@@ -24,7 +26,7 @@ def create_pipeline(
     return pipeline
 
 
-def get_pipeline_by_id(db: Session, pipeline_id: int) -> LaboratoryPipeline | None:
+def get_pipeline_by_id(db: Session, pipeline_id: UUID) -> LaboratoryPipeline | None:
     return db.query(LaboratoryPipeline).filter(LaboratoryPipeline.id == pipeline_id).first()
 
 
@@ -70,7 +72,7 @@ def delete_pipeline(db: Session, pipeline: LaboratoryPipeline) -> None:
 def create_step(
     db: Session,
     *,
-    pipeline_id: int,
+    pipeline_id: UUID,
     step_index: int,
     process_type: str,
     priority: int,
@@ -103,7 +105,7 @@ def create_step(
     return step
 
 
-def list_steps_by_pipeline(db: Session, pipeline_id: int) -> list[LaboratoryPipelineStep]:
+def list_steps_by_pipeline(db: Session, pipeline_id: UUID) -> list[LaboratoryPipelineStep]:
     return (
         db.query(LaboratoryPipelineStep)
         .filter(LaboratoryPipelineStep.pipeline_id == pipeline_id)

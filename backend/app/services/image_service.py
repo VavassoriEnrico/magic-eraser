@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,7 +10,7 @@ def list_images(db: Session):
     return image_repository.list_all(db)
 
 #delete image using its id
-def delete_image(db: Session, image_id: int) -> None:
+def delete_image(db: Session, image_id: UUID) -> None:
     image = image_repository.get_by_id(db, image_id)
     if image is None:
         raise HTTPException(status_code=404, detail="image not found")

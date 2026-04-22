@@ -12,11 +12,11 @@ export function createProject(name: string) {
   });
 }
 
-export function deleteProject(projectId: number) {
+export function deleteProject(projectId: number | string) {
   return request<{ message: string }>(`/projects/${projectId}`, { method: "DELETE" });
 }
 
-export function updateProject(projectId: number, name: string) {
+export function updateProject(projectId: number | string, name: string) {
   return request<Project>(`/projects/${projectId}`, {
     method: "PATCH",
     body: JSON.stringify({ name }),

@@ -61,7 +61,7 @@ export function useHomeData(): HomeData {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const loadImagesForProject = useCallback(async (projectId: number) => {
+  const loadImagesForProject = useCallback(async (projectId: number | string) => {
     setLoadingImagesByProject((prev) => ({ ...prev, [projectId]: true }));
 
     try {
@@ -180,7 +180,7 @@ export function useHomeData(): HomeData {
     [expandedProjectId, projects, selectedProjectId, uploadProjectId]
   );
 
-  const onRenameProject = useCallback(async (projectId: number, nextName: string) => {
+  const onRenameProject = useCallback(async (projectId: number | string, nextName: string) => {
     const trimmedName = nextName.trim();
     if (!trimmedName) {
       setError("Project name cannot be empty");
@@ -196,7 +196,7 @@ export function useHomeData(): HomeData {
       setProjects((prev) =>
         sortProjectsByLastUpdate(
           prev.map((project) =>
-            project.id === projectId
+            String(project.id) === String(projectId)
               ? {
                   ...project,
                   name: updated.name,
@@ -237,7 +237,7 @@ export function useHomeData(): HomeData {
       try {
         for (const file of uploadFiles) {
           try {
-            await uploadImage(Number(uploadProjectId), file);
+            await uploadImage(uploadProjectId, file);
             successCount += 1;
           } catch (caughtError) {
             if (!firstUploadError) {
@@ -247,11 +247,11 @@ export function useHomeData(): HomeData {
         }
 
         if (successCount > 0) {
-          await loadImagesForProject(Number(uploadProjectId));
+          await loadImagesForProject(uploadProjectId);
           setProjects((prev) =>
             sortProjectsByLastUpdate(
               prev.map((project) =>
-                project.id === Number(uploadProjectId)
+                String(project.id) === uploadProjectId
                   ? { ...project, updated_at: new Date().toISOString() }
                   : project
               )

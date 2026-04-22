@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -8,9 +9,17 @@ from app.repositories import image_repository, project_repository
 from app.services import storage_service
 
 
-def create_project(db: Session, name: str):
+def create_project(db: Session, name: str, user_id: str):
+    next_name = name.strip()
+    if not next_name:
+        raise HTTPException(status_code=400, detail="project name cannot be empty")
     try:
-        project = project_repository.create(db, name=name)
+        owner_id = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="invalid token subject")
+
+    try:
+        project = project_repository.create(db, name=next_name, user_id=owner_id)
         db.commit()
         db.refresh(project)
         return project
@@ -19,18 +28,22 @@ def create_project(db: Session, name: str):
         raise
 
 
-def list_projects(db: Session):
-    return project_repository.list_all(db)
+def list_projects(db: Session, user_id: str):
+    try:
+        owner_id = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="invalid token subject")
+    return project_repository.list_by_user_id(db, owner_id)
 
 
-def get_project(db: Session, project_id: int):
+def get_project(db: Session, project_id: UUID):
     project = project_repository.get_by_id(db, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="project not found")
     return project
 
 
-def delete_project(db: Session, project_id: int) -> None:
+def delete_project(db: Session, project_id: UUID) -> None:
     project = get_project(db, project_id)
     try:
         project_repository.delete(db, project)
@@ -40,7 +53,7 @@ def delete_project(db: Session, project_id: int) -> None:
         raise
 
 
-def update_project_name(db: Session, project_id: int, name: str):
+def update_project_name(db: Session, project_id: UUID, name: str):
     project = get_project(db, project_id)
 
     next_name = name.strip()
@@ -57,7 +70,7 @@ def update_project_name(db: Session, project_id: int, name: str):
         raise
 
 
-def upload_image(db: Session, project_id: int, file: UploadFile):
+def upload_image(db: Session, project_id: UUID, file: UploadFile):
     project = get_project(db, project_id)
     original_name, public_path = storage_service.save_project_upload(project_id, file)
     try:
@@ -74,14 +87,14 @@ def upload_image(db: Session, project_id: int, file: UploadFile):
         raise
 
 
-def list_project_images(db: Session, project_id: int):
+def list_project_images(db: Session, project_id: UUID):
     get_project(db, project_id)
     return image_repository.list_by_project_id(db, project_id)
 
 
 def upload_image_from_url(
     db: Session,
-    project_id: int,
+    project_id: UUID,
     image_url: str,
     file_name: str | None = None,
 ):

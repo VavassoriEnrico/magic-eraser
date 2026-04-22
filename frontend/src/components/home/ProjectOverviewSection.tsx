@@ -47,7 +47,7 @@ interface ProjectOverviewSectionProps {
   onUpdatePreviewScrollState: (projectId: number) => void;
   onStartInlineEdit: (project: Project) => void;
   onEditingProjectNameChange: (value: string) => void;
-  onSaveInlineEdit: (projectId: number) => void;
+  onSaveInlineEdit: (projectId: string) => void;
   onCancelInlineEdit: () => void;
   onRequestDeleteProject: (projectId: string) => void;
   onConfirmDeleteProject: (projectId: number) => void;
@@ -110,8 +110,8 @@ export function ProjectOverviewSection({
       ) : (
         <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={4}>
           {orderedProjects.map((project) => {
-            const isExpanded = project.id === Number(expandedProjectId);
-            const isEditing = project.id === Number(editingProjectId);
+            const isExpanded = String(project.id) === expandedProjectId;
+            const isEditing = String(project.id) === editingProjectId;
             const projectImages = projectImagesMap[project.id] ?? [];
             const projectLoading = loadingImagesByProject[project.id];
             const previewState = previewScrollStateByProject[project.id] ?? {
@@ -233,7 +233,7 @@ interface ProjectCardProps {
   onUpdatePreviewScrollState: (projectId: number) => void;
   onStartInlineEdit: (project: Project) => void;
   onEditingProjectNameChange: (value: string) => void;
-  onSaveInlineEdit: (projectId: number) => void;
+  onSaveInlineEdit: (projectId: string) => void;
   onCancelInlineEdit: () => void;
   onRequestDeleteProject: (projectId: string) => void;
   onConfirmDeleteProject: (projectId: number) => void;
@@ -319,7 +319,7 @@ function ProjectCard({
                   <Button
                     size="sm"
                     colorScheme="blue"
-                    onClick={() => onSaveInlineEdit(project.id)}
+                    onClick={() => onSaveInlineEdit(String(project.id))}
                     isDisabled={!editingProjectName.trim()}
                     isLoading={submitting}
                   >

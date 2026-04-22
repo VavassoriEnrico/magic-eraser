@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,8 +10,8 @@ from app.repositories import laboratory_pipeline_repository
 def create_pipeline(
     db: Session,
     *,
-    project_id: int,
-    source_image_id: int,
+    project_id: UUID,
+    source_image_id: UUID,
     start_image_url: str,
     name: str | None = None,
 ) -> LaboratoryPipeline:
@@ -26,7 +28,7 @@ def create_pipeline(
         raise
 
 
-def get_pipeline(db: Session, pipeline_id: int) -> LaboratoryPipeline:
+def get_pipeline(db: Session, pipeline_id: UUID) -> LaboratoryPipeline:
     pipeline = laboratory_pipeline_repository.get_pipeline_by_id(db, pipeline_id)
     if pipeline is None:
         raise HTTPException(status_code=404, detail="pipeline not found")
@@ -40,7 +42,7 @@ def list_pipelines(db: Session) -> list[LaboratoryPipeline]:
 def update_pipeline_status(
     db: Session,
     *,
-    pipeline_id: int,
+    pipeline_id: UUID,
     status: str,
     final_image_url: str | None = None,
 ) -> LaboratoryPipeline:
@@ -60,7 +62,7 @@ def update_pipeline_status(
 def update_pipeline_name(
     db: Session,
     *,
-    pipeline_id: int,
+    pipeline_id: UUID,
     name: str | None,
 ) -> LaboratoryPipeline:
     pipeline = get_pipeline(db, pipeline_id)
@@ -77,7 +79,7 @@ def update_pipeline_name(
         raise
 
 
-def delete_pipeline(db: Session, pipeline_id: int) -> None:
+def delete_pipeline(db: Session, pipeline_id: UUID) -> None:
     pipeline = get_pipeline(db, pipeline_id)
     try:
         laboratory_pipeline_repository.delete_pipeline(db, pipeline)
@@ -89,7 +91,7 @@ def delete_pipeline(db: Session, pipeline_id: int) -> None:
 def create_step(
     db: Session,
     *,
-    pipeline_id: int,
+    pipeline_id: UUID,
     step_index: int,
     process_type: str,
     priority: int,
@@ -124,6 +126,6 @@ def create_step(
         raise
 
 
-def list_steps(db: Session, pipeline_id: int) -> list[LaboratoryPipelineStep]:
+def list_steps(db: Session, pipeline_id: UUID) -> list[LaboratoryPipelineStep]:
     get_pipeline(db, pipeline_id)
     return laboratory_pipeline_repository.list_steps_by_pipeline(db, pipeline_id)

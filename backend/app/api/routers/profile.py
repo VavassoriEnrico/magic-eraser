@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies_auth import get_current_user
 from app.schemas import ProfileRead, ProfileUpdate
 from app.services import profile_service
 

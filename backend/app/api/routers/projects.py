@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from app.dependencies import get_db
+from app.dependencies_auth import get_current_user_id
 from app.schemas import ImageFromUrlCreate, ImageRead, ProjectCreate, ProjectRead, ProjectUpdate
 from app.services import project_service
 
@@ -9,34 +11,41 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 
 #create a new project
 @router.post("", response_model=ProjectRead)
-def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
-    return project_service.create_project(db, project.name)
+def create_project(
+    project: ProjectCreate,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    return project_service.create_project(db, project.name, user_id)
 
 #get all projects in the db
 @router.get("", response_model=list[ProjectRead])
-def read_projects(db: Session = Depends(get_db)):
-    return project_service.list_projects(db)
+def read_projects(
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    return project_service.list_projects(db, user_id)
 
 #get project by id
 @router.get("/{project_id}", response_model=ProjectRead)
-def get_project_by_id(project_id: int, db: Session = Depends(get_db)):
+def get_project_by_id(project_id: UUID, db: Session = Depends(get_db)):
     return project_service.get_project(db, project_id)
 
 #delete project using its id
 @router.delete("/{project_id}")
-def delete_project(project_id: int, db: Session = Depends(get_db)):
+def delete_project(project_id: UUID, db: Session = Depends(get_db)):
     project_service.delete_project(db, project_id)
     return {"message": "Project deleted"}
 
 #update project name using its id, payload is the new name passed as str in project.py
 @router.patch("/{project_id}", response_model=ProjectRead)
-def update_project(project_id: int, payload: ProjectUpdate, db: Session = Depends(get_db)):
+def update_project(project_id: UUID, payload: ProjectUpdate, db: Session = Depends(get_db)):
     return project_service.update_project_name(db, project_id, payload.name)
 
 #upload image to project using project_id and file as payload (UploadFile), the difference 
 @router.post("/{project_id}/images/upload", response_model=ImageRead)
 def upload_image(
-    project_id: int,
+    project_id: UUID,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
@@ -45,7 +54,7 @@ def upload_image(
 
 @router.post("/{project_id}/images/from-url", response_model=ImageRead)
 def upload_image_from_url(
-    project_id: int,
+    project_id: UUID,
     payload: ImageFromUrlCreate,
     db: Session = Depends(get_db),
 ):
@@ -58,5 +67,5 @@ def upload_image_from_url(
 
 #list all images of a project using its id
 @router.get("/{project_id}/images", response_model=list[ImageRead])
-def read_project_images(project_id: int, db: Session = Depends(get_db)):
+def read_project_images(project_id: UUID, db: Session = Depends(get_db)):
     return project_service.list_project_images(db, project_id)
