@@ -90,15 +90,17 @@ export function LabCellCard({
   ).filter((setting) => !["use_convex_hull_mask", "convex_hull_expand_px"].includes(setting.key));
   const [showMaskOverlay, setShowMaskOverlay] = useState(true);
   const isWorking = cell.status === "running" || cell.outputPreviewLoading;
+  const supportsMaskOverlay =
+    cell.processType === "generate_from_prompt" || cell.processType === "remove_with_mask";
 
   useEffect(() => {
-    if (cell.processType !== "generate_from_prompt" || !maskOverlayUrl) {
+    if (!supportsMaskOverlay || !maskOverlayUrl) {
       setShowMaskOverlay(false);
       return;
     }
 
     setShowMaskOverlay(true);
-  }, [cell.processType, maskOverlayUrl]);
+  }, [maskOverlayUrl, supportsMaskOverlay]);
 
   return (
     <Box p={4} borderRadius="lg" border="1px solid" borderColor={panelBorder}>
@@ -148,7 +150,7 @@ export function LabCellCard({
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
             ) : null}
-            {inputUrl && maskOverlayUrl && cell.processType === "generate_from_prompt" && showMaskOverlay ? (
+            {inputUrl && maskOverlayUrl && supportsMaskOverlay && showMaskOverlay ? (
               <Box
                 as="img"
                 src={maskOverlayUrl}
@@ -164,7 +166,7 @@ export function LabCellCard({
               />
             ) : null}
           </Box>
-          {maskOverlayUrl && cell.processType === "generate_from_prompt" ? (
+          {maskOverlayUrl && supportsMaskOverlay ? (
             <VStack align="stretch" spacing={3}>
               <FormControl display="flex" alignItems="center" justifyContent="space-between">
                 <Box pr={4}>
@@ -172,7 +174,7 @@ export function LabCellCard({
                     Show mask overlay
                   </FormLabel>
                   <Text color={subtleText} fontSize="xs">
-                    Overlay the white masked area on top of the fill input preview.
+                    Overlay the white masked area on top of the process input preview.
                   </Text>
                 </Box>
                 <Switch
@@ -234,6 +236,36 @@ export function LabCellCard({
                 }
 
                 if (setting.type === "select") {
+                  const isRemovalModeButtons =
+                    setting.key === "mode" &&
+                    cell.processType === "remove_with_mask" &&
+                    (setting.options ?? []).length === 3;
+
+                  if (isRemovalModeButtons) {
+                    return (
+                      <FormControl key={setting.key}>
+                        <FormLabel fontSize="sm">{setting.label}</FormLabel>
+                        <ButtonGroup isAttached size="sm" variant="outline">
+                          {(setting.options ?? []).map((option) => (
+                            <Button
+                              key={option.value}
+                              variant={currentValue === option.value ? "solid" : "outline"}
+                              onClick={() => onUpdateAdditionalSetting(setting.key, option.value)}
+                              isDisabled={cell.status === "running" || runningAll}
+                            >
+                              {option.label}
+                            </Button>
+                          ))}
+                        </ButtonGroup>
+                        {setting.description ? (
+                          <Text color={subtleText} fontSize="xs" mt={1}>
+                            {setting.description}
+                          </Text>
+                        ) : null}
+                      </FormControl>
+                    );
+                  }
+
                   return (
                     <FormControl key={setting.key}>
                       <FormLabel fontSize="sm">{setting.label}</FormLabel>

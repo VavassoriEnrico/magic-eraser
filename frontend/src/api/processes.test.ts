@@ -7,6 +7,7 @@ import {
   getPipeline,
   getPipelineSteps,
   getProcessCatalog,
+  getRemovalModels,
   getSegmentModels,
   listPipelines,
   renamePipeline,
@@ -51,6 +52,14 @@ describe("processes api", () => {
     await getSegmentModels();
 
     expect(request).toHaveBeenCalledWith("/processes/segment-models");
+  });
+
+  test("calls request correctly for getRemovalModels", async () => {
+    vi.mocked(request).mockResolvedValueOnce([] as never);
+
+    await getRemovalModels();
+
+    expect(request).toHaveBeenCalledWith("/processes/remove-models");
   });
 
 

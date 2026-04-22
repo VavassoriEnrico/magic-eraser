@@ -45,6 +45,10 @@ def get_segment_model_options() -> list[ProcessModelOption]:
     return _build_model_options("segment_from_prompt")
 
 
+def get_removal_model_options() -> list[ProcessModelOption]:
+    return _build_model_options("remove_with_mask")
+
+
 def get_generation_model_options() -> list[ProcessModelOption]:
     return _build_model_options("generate_from_prompt")
 
@@ -67,6 +71,7 @@ def get_process_catalog() -> list[ProcessCatalogItem]:
             prompt_required=False,
             explanation=RemoveWithMaskRequest.model_fields["explanation"].default,
             priority_explanation=RemoveWithMaskRequest.model_fields["priority_explanation"].default,
+            model_options=get_removal_model_options(),
         ),
         ProcessCatalogItem(
             process_type="generate_from_prompt",

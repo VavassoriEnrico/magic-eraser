@@ -47,6 +47,25 @@ const FALLBACK_CATALOG: ProcessCatalogItem[] = [
     title: "Remove",
     priority: 2,
     prompt_required: false,
+    model_options: [{
+      key: "finegrain-eraser",
+      label: "Finegrain Eraser",
+      default: true,
+      additional_settings: [
+        {
+          key: "mode",
+          label: "Mode",
+          type: "select",
+          description: "Choose the removal quality mode used by Finegrain Eraser.",
+          default_value: "standard",
+          options: [
+            { value: "express", label: "Express" },
+            { value: "standard", label: "Standard" },
+            { value: "premium", label: "Premium" },
+          ],
+        },
+      ],
+    }],
   },
   {
     process_type: "generate_from_prompt",
@@ -115,6 +134,33 @@ function createCell(def: ProcessCatalogItem): LabCell {
   };
 }
 
+function getEditableImageUrlBeforeCell(
+  cellIndex: number,
+  sourceCells: LabCell[],
+  selectedImage: ImageAsset | null,
+) {
+  if (!selectedImage) {
+    return "";
+  }
+
+  const cell = sourceCells[cellIndex];
+  if (!cell) {
+    return "";
+  }
+
+  for (let i = cellIndex - 1; i >= 0; i -= 1) {
+    const candidate = sourceCells[i];
+    if (candidate.processType === "segment_from_prompt") {
+      continue;
+    }
+
+    const candidateOutputUrl = candidate.outputUrl.trim();
+    return candidateOutputUrl ? toImageUrl(candidateOutputUrl) : "";
+  }
+
+  return toImageUrl(selectedImage.filePath);
+}
+
 function getSegmentationContext(cellIndex: number, sourceCells: LabCell[], selectedImage: ImageAsset | null) {
   for (let i = cellIndex - 1; i >= 0; i -= 1) {
     const candidate = sourceCells[i];
@@ -127,13 +173,7 @@ function getSegmentationContext(cellIndex: number, sourceCells: LabCell[], selec
       return null;
     }
 
-    const inputImageUrl =
-      i === 0
-        ? selectedImage
-          ? toImageUrl(selectedImage.filePath)
-          : ""
-        : toImageUrl(sourceCells[i - 1].outputUrl);
-
+    const inputImageUrl = getEditableImageUrlBeforeCell(i, sourceCells, selectedImage);
     if (!inputImageUrl) {
       return null;
     }
@@ -152,25 +192,7 @@ function getEffectiveInputForCell(
   sourceCells: LabCell[],
   selectedImage: ImageAsset | null,
 ) {
-  if (!selectedImage) {
-    return "";
-  }
-
-  const cell = sourceCells[cellIndex];
-  if (!cell) {
-    return "";
-  }
-
-  if (cell.processType === "generate_from_prompt") {
-    const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
-    return segmentationContext?.inputImageUrl ?? "";
-  }
-
-  if (cellIndex === 0) {
-    return toImageUrl(selectedImage.filePath);
-  }
-
-  return toImageUrl(sourceCells[cellIndex - 1].outputUrl);
+  return getEditableImageUrlBeforeCell(cellIndex, sourceCells, selectedImage);
 }
 
 function createCellFromStep(def: ProcessCatalogItem, step: PipelineStep): LabCell {
@@ -233,7 +255,7 @@ export function getMaskOverlayForCell(
   selectedImage: ImageAsset | null,
 ) {
   const cell = sourceCells[cellIndex];
-  if (!cell || cell.processType !== "generate_from_prompt") {
+  if (!cell || (cell.processType !== "generate_from_prompt" && cell.processType !== "remove_with_mask")) {
     return "";
   }
 
@@ -440,7 +462,11 @@ export function useLaboratoryNotebook() {
   }
 
   function getAvailableProcessesAfter(afterIndex: number, sourceCells: LabCell[] = cells) {
-    const previousPriority = afterIndex >= 0 ? sourceCells[afterIndex]?.priority ?? 0 : 0;
+    const previousCell = afterIndex >= 0 ? sourceCells[afterIndex] : undefined;
+    const previousPriority =
+      previousCell?.processType === "remove_with_mask" || previousCell?.processType === "generate_from_prompt"
+        ? 0
+        : previousCell?.priority ?? 0;
     const nextPriority =
       afterIndex + 1 < sourceCells.length
         ? sourceCells[afterIndex + 1]?.priority ?? Number.MAX_SAFE_INTEGER
@@ -462,10 +488,19 @@ export function useLaboratoryNotebook() {
     }
 
     const previousProcessType = afterIndex >= 0 ? cells[afterIndex]?.processType : undefined;
-    if (previousProcessType === "segment_from_prompt") {
-      const preferredFill = available.find((processItem) => processItem.process_type === "generate_from_prompt");
-      if (preferredFill) {
-        return preferredFill.process_type;
+    const preferredNextProcessType =
+      previousProcessType === "segment_from_prompt"
+        ? "remove_with_mask"
+        : previousProcessType === "remove_with_mask"
+          ? "generate_from_prompt"
+          : previousProcessType === "generate_from_prompt"
+            ? "segment_from_prompt"
+            : undefined;
+
+    if (preferredNextProcessType) {
+      const preferredProcess = available.find((processItem) => processItem.process_type === preferredNextProcessType);
+      if (preferredProcess) {
+        return preferredProcess.process_type;
       }
     }
 
@@ -675,7 +710,6 @@ export function useLaboratoryNotebook() {
     cell: LabCell,
     sourceCells: LabCell[],
     inputImageUrl: string,
-    previousOutputUrl: string,
   ): ProcessRunPayload {
     const basePayload: ProcessRunPayload = {
       process_type: cell.processType,
@@ -699,10 +733,15 @@ export function useLaboratoryNotebook() {
     }
 
     if (cell.processType === "remove_with_mask") {
+      const additionalSettings = sanitizeAdditionalSettings(cell.additionalSettings);
+      const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
+
       return {
         ...basePayload,
-        input_image_url: selectedImage ? toImageUrl(selectedImage.filePath) : inputImageUrl,
-        mask_image_url: toImageUrl(previousOutputUrl),
+        input_image_url: inputImageUrl,
+        mask_image_url: segmentationContext?.maskImageUrl,
+        model_key: cell.modelKey || undefined,
+        additional_settings: Object.keys(additionalSettings).length > 0 ? additionalSettings : undefined,
       };
     }
 
@@ -715,7 +754,7 @@ export function useLaboratoryNotebook() {
         prompt: cell.prompt,
         model_key: cell.modelKey || undefined,
         additional_settings: Object.keys(additionalSettings).length > 0 ? additionalSettings : undefined,
-        input_image_url: segmentationContext?.inputImageUrl || inputImageUrl,
+        input_image_url: inputImageUrl,
         mask_image_url: segmentationContext?.maskImageUrl,
       };
     }
@@ -735,16 +774,21 @@ export function useLaboratoryNotebook() {
     if (!cell) return null;
 
     const inputImageUrl = getInputForCell(cellIndex, currentCells);
-    const previousOutputUrl = cellIndex > 0 ? currentCells[cellIndex - 1].outputUrl : "";
 
     if (!inputImageUrl) {
       updateCell(cellIndex, { status: "failed", error: "Previous cell output missing" });
       return null;
     }
 
-    if (cell.processType === "remove_with_mask" && !previousOutputUrl) {
-      updateCell(cellIndex, { status: "failed", error: "Mask image missing from previous cell" });
-      return null;
+    if (cell.processType === "remove_with_mask") {
+      const segmentationContext = getSegmentationContext(cellIndex, currentCells, selectedImage);
+      if (!segmentationContext?.maskImageUrl) {
+        updateCell(cellIndex, {
+          status: "failed",
+          error: "Removal requires a mask from a previous segmentation cell",
+        });
+        return null;
+      }
     }
 
     if (cell.processType === "generate_from_prompt") {
@@ -770,7 +814,7 @@ export function useLaboratoryNotebook() {
     setSaveError("");
 
     try {
-      const payload = buildPayload(cellIndex, cell, currentCells, inputImageUrl, previousOutputUrl);
+      const payload = buildPayload(cellIndex, cell, currentCells, inputImageUrl);
       const response = await runProcess(payload);
       updateCell(cellIndex, {
         status: "done",
@@ -875,7 +919,6 @@ export function useLaboratoryNotebook() {
           }
 
           const inputImageUrl = getInputForCell(i, cells);
-          const previousOutputUrl = i > 0 ? cells[i - 1].outputUrl : "";
           const segmentationContext = getSegmentationContext(i, cells, selectedImage);
 
           await createPipelineStep(pipelineId, {
@@ -885,16 +928,11 @@ export function useLaboratoryNotebook() {
             model_key: cell.modelKey || undefined,
             prompt: cell.prompt || undefined,
             additional_settings_json: sanitizeAdditionalSettings(cell.additionalSettings),
-            input_image_url:
-              cell.processType === "generate_from_prompt"
-                ? segmentationContext?.inputImageUrl || inputImageUrl
-                : inputImageUrl,
+            input_image_url: inputImageUrl,
             mask_image_url:
-              cell.processType === "remove_with_mask"
-                ? previousOutputUrl || undefined
-                : cell.processType === "generate_from_prompt"
+              cell.processType === "remove_with_mask" || cell.processType === "generate_from_prompt"
                   ? segmentationContext?.maskImageUrl
-                  : undefined,
+                : undefined,
             output_image_url: cell.outputUrl || undefined,
             status: cell.status === "done" ? "done" : "failed",
             error_message: cell.error || undefined,
