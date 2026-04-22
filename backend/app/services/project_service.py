@@ -5,7 +5,11 @@ from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.integrations.remote_image_fetcher import fetch_remote_image
-from app.repositories import image_repository, project_repository
+from app.repositories import (
+    image_repository,
+    laboratory_pipeline_repository,
+    project_repository,
+)
 from app.services import storage_service
 
 
@@ -46,6 +50,9 @@ def get_project(db: Session, project_id: UUID):
 def delete_project(db: Session, project_id: UUID) -> None:
     project = get_project(db, project_id)
     try:
+        pipelines = laboratory_pipeline_repository.list_pipelines_by_project_id(db, project_id)
+        for pipeline in pipelines:
+            laboratory_pipeline_repository.delete_pipeline(db, pipeline)
         project_repository.delete(db, project)
         db.commit()
     except Exception:

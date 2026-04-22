@@ -83,6 +83,7 @@ def delete_pipeline(db: Session, pipeline_id: UUID) -> None:
     pipeline = get_pipeline(db, pipeline_id)
     try:
         laboratory_pipeline_repository.delete_pipeline(db, pipeline)
+        db.commit()
     except Exception:
         db.rollback()
         raise

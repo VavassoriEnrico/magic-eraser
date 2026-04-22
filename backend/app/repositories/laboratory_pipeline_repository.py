@@ -34,6 +34,24 @@ def list_pipelines(db: Session) -> list[LaboratoryPipeline]:
     return db.query(LaboratoryPipeline).order_by(LaboratoryPipeline.updated_at.desc()).all()
 
 
+def list_pipelines_by_project_id(db: Session, project_id: UUID) -> list[LaboratoryPipeline]:
+    return (
+        db.query(LaboratoryPipeline)
+        .filter(LaboratoryPipeline.project_id == project_id)
+        .order_by(LaboratoryPipeline.updated_at.desc())
+        .all()
+    )
+
+
+def has_pipeline_for_source_image(db: Session, source_image_id: UUID) -> bool:
+    return (
+        db.query(LaboratoryPipeline.id)
+        .filter(LaboratoryPipeline.source_image_id == source_image_id)
+        .first()
+        is not None
+    )
+
+
 def update_pipeline_status(
     db: Session,
     *,
@@ -66,7 +84,6 @@ def update_pipeline_name(
 
 def delete_pipeline(db: Session, pipeline: LaboratoryPipeline) -> None:
     db.delete(pipeline)
-    db.commit()
 
 
 def create_step(
