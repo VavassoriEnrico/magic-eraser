@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.catalogs.process_catalog import (
     get_generation_model_options,
     get_process_catalog as build_process_catalog,
+    get_removal_model_options,
     get_segment_model_options,
 )
 from app.dependencies import get_db
@@ -30,6 +31,12 @@ def get_process_catalog():
 @router.get("/segment-models", response_model=list[ProcessModelOption])
 def list_segment_models():
     return get_segment_model_options()
+
+
+@router.get("/remove-models", response_model=list[ProcessModelOption])
+def list_remove_models():
+    return get_removal_model_options()
+
 
 @router.get("/generation-models", response_model=list[ProcessModelOption])
 def list_generation_models():

@@ -75,6 +75,8 @@ class RemoveWithMaskRequest(BaseProcessRequest):
     priority: Literal[2]
     input_image_url: str
     mask_image_url: str
+    model_key: str | None = None
+    additional_settings: dict[str, bool | int | float | str] = Field(default_factory=dict)
 
 
 ProcessRunRequest = Annotated[

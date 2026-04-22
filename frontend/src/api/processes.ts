@@ -30,6 +30,10 @@ export function getSegmentModels() {
   return request<SegmentModel[]>("/processes/segment-models");
 }
 
+export function getRemovalModels() {
+  return request<SegmentModel[]>("/processes/remove-models");
+}
+
 export function getProcessCatalog() {
   return request<ProcessCatalogItem[]>("/processes/catalog");
 }
