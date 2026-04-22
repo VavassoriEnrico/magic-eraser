@@ -10,7 +10,7 @@ import theme from "../../theme";
 function renderSection(overrideProps?: Partial<React.ComponentProps<typeof ProjectOverviewSection>>) {
   const projects: Project[] = [
     {
-      id: 1,
+      id: "1",
       name: "Project One",
       created_at: "2026-04-19T08:00:00Z",
       updated_at: "2026-04-20T10:00:00Z",
@@ -19,8 +19,8 @@ function renderSection(overrideProps?: Partial<React.ComponentProps<typeof Proje
 
   const projectImages: ImageAsset[] = [
     {
-      id: 7,
-      project_id: 1,
+      id: "7",
+      project_id: "1",
       fileName: "sample.png",
       filePath: "/uploads/sample.png",
       created_at: "2026-04-20T09:00:00Z",
@@ -31,7 +31,7 @@ function renderSection(overrideProps?: Partial<React.ComponentProps<typeof Proje
     projects,
     orderedProjects: projects,
     expandedProjectId: "1",
-    projectImagesMap: { 1: projectImages },
+    projectImagesMap: { "1": projectImages },
     projectName: "Draft project",
     loadingProjects: false,
     loadingImagesByProject: {},
@@ -40,13 +40,13 @@ function renderSection(overrideProps?: Partial<React.ComponentProps<typeof Proje
     editingProjectName: "",
     deleteConfirmProjectId: "",
     previewScrollStateByProject: {
-      1: {
+      "1": {
         hasOverflow: true,
         canScrollLeft: true,
         canScrollRight: true,
       },
     },
-    imageStripRefs: { current: { 1: null } },
+    imageStripRefs: { current: { "1": null } },
     onProjectNameChange: vi.fn(),
     onCreateProject: vi.fn(),
     onToggleProject: vi.fn(),
@@ -158,6 +158,6 @@ describe("ProjectOverviewSection", () => {
 
     await user.click(screen.getByText("Project One"));
 
-    expect(props.onToggleProject).toHaveBeenCalledWith(1);
+    expect(props.onToggleProject).toHaveBeenCalledWith("1");
   });
 });

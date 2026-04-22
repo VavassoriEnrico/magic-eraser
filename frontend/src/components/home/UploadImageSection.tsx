@@ -6,7 +6,7 @@ import { BiArrowFromBottom } from "react-icons/bi";
 import { GlassPanel } from "../common/GlassPanel";
 
 interface UploadProjectOption {
-  id: number;
+  id: string;
   name: string;
 }
 

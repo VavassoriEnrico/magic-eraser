@@ -1,11 +1,11 @@
 import { request } from "./client";
 import type { ImageAsset } from "../types/api";
 
-export function getProjectImages(projectId: number | string) {
+export function getProjectImages(projectId: string) {
   return request<ImageAsset[]>(`/projects/${projectId}/images`);
 }
 
-export function uploadImage(projectId: number | string, file: File) {
+export function uploadImage(projectId: string, file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -15,7 +15,7 @@ export function uploadImage(projectId: number | string, file: File) {
   });
 }
 
-export function uploadImageFromUrl(projectId: number | string, imageUrl: string, fileName?: string) {
+export function uploadImageFromUrl(projectId: string, imageUrl: string, fileName?: string) {
   return request<ImageAsset>(`/projects/${projectId}/images/from-url`, {
     method: "POST",
     body: JSON.stringify({
@@ -25,6 +25,6 @@ export function uploadImageFromUrl(projectId: number | string, imageUrl: string,
   });
 }
 
-export function deleteImage(imageId: number) {
+export function deleteImage(imageId: string) {
   return request<{ message: string }>(`/images/${imageId}`, { method: "DELETE" });
 }

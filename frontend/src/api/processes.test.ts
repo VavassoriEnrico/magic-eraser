@@ -27,8 +27,8 @@ describe("processes api", () => {
   test("calls request correctly for runProcess", async () => {
     const payload = {
       process_type: "inpaint",
-      project_id: 1,
-      image_id: 2,
+      project_id: "1",
+      image_id: "2",
     };
 
     vi.mocked(request).mockResolvedValueOnce({} as never);
@@ -81,7 +81,7 @@ describe("processes api", () => {
   test("calls request correctly for getPipeline", async () => {
     vi.mocked(request).mockResolvedValueOnce({} as never);
 
-    await getPipeline(12);
+    await getPipeline("12");
 
     expect(request).toHaveBeenCalledWith("/laboratory-pipelines/12");
   });
@@ -89,7 +89,9 @@ describe("processes api", () => {
   //tests startPipeline calls request with the correct path and options
   test("calls request correctly for startPipeline", async () => {
     const payload = {
-      project_id: 3,
+      project_id: "3",
+      source_image_id: "30",
+      start_image_url: "http://127.0.0.1:8000/uploads/source.png",
       name: "Test pipeline",
     };
 
@@ -113,7 +115,7 @@ describe("processes api", () => {
 
     vi.mocked(request).mockResolvedValueOnce({} as never);
 
-    await finishPipeline(8, payload as never);
+    await finishPipeline("8", payload as never);
 
     expect(request).toHaveBeenCalledWith("/laboratory-pipelines/8/finish", {
       method: "POST",
@@ -127,7 +129,7 @@ describe("processes api", () => {
   test("calls request correctly for getPipelineSteps", async () => {
     vi.mocked(request).mockResolvedValueOnce([] as never);
 
-    await getPipelineSteps(5);
+    await getPipelineSteps("5");
 
     expect(request).toHaveBeenCalledWith("/laboratory-pipelines/5/steps");
   });
@@ -155,7 +157,7 @@ describe("processes api", () => {
 
     vi.mocked(request).mockResolvedValueOnce({} as never);
 
-    await createPipelineStep(4, payload);
+    await createPipelineStep("4", payload);
 
     expect(request).toHaveBeenCalledWith("/laboratory-pipelines/4/steps", {
       method: "POST",
@@ -168,7 +170,7 @@ describe("processes api", () => {
   test("calls request correctly for renamePipeline", async () => {
     vi.mocked(request).mockResolvedValueOnce({} as never);
 
-    await renamePipeline(6, "Renamed pipeline");
+    await renamePipeline("6", "Renamed pipeline");
 
     expect(request).toHaveBeenCalledWith("/laboratory-pipelines/6/name", {
       method: "PATCH",
@@ -182,7 +184,7 @@ describe("processes api", () => {
   test("calls request correctly for deletePipeline", async () => {
     vi.mocked(request).mockResolvedValueOnce(undefined as never);
 
-    await deletePipeline(9);
+    await deletePipeline("9");
 
     expect(request).toHaveBeenCalledWith("/laboratory-pipelines/9", {
       method: "DELETE",

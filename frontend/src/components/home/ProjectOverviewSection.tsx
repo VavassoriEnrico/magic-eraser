@@ -27,30 +27,30 @@ interface ProjectOverviewSectionProps {
   projects: Project[];
   orderedProjects: Project[];
   expandedProjectId: string;
-  projectImagesMap: Record<number, ImageAsset[]>;
+  projectImagesMap: Record<string, ImageAsset[]>;
   projectName: string;
   loadingProjects: boolean;
-  loadingImagesByProject: Record<number, boolean>;
+  loadingImagesByProject: Record<string, boolean>;
   submitting: boolean;
   editingProjectId: string;
   editingProjectName: string;
   deleteConfirmProjectId: string;
-  previewScrollStateByProject: Record<number, PreviewScrollState>;
-  imageStripRefs: MutableRefObject<Record<number, HTMLDivElement | null>>;
+  previewScrollStateByProject: Record<string, PreviewScrollState>;
+  imageStripRefs: MutableRefObject<Record<string, HTMLDivElement | null>>;
   onProjectNameChange: (value: string) => void;
   onCreateProject: (event: FormEvent<HTMLFormElement>) => void;
-  onToggleProject: (projectId: number) => void;
+  onToggleProject: (projectId: string) => void;
   onOpenImagePopup: (image: ImageAsset) => void;
-  onOpenLaboratory: (image: ImageAsset, projectId: number) => void;
-  onDeleteImage: (imageId: number, projectId: number) => void;
-  onScrollPreview: (projectId: number, direction: number) => void;
-  onUpdatePreviewScrollState: (projectId: number) => void;
+  onOpenLaboratory: (image: ImageAsset, projectId: string) => void;
+  onDeleteImage: (imageId: string, projectId: string) => void;
+  onScrollPreview: (projectId: string, direction: number) => void;
+  onUpdatePreviewScrollState: (projectId: string) => void;
   onStartInlineEdit: (project: Project) => void;
   onEditingProjectNameChange: (value: string) => void;
   onSaveInlineEdit: (projectId: string) => void;
   onCancelInlineEdit: () => void;
   onRequestDeleteProject: (projectId: string) => void;
-  onConfirmDeleteProject: (projectId: number) => void;
+  onConfirmDeleteProject: (projectId: string) => void;
 }
 
 export function ProjectOverviewSection({
@@ -224,19 +224,19 @@ interface ProjectCardProps {
   submitting: boolean;
   editingProjectName: string;
   deleteConfirmProjectId: string;
-  imageStripRefs: MutableRefObject<Record<number, HTMLDivElement | null>>;
-  onToggleProject: (projectId: number) => void;
+  imageStripRefs: MutableRefObject<Record<string, HTMLDivElement | null>>;
+  onToggleProject: (projectId: string) => void;
   onOpenImagePopup: (image: ImageAsset) => void;
-  onOpenLaboratory: (image: ImageAsset, projectId: number) => void;
-  onDeleteImage: (imageId: number, projectId: number) => void;
-  onScrollPreview: (projectId: number, direction: number) => void;
-  onUpdatePreviewScrollState: (projectId: number) => void;
+  onOpenLaboratory: (image: ImageAsset, projectId: string) => void;
+  onDeleteImage: (imageId: string, projectId: string) => void;
+  onScrollPreview: (projectId: string, direction: number) => void;
+  onUpdatePreviewScrollState: (projectId: string) => void;
   onStartInlineEdit: (project: Project) => void;
   onEditingProjectNameChange: (value: string) => void;
   onSaveInlineEdit: (projectId: string) => void;
   onCancelInlineEdit: () => void;
   onRequestDeleteProject: (projectId: string) => void;
-  onConfirmDeleteProject: (projectId: number) => void;
+  onConfirmDeleteProject: (projectId: string) => void;
 }
 
 function ProjectCard({
@@ -452,12 +452,12 @@ interface ProjectImageStripProps {
   compact?: boolean;
   previewState: PreviewScrollState;
   submitting: boolean;
-  imageStripRefs: MutableRefObject<Record<number, HTMLDivElement | null>>;
+  imageStripRefs: MutableRefObject<Record<string, HTMLDivElement | null>>;
   onOpenImagePopup: (image: ImageAsset) => void;
-  onOpenLaboratory: (image: ImageAsset, projectId: number) => void;
-  onDeleteImage: (imageId: number, projectId: number) => void;
-  onScrollPreview: (projectId: number, direction: number) => void;
-  onUpdatePreviewScrollState: (projectId: number) => void;
+  onOpenLaboratory: (image: ImageAsset, projectId: string) => void;
+  onDeleteImage: (imageId: string, projectId: string) => void;
+  onScrollPreview: (projectId: string, direction: number) => void;
+  onUpdatePreviewScrollState: (projectId: string) => void;
 }
 
 function ProjectImageStrip({

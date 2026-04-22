@@ -43,9 +43,9 @@ vi.mock("../components/home/ProjectOverviewSection", () => ({
   ProjectOverviewSection: (props: {
     projects: Project[];
     orderedProjects: Project[];
-    onOpenLaboratory: (image: ImageAsset, projectId: number) => void;
+    onOpenLaboratory: (image: ImageAsset, projectId: string) => void;
     onCreateProject: (event: React.FormEvent<HTMLFormElement>) => void;
-    onToggleProject: (projectId: number) => void;
+    onToggleProject: (projectId: string) => void;
   }) => (
     <div>
       <div data-testid="ordered-projects">{props.orderedProjects.map((project) => project.name).join(",")}</div>
@@ -54,7 +54,7 @@ vi.mock("../components/home/ProjectOverviewSection", () => ({
         onClick={() =>
           props.onOpenLaboratory(
             {
-              id: 7,
+              id: "7",
               project_id: props.projects[0].id,
               fileName: "image.png",
               filePath: "/uploads/image.png",
@@ -140,13 +140,13 @@ function renderPage() {
 describe("HomePage", () => {
   const projects: Project[] = [
     {
-      id: 1,
+      id: "1",
       name: "Alpha",
       created_at: "2026-04-19T08:00:00Z",
       updated_at: "2026-04-19T10:00:00Z",
     },
     {
-      id: 2,
+      id: "2",
       name: "Beta",
       created_at: "2026-04-20T08:00:00Z",
       updated_at: "2026-04-20T10:00:00Z",
@@ -178,8 +178,8 @@ describe("HomePage", () => {
       uploadProjectId: "1",
       expandedProjectId: "2",
       projectImagesMap: {
-        1: [],
-        2: [],
+        "1": [],
+        "2": [],
       },
       projectName: "Draft project",
       loadingProjects: false,
@@ -242,7 +242,7 @@ describe("HomePage", () => {
 
     await user.click(screen.getByRole("button", { name: "Open laboratory" }));
 
-    expect(window.sessionStorage.getItem("laboratory:selected-image")).toContain("\"id\":7");
+    expect(window.sessionStorage.getItem("laboratory:selected-image")).toContain("\"id\":\"7\"");
     expect(pushStateSpy).toHaveBeenCalledWith({}, "", "/laboratory?projectId=1&imageId=7");
     expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
   });

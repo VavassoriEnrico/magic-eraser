@@ -31,8 +31,8 @@ vi.mock("../api/processes", () => ({
 }));
 
 const selectedImage: ImageAsset = {
-  id: 7,
-  project_id: 3,
+  id: "7",
+  project_id: "3",
   fileName: "source.png",
   filePath: "/uploads/source.png",
   created_at: "2026-04-20T08:00:00Z",
@@ -149,11 +149,11 @@ describe("useLaboratoryNotebook", () => {
     vi.mocked(getPipeline).mockResolvedValue({} as never);
     vi.mocked(getPipelineSteps).mockResolvedValue([]);
     vi.mocked(startPipeline).mockResolvedValue({
-      id: 21,
+      id: "21",
       name: "Saved pipeline",
     } as never);
     vi.mocked(finishPipeline).mockResolvedValue({
-      id: 21,
+      id: "21",
       name: "Saved pipeline",
     } as never);
     vi.mocked(createPipelineStep).mockResolvedValue({} as never);
@@ -173,7 +173,7 @@ describe("useLaboratoryNotebook", () => {
     const { result } = renderHook(() => useLaboratoryNotebook());
 
     await waitFor(() => {
-      expect(result.current.selectedImage?.id).toBe(7);
+      expect(result.current.selectedImage?.id).toBe("7");
       expect(result.current.cells).toHaveLength(1);
     });
 
@@ -227,12 +227,12 @@ describe("useLaboratoryNotebook", () => {
     });
 
     expect(startPipeline).toHaveBeenCalledWith({
-      project_id: 3,
-      source_image_id: 7,
+      project_id: "3",
+      source_image_id: "7",
       start_image_url: "http://127.0.0.1:8000/uploads/source.png",
       name: "My pipeline",
     });
-    expect(createPipelineStep).toHaveBeenCalledWith(21, {
+    expect(createPipelineStep).toHaveBeenCalledWith("21", {
       step_index: 1,
       process_type: "segment_from_prompt",
       priority: 1,
@@ -245,11 +245,11 @@ describe("useLaboratoryNotebook", () => {
       status: "done",
       error_message: undefined,
     });
-    expect(finishPipeline).toHaveBeenCalledWith(21, {
+    expect(finishPipeline).toHaveBeenCalledWith("21", {
       status: "done",
       final_image_url: "/uploads/mask.png",
     });
-    expect(result.current.activePipelineId).toBe(21);
+    expect(result.current.activePipelineId).toBe("21");
     expect(result.current.saveMessage).toBe("Pipeline saved");
     expect(result.current.saveError).toBe("");
   });
@@ -281,11 +281,11 @@ describe("useLaboratoryNotebook", () => {
     });
 
     expect(uploadImageFromUrl).toHaveBeenCalledWith(
-      3,
+      "3",
       "http://127.0.0.1:8000/uploads/mask.png",
       expect.stringMatching(/^segment_from_prompt-/),
     );
-    expect(finishPipeline).toHaveBeenLastCalledWith(21, {
+    expect(finishPipeline).toHaveBeenLastCalledWith("21", {
       status: "done",
       final_image_url: "/uploads/mask.png",
     });
