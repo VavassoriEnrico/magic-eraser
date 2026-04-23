@@ -8,13 +8,14 @@ import {
   getPipeline,
   getPipelineSteps,
   getProcessCatalog,
-  renamePipeline,
+  replacePipeline,
   runProcess,
   startPipeline,
 } from "../api/processes";
 import type {
   AdditionalSettingDefinition,
   ImageAsset,
+  PipelineReplaceStepPayload,
   PipelineStep,
   ProcessCatalogItem,
   ProcessRunPayload,
@@ -27,6 +28,15 @@ import { toImageUrl } from "../utils/images";
 const STORAGE_KEY = "laboratory:selected-image";
 const DEFAULT_FILL_PROMPT = "Fill the missing area naturally using the surrounding background.";
 const DEFAULT_OUTPUT_CONVEX_HULL_MODE: ConvexHullPreviewMode = "medium";
+export type PipelineSaveMode = "overwrite" | "save_as_new";
+const NOTEBOOK_EXPLANATION_LIST = [
+  "Standard pipeline:",
+  "- Segmentation: write as prompt what you want to edit, ex. 'cat' 'bottle'",
+  "- - you obtain the mask of that object. The mask will then be used in the future steps.",
+  "- Remove: the mask is applied to the image and used to remove the object.",
+  "- Fill: write as prompt what you want to add in the outlined area",
+  "You can experiment quite freely with the workflow, but the first step should always be a segmentation!",
+];
 
 const FALLBACK_CATALOG: ProcessCatalogItem[] = [
   {
@@ -221,6 +231,14 @@ function createCellFromStep(def: ProcessCatalogItem, step: PipelineStep): LabCel
   };
 }
 
+function getPipelineNameFromImage(selectedImage: ImageAsset | null) {
+  if (!selectedImage) {
+    return "";
+  }
+
+  return selectedImage.fileName?.startsWith("Pipeline #") ? "" : selectedImage.fileName ?? "";
+}
+
 function syncCellWithDefinition(cell: LabCell, def: ProcessCatalogItem): LabCell {
   const modelOptions = def.model_options ?? [];
   const defaultModel = (def.model_options ?? []).find((model) => model.default) ?? def.model_options?.[0];
@@ -289,6 +307,7 @@ export function useLaboratoryNotebook() {
   const [cells, setCells] = useState<LabCell[]>([]);
   const [addProcessTypeByAnchor, setAddProcessTypeByAnchor] = useState<Record<string, string>>({});
   const [runningAll, setRunningAll] = useState(false);
+  const [savingPipeline, setSavingPipeline] = useState(false);
   const [savingCellId, setSavingCellId] = useState("");
   const [saveMessageByCell, setSaveMessageByCell] = useState<Record<string, string>>({});
   const [saveErrorByCell, setSaveErrorByCell] = useState<Record<string, string>>({});
@@ -439,22 +458,7 @@ export function useLaboratoryNotebook() {
     });
   }, [catalog]);
 
-  const notebookExplanationList = useMemo(() => {
-    const seen = new Set<string>();
-    const items: string[] = [];
-
-    for (const item of catalog) {
-      const explanations = [item.explanation, item.priority_explanation];
-      for (const text of explanations) {
-        const clean = (text ?? "").trim();
-        if (!clean || seen.has(clean)) continue;
-        seen.add(clean);
-        items.push(clean);
-      }
-    }
-
-    return items;
-  }, [catalog]);
+  const notebookExplanationList = NOTEBOOK_EXPLANATION_LIST;
 
   function getAddAnchorKey(afterIndex: number) {
     if (afterIndex < 0) return "start";
@@ -868,76 +872,104 @@ export function useLaboratoryNotebook() {
     setRunningAll(false);
   }
 
-  async function savePipelineName() {
+  function buildPipelineStepsSnapshot(): PipelineReplaceStepPayload[] {
+    if (!selectedImage) {
+      return [];
+    }
+
+    return cells.flatMap((cell, index) => {
+      if (cell.status !== "done" && cell.status !== "failed") {
+        return [];
+      }
+
+      const inputImageUrl = getInputForCell(index, cells);
+      const segmentationContext = getSegmentationContext(index, cells, selectedImage);
+
+      return [{
+        step_index: index + 1,
+        process_type: cell.processType,
+        priority: cell.priority,
+        model_key: cell.modelKey || undefined,
+        prompt: cell.prompt || undefined,
+        additional_settings_json: sanitizeAdditionalSettings(cell.additionalSettings),
+        input_image_url: inputImageUrl,
+        mask_image_url:
+          cell.processType === "remove_with_mask" || cell.processType === "generate_from_prompt"
+            ? segmentationContext?.maskImageUrl
+            : undefined,
+        output_image_url: cell.outputUrl || undefined,
+        status: cell.status === "done" ? "done" : "failed",
+        error_message: cell.error || undefined,
+      }];
+    });
+  }
+
+  async function savePipeline(mode: PipelineSaveMode, name: string) {
     if (!selectedImage) {
       setSaveError("Select an image first");
-      return;
+      return false;
     }
 
     const latestOutputUrl = [...cells].reverse().find((cell) => cell.outputUrl && cell.status === "done")?.outputUrl;
 
     if (!latestOutputUrl) {
       setSaveError("Run at least one cell before saving");
-      return;
+      return false;
     }
 
-    const currentName = selectedImage.fileName?.startsWith("Pipeline #") ? "" : selectedImage.fileName ?? "";
-    const nextName = window.prompt("Choose a name for this pipeline", currentName);
-    if (nextName === null) {
-      return;
-    }
+    const nextName = name.trim() || undefined;
+    const steps = buildPipelineStepsSnapshot();
 
     try {
+      setSavingPipeline(true);
+
+      if (mode === "overwrite" && activePipelineId) {
+        const updated = await replacePipeline(activePipelineId, {
+          name: nextName,
+          status: "done",
+          final_image_url: latestOutputUrl,
+          steps,
+        });
+
+        setSelectedImage((prev) =>
+          prev
+            ? {
+              ...prev,
+              fileName: updated.name?.trim() || prev.fileName,
+            }
+            : prev,
+        );
+        setSaveError("");
+        setSaveMessage("Pipeline saved");
+        return true;
+      }
+
       let pipelineId = activePipelineId;
-      let isNewPipeline = false;
-      if (!pipelineId) {
+      if (!pipelineId || mode === "save_as_new") {
         const projectId = queryProjectId ? Number(queryProjectId) : selectedImage.project_id;
         const imageId = queryImageId ? Number(queryImageId) : selectedImage.id;
         if (!projectId || !imageId) {
           setSaveError("Project or image id missing");
-          return;
+          return false;
         }
 
         const created = await startPipeline({
           project_id: projectId,
           source_image_id: imageId,
           start_image_url: toImageUrl(selectedImage.filePath),
-          name: nextName.trim() || undefined,
+          name: nextName,
         });
         pipelineId = created.id;
-        isNewPipeline = true;
         setActivePipelineId(created.id);
-      } else {
-        await renamePipeline(pipelineId, nextName.trim());
       }
 
-      if (isNewPipeline) {
-        for (let i = 0; i < cells.length; i += 1) {
-          const cell = cells[i];
-          if (cell.status !== "done" && cell.status !== "failed") {
-            continue;
-          }
+      if (!pipelineId) {
+        setSaveError("Could not create the pipeline");
+        return false;
+      }
 
-          const inputImageUrl = getInputForCell(i, cells);
-          const segmentationContext = getSegmentationContext(i, cells, selectedImage);
-
-          await createPipelineStep(pipelineId, {
-            step_index: i + 1,
-            process_type: cell.processType,
-            priority: cell.priority,
-            model_key: cell.modelKey || undefined,
-            prompt: cell.prompt || undefined,
-            additional_settings_json: sanitizeAdditionalSettings(cell.additionalSettings),
-            input_image_url: inputImageUrl,
-            mask_image_url:
-              cell.processType === "remove_with_mask" || cell.processType === "generate_from_prompt"
-                  ? segmentationContext?.maskImageUrl
-                : undefined,
-            output_image_url: cell.outputUrl || undefined,
-            status: cell.status === "done" ? "done" : "failed",
-            error_message: cell.error || undefined,
-          });
-        }
+      for (const step of steps) {
+        await createPipelineStep(pipelineId, step);
       }
 
       const updated = await finishPipeline(pipelineId, {
@@ -955,9 +987,13 @@ export function useLaboratoryNotebook() {
       );
       setSaveError("");
       setSaveMessage("Pipeline saved");
+      return true;
     } catch (error) {
       setSaveMessage("");
       setSaveError(getErrorMessage(error));
+      return false;
+    } finally {
+      setSavingPipeline(false);
     }
   }
 
@@ -1007,12 +1043,14 @@ export function useLaboratoryNotebook() {
     catalog,
     cells,
     runningAll,
+    savingPipeline,
     savingCellId,
     saveMessageByCell,
     saveErrorByCell,
     saveMessage,
     saveError,
     loadingPipeline,
+    currentPipelineName: getPipelineNameFromImage(selectedImage),
     notebookExplanationList,
     getAvailableProcessesAfter,
     getSelectedProcessTypeFor,
@@ -1028,7 +1066,7 @@ export function useLaboratoryNotebook() {
     removeCell,
     runCell,
     runAllCells,
-    savePipelineName,
+    savePipeline,
     saveCellOutputToProject,
     setSegmentOutputConvexHull,
     setSegmentOutputConvexHullMode,

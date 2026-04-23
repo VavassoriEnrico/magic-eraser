@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PipelineStartRequest(BaseModel):
@@ -44,6 +44,27 @@ class PipelineFinishRequest(BaseModel):
 
 class PipelineRenameRequest(BaseModel):
     name: str | None = None
+
+
+class PipelineSnapshotStep(BaseModel):
+    step_index: int
+    process_type: str
+    priority: int
+    model_key: str | None = None
+    prompt: str | None = None
+    additional_settings_json: dict[str, object] | None = None
+    input_image_url: str
+    mask_image_url: str | None = None
+    output_image_url: str | None = None
+    status: str = "done"
+    error_message: str | None = None
+
+
+class PipelineReplaceRequest(BaseModel):
+    name: str | None = None
+    status: str
+    final_image_url: str | None = None
+    steps: list[PipelineSnapshotStep] = Field(default_factory=list)
 
 
 class PipelineStepRead(BaseModel):

@@ -77,6 +77,32 @@ def update_pipeline_name(
         raise
 
 
+def replace_pipeline_snapshot(
+    db: Session,
+    *,
+    pipeline_id: int,
+    name: str | None,
+    status: str,
+    final_image_url: str | None,
+    steps: list[dict[str, object]],
+) -> LaboratoryPipeline:
+    pipeline = get_pipeline(db, pipeline_id)
+    clean_name = name.strip() if isinstance(name, str) else None
+    clean_name = clean_name or None
+    try:
+        return laboratory_pipeline_repository.replace_pipeline_snapshot(
+            db,
+            pipeline=pipeline,
+            name=clean_name,
+            status=status,
+            final_image_url=final_image_url,
+            steps=steps,
+        )
+    except Exception:
+        db.rollback()
+        raise
+
+
 def delete_pipeline(db: Session, pipeline_id: int) -> None:
     pipeline = get_pipeline(db, pipeline_id)
     try:

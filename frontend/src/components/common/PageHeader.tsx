@@ -31,7 +31,6 @@ export function PageHeader({
           textTransform="uppercase"
           _dark={{ color: eyebrowColor ?? "whiteAlpha.600" }}
         >
-          {eyebrow}
         </Text>
       ) : null}
       <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em" {...titleProps}>

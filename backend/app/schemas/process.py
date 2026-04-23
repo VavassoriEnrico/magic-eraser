@@ -16,7 +16,7 @@ class AdditionalSettingDefinition(BaseModel):
     depends_on_key: str | None = None
     depends_on_value: bool | int | float | str | None = None
     default_value: bool | int | float | str | None = None
-    options: list[AdditionalSettingChoice] = []
+    options: list[AdditionalSettingChoice] = Field(default_factory=list)
     min_value: int | float | None = None
     max_value: int | float | None = None
     step: int | float | None = None
@@ -29,18 +29,10 @@ class BaseProcessRequest(BaseModel):
     pipeline_id: int | None = None
     step_index: int | None = None
     priority: int
-    explanation: str | None = None
-    priority_explanation: str | None = None
 
 
 class SegmentFromPromptRequest(BaseProcessRequest):
     process_type: Literal["segment_from_prompt"]
-    explanation: Literal[
-        "Segmentation is a process that extract a mask from a prompt, so you can select just what you want"
-    ] = "Segmentation is a process that extract a mask from a prompt, so you can select just what you want"
-    priority_explanation: Literal[
-        "Segmentation process can be executed one or more times, but only at the beginning of the workflow"
-    ] = "Segmentation process can be executed one or more times, but only at the beginning of the workflow"
     priority: Literal[1]
     prompt: str
     input_image_url: str
@@ -50,12 +42,6 @@ class SegmentFromPromptRequest(BaseProcessRequest):
 
 class GenerateFromPromptRequest(BaseProcessRequest):
     process_type: Literal["generate_from_prompt"]
-    explanation: Literal["Fill uses the source image and a mask to inpaint the selected area from a prompt"] = (
-        "Fill uses the source image and a mask to inpaint the selected area from a prompt"
-    )
-    priority_explanation: Literal[
-        "Generation process can be executed one or more times, but only at the end of the workflow"
-    ] = "Generation process can be executed one or more times, but only at the end of the workflow"
     priority: Literal[3]
     prompt: str
     input_image_url: str
@@ -66,12 +52,6 @@ class GenerateFromPromptRequest(BaseProcessRequest):
 
 class RemoveWithMaskRequest(BaseProcessRequest):
     process_type: Literal["remove_with_mask"]
-    explanation: Literal[
-        "Removal is a process that remove a part of an image from the mask that come from segmentation"
-    ] = "Removal is a process that remove a part of an image from the mask that come from segmentation"
-    priority_explanation: Literal[
-        "Removal process can be executed only after the segmentation and before the generation"
-    ] = "Removal process can be executed only after the segmentation and before the generation"
     priority: Literal[2]
     input_image_url: str
     mask_image_url: str
@@ -103,7 +83,7 @@ class ProcessModelOption(BaseModel):
     key: str
     label: str
     default: bool = False
-    additional_settings: list[AdditionalSettingDefinition] = []
+    additional_settings: list[AdditionalSettingDefinition] = Field(default_factory=list)
 
 
 class ProcessCatalogItem(BaseModel):
@@ -111,6 +91,4 @@ class ProcessCatalogItem(BaseModel):
     title: str
     priority: int
     prompt_required: bool
-    explanation: str | None = None
-    priority_explanation: str | None = None
-    model_options: list[ProcessModelOption] = []
+    model_options: list[ProcessModelOption] = Field(default_factory=list)

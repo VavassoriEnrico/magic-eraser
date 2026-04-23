@@ -11,10 +11,12 @@ import {
 } from "@chakra-ui/react";
 
 import { PageHeader } from "../components/common/PageHeader";
-import { supabase } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
+import { requireSupabase } from "../api/client";
 import { getErrorMessage } from "../utils/errors";
 
 async function onLogout() {
+  const supabase = requireSupabase();
   await supabase.auth.signOut();
   window.history.pushState({}, "", "/login");
   window.dispatchEvent(new PopStateEvent("popstate"));
@@ -46,6 +48,7 @@ export default function ProfilePage() {
       setMessage("");
 
       try {
+        const supabase = requireSupabase();
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) {
           throw authError;
@@ -101,6 +104,7 @@ export default function ProfilePage() {
     setMessage("");
 
     try {
+      const supabase = requireSupabase();
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError) {
         throw authError;
@@ -154,6 +158,13 @@ export default function ProfilePage() {
         descriptionColor={mutedColor}
       />
 
+      {!isSupabaseConfigured ? (
+        <Text color={mutedColor}>
+          Supabase is not configured yet. Add `VITE_SUPABASE_URL` and
+          `VITE_SUPABASE_ANON_KEY` to enable login and profile features.
+        </Text>
+      ) : null}
+
       <Grid templateColumns={{ base: "1fr", lg: "220px 1fr" }} gap={8} alignItems="start">
         <VStack align="stretch" spacing={4}>
           <Box
@@ -201,6 +212,7 @@ export default function ProfilePage() {
             _hover={{ bg: "#8f0000" }}
             px={6}
             onClick={() => void onLogout()}
+            isDisabled={!isSupabaseConfigured}
           >
             Logout
           </Button>

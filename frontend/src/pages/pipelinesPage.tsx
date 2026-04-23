@@ -110,7 +110,7 @@ export default function PipelinesPage() {
     <Stack spacing={6} color={pageText}>
       <PageHeader
         title="Pipelines"
-        description="Open a previous pipeline and continue from the saved steps."
+        description="Open a previous pipeline and continue from the saved steps. To create a new one, edit an image and save the pipeline."
         eyebrowColor={sectionLabel}
         descriptionColor={subtleText}
       />

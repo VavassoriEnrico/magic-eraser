@@ -2,7 +2,8 @@ import { FormEvent, useState } from "react";
 import { Box, Button, Input, Stack, Text, useColorMode } from "@chakra-ui/react";
 import logoBlack from "../assets/me_logo_black.png";
 import logoWhite from "../assets/me_logo_white.png";
-import { supabase } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
+import { requireSupabase } from "../api/client";
 
 export default function LoginPage() {
   const { colorMode } = useColorMode();
@@ -18,6 +19,7 @@ export default function LoginPage() {
     setMessage("");
 
     try {
+      const supabase = requireSupabase();
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -65,6 +67,13 @@ export default function LoginPage() {
         <Text className="auth-title">Welcome back</Text>
         <Text className="auth-subtitle">Log in to continue editing your projects.</Text>
 
+        {!isSupabaseConfigured ? (
+          <Text className="auth-message">
+            Supabase is not configured yet. Add `VITE_SUPABASE_URL` and
+            `VITE_SUPABASE_ANON_KEY` to the frontend environment.
+          </Text>
+        ) : null}
+
         <Box as="form" onSubmit={onSubmit}>
           <Stack spacing={3}>
             <Input
@@ -74,6 +83,7 @@ export default function LoginPage() {
               type="email"
               required
               className="auth-input"
+              isDisabled={!isSupabaseConfigured}
             />
             <Input
               placeholder="Password"
@@ -82,8 +92,14 @@ export default function LoginPage() {
               type="password"
               required
               className="auth-input"
+              isDisabled={!isSupabaseConfigured}
             />
-            <Button type="submit" className="auth-submit-btn" isLoading={submitting}>
+            <Button
+              type="submit"
+              className="auth-submit-btn"
+              isLoading={submitting}
+              isDisabled={!isSupabaseConfigured}
+            >
               {submitting ? "Logging in..." : "Log in"}
             </Button>
           </Stack>

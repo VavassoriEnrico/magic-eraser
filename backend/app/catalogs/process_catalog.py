@@ -1,12 +1,30 @@
 from app.models_registry import get_process_model_registry
 from app.schemas.process import (
-    AdditionalSettingDefinition,
     AdditionalSettingChoice,
-    GenerateFromPromptRequest,
+    AdditionalSettingDefinition,
     ProcessCatalogItem,
     ProcessModelOption,
-    RemoveWithMaskRequest,
-    SegmentFromPromptRequest,
+)
+
+PROCESS_CATALOG_DEFINITIONS: tuple[dict[str, str | int | bool], ...] = (
+    {
+        "process_type": "segment_from_prompt",
+        "title": "Segment",
+        "priority": 1,
+        "prompt_required": True,
+    },
+    {
+        "process_type": "remove_with_mask",
+        "title": "Remove",
+        "priority": 2,
+        "prompt_required": False,
+    },
+    {
+        "process_type": "generate_from_prompt",
+        "title": "Fill",
+        "priority": 3,
+        "prompt_required": True,
+    },
 )
 
 
@@ -54,32 +72,18 @@ def get_generation_model_options() -> list[ProcessModelOption]:
 
 
 def get_process_catalog() -> list[ProcessCatalogItem]:
-    return [
-        ProcessCatalogItem(
-            process_type="segment_from_prompt",
-            title="Segment",
-            priority=1,
-            prompt_required=True,
-            explanation=SegmentFromPromptRequest.model_fields["explanation"].default,
-            priority_explanation=SegmentFromPromptRequest.model_fields["priority_explanation"].default,
-            model_options=get_segment_model_options(),
-        ),
-        ProcessCatalogItem(
-            process_type="remove_with_mask",
-            title="Remove",
-            priority=2,
-            prompt_required=False,
-            explanation=RemoveWithMaskRequest.model_fields["explanation"].default,
-            priority_explanation=RemoveWithMaskRequest.model_fields["priority_explanation"].default,
-            model_options=get_removal_model_options(),
-        ),
-        ProcessCatalogItem(
-            process_type="generate_from_prompt",
-            title="Fill",
-            priority=3,
-            prompt_required=True,
-            explanation=GenerateFromPromptRequest.model_fields["explanation"].default,
-            priority_explanation=GenerateFromPromptRequest.model_fields["priority_explanation"].default,
-            model_options=get_generation_model_options(),
-        ),
-    ]
+    catalog_items: list[ProcessCatalogItem] = []
+
+    for definition in PROCESS_CATALOG_DEFINITIONS:
+        process_type = str(definition["process_type"])
+        catalog_items.append(
+            ProcessCatalogItem(
+                process_type=process_type,
+                title=str(definition["title"]),
+                priority=int(definition["priority"]),
+                prompt_required=bool(definition["prompt_required"]),
+                model_options=_build_model_options(process_type),
+            )
+        )
+
+    return catalog_items

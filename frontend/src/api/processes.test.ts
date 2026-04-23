@@ -11,6 +11,7 @@ import {
   getSegmentModels,
   listPipelines,
   renamePipeline,
+  replacePipeline,
   runProcess,
   startPipeline,
 } from "./processes";
@@ -182,6 +183,33 @@ describe("processes api", () => {
     expect(request).toHaveBeenCalledWith("/laboratory-pipelines/6/name", {
       method: "PATCH",
       body: JSON.stringify({ name: "Renamed pipeline" }),
+    });
+  });
+
+  test("calls request correctly for replacePipeline", async () => {
+    const payload = {
+      name: "Updated pipeline",
+      status: "done",
+      final_image_url: "/uploads/final.png",
+      steps: [
+        {
+          step_index: 1,
+          process_type: "segment_from_prompt",
+          priority: 1,
+          input_image_url: "/uploads/source.png",
+          output_image_url: "/uploads/mask.png",
+          status: "done",
+        },
+      ],
+    };
+
+    vi.mocked(request).mockResolvedValueOnce({} as never);
+
+    await replacePipeline(6, payload);
+
+    expect(request).toHaveBeenCalledWith("/laboratory-pipelines/6", {
+      method: "PUT",
+      body: JSON.stringify(payload),
     });
   });
 

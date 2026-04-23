@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db
+from app.db_dependencies import get_db
 from app.schemas import ImageFromUrlCreate, ImageRead, ProjectCreate, ProjectRead, ProjectUpdate
 from app.services import project_service
 

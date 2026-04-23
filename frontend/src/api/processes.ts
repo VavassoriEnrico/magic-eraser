@@ -4,6 +4,7 @@ import type {
   ConvexHullPreviewResponse,
   Pipeline,
   PipelineFinishPayload,
+  PipelineReplacePayload,
   PipelineStartPayload,
   PipelineStep,
   ProcessRunPayload,
@@ -90,6 +91,13 @@ export function renamePipeline(pipelineId: number, name: string) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}/name`, {
     method: "PATCH",
     body: JSON.stringify({ name }),
+  });
+}
+
+export function replacePipeline(pipelineId: number, payload: PipelineReplacePayload) {
+  return request<Pipeline>(`/laboratory-pipelines/${pipelineId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
   });
 }
 

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db
+from app.db_dependencies import get_db
 from app.schemas.laboratory_pipeline import (
     PipelineFinishRequest,
+    PipelineReplaceRequest,
     PipelineRead,
     PipelineRenameRequest,
     PipelineStartRequest,
@@ -61,6 +62,22 @@ def rename_pipeline(
         db,
         pipeline_id=pipeline_id,
         name=payload.name,
+    )
+
+
+@router.put("/{pipeline_id}", response_model=PipelineStartResponse)
+def replace_pipeline(
+    pipeline_id: int,
+    payload: PipelineReplaceRequest,
+    db: Session = Depends(get_db),
+):
+    return laboratory_pipeline_service.replace_pipeline_snapshot(
+        db,
+        pipeline_id=pipeline_id,
+        name=payload.name,
+        status=payload.status,
+        final_image_url=payload.final_image_url,
+        steps=[step.model_dump() for step in payload.steps],
     )
 
 

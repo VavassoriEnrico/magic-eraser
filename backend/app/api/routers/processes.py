@@ -7,7 +7,7 @@ from app.catalogs.process_catalog import (
     get_removal_model_options,
     get_segment_model_options,
 )
-from app.dependencies import get_db
+from app.db_dependencies import get_db
 from app.schemas.process import (
     ConvexHullMaskRequest,
     ConvexHullMaskResponse,

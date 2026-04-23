@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase";
+import { SUPABASE_CONFIG_ERROR, supabase } from "../lib/supabase";
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL?.trim() || "http://127.0.0.1:8000";
@@ -8,8 +8,9 @@ export async function request<TResponse>(
   options: RequestInit = {}
 ): Promise<TResponse> {
   const isFormData = options.body instanceof FormData;
-  const { data } = await supabase.auth.getSession();
-  const accessToken = data.session?.access_token;
+  const accessToken = supabase
+    ? (await supabase.auth.getSession()).data.session?.access_token
+    : undefined;
   const headers = new Headers(options.headers ?? {});
   if (!isFormData) {
     headers.set("Content-Type", "application/json");
@@ -34,4 +35,12 @@ export async function request<TResponse>(
 
   const text = await response.text();
   return text ? (JSON.parse(text) as TResponse) : (null as TResponse);
+}
+
+export function requireSupabase() {
+  if (!supabase) {
+    throw new Error(SUPABASE_CONFIG_ERROR);
+  }
+
+  return supabase;
 }

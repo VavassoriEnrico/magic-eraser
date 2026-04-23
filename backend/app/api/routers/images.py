@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db
+from app.db_dependencies import get_db
 from app.schemas import ImageRead
 from app.services import image_service
 

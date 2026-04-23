@@ -72,8 +72,6 @@ export interface ProcessCatalogItem {
   title: string;
   priority: number;
   prompt_required: boolean;
-  explanation?: string;
-  priority_explanation?: string;
   model_options?: SegmentModel[];
 }
 
@@ -117,6 +115,27 @@ export interface PipelineStartPayload {
 export interface PipelineFinishPayload {
   status: string;
   final_image_url?: string;
+}
+
+export interface PipelineReplaceStepPayload {
+  step_index: number;
+  process_type: string;
+  priority: number;
+  model_key?: string;
+  prompt?: string;
+  additional_settings_json?: Record<string, string | number | boolean>;
+  input_image_url: string;
+  mask_image_url?: string;
+  output_image_url?: string;
+  status: string;
+  error_message?: string;
+}
+
+export interface PipelineReplacePayload {
+  name?: string;
+  status: string;
+  final_image_url?: string;
+  steps: PipelineReplaceStepPayload[];
 }
 
 export interface Profile {
