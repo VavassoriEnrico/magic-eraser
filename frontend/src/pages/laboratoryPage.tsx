@@ -18,6 +18,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { BiPlayCircle, BiSave } from "react-icons/bi";
 
 import { AddProcessControl } from "../components/laboratory/AddProcessControl";
 import { LabCellCard } from "../components/laboratory/LabCellCard";
@@ -72,11 +73,17 @@ function parseNotebookExplanationList(items: string[]) {
 
 export default function LaboratoryPage() {
   const pageText = useColorModeValue("gray.800", "white");
-  const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
   const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const panelBg = useColorModeValue("white", "whiteAlpha.50");
-  const panelBorder = useColorModeValue("gray.200", "whiteAlpha.200");
-  const outputBg = useColorModeValue("gray.100", "whiteAlpha.100");
+  const panelBg = useColorModeValue("#eef3f8", "#151b23");
+  const panelBorder = useColorModeValue("rgba(148,163,184,0.2)", "rgba(255,255,255,0.09)");
+  const outputBg = useColorModeValue("#dfe6ef", "#1b2430");
+  const modalBg = useColorModeValue("#f8fafc", "#151b23");
+  const modalBorder = useColorModeValue("rgba(148,163,184,0.32)", "rgba(240,246,252,0.12)");
+  const modalOverlay = useColorModeValue("rgba(226,232,240,0.62)", "rgba(4, 6, 12, 0.74)");
+  const modalMuted = useColorModeValue("rgba(15,23,42,0.64)", "rgba(226,232,240,0.7)");
+  const closeBg = useColorModeValue("#eef2f6", "#1b2430");
+  const closeBorder = useColorModeValue("rgba(148,163,184,0.28)", "rgba(240,246,252,0.12)");
+  const overwritePanelBg = useColorModeValue("#eef2f6", "#1b2430");
 
   const {
     queryProjectId,
@@ -132,12 +139,18 @@ export default function LaboratoryPage() {
   }
 
   return (
-    <Stack spacing={6} color={pageText}>
+    <Stack spacing={6} color={pageText} px={{ base: 4, md: 6, xl: 8 }}>
       <PageHeader
+        eyebrow=""
         title="Laboratory"
-        description="Notebook workflow: add cells, run them in order, and save final output."
-        eyebrowColor={sectionLabel}
+        description="Notebook workflow."
         descriptionColor={subtleText}
+        titleProps={{
+          fontSize: { base: "3xl", md: "4xl" },
+          textAlign: "left",
+          fontWeight: "800",
+          letterSpacing: "-0.05em",
+        }}
       >
         {notebookExplanationList.length > 0 ? (
           <VStack align="start" spacing={1} mt={2}>
@@ -175,34 +188,57 @@ export default function LaboratoryPage() {
         ) : null}
       </PageHeader>
 
-      <HStack justify="space-between" align="center" flexWrap="wrap">
-        <Badge width="fit-content" colorScheme="blue" variant="subtle">
-          project #{queryProjectId ?? selectedImage?.project_id ?? "-"} • image #{queryImageId ?? selectedImage?.id ?? "-"} • pipeline #{activePipelineId ?? "-"}
-        </Badge>
-        <HStack>
-          <Button variant="outline" onClick={() => setIsSaveModalOpen(true)} isDisabled={runningAll}>
-            Save pipeline
-          </Button>
-          <Button colorScheme="blue" onClick={() => void runAllCells()} isLoading={runningAll}>
-            Run all cells
-          </Button>
-        </HStack>
-      </HStack>
+      <GlassPanel p={{ base: 4, md: 5 }} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
+        <Stack direction={{ base: "column", lg: "row" }} justify="space-between" align={{ base: "stretch", lg: "center" }} spacing={4}>
+          <VStack align="start" spacing={2}>
+            <HStack spacing={2} flexWrap="wrap">
+              <Badge width="fit-content" colorScheme="blue" variant="subtle">
+                project #{queryProjectId ?? selectedImage?.project_id ?? "-"}
+              </Badge>
+              <Badge width="fit-content" colorScheme="blue" variant="subtle">
+                image #{queryImageId ?? selectedImage?.id ?? "-"}
+              </Badge>
+              <Badge width="fit-content" colorScheme="blue" variant="subtle">
+                pipeline #{activePipelineId ?? "-"}
+              </Badge>
+            </HStack>
+          </VStack>
+          <HStack spacing={3} flexWrap="wrap">
+            <Button variant="outline" leftIcon={<BiSave />} onClick={() => setIsSaveModalOpen(true)} isDisabled={runningAll}>
+              Save pipeline
+            </Button>
+            <Button leftIcon={<BiPlayCircle />} onClick={() => void runAllCells()} isLoading={runningAll}>
+              Run all cells
+            </Button>
+          </HStack>
+        </Stack>
+      </GlassPanel>
 
       {saveMessage ? <StatusNotice tone="success" variant="text">{saveMessage}</StatusNotice> : null}
       {saveError ? <StatusNotice tone="error" variant="text">{saveError}</StatusNotice> : null}
 
       <GlassPanel p={5} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
         <VStack align="stretch" spacing={4}>
+          <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
+            <VStack align="start" spacing={1}>
+              <Text fontWeight="800" fontSize={{ base: "lg", md: "xl" }} letterSpacing="-0.04em">
+                Workflow cells
+              </Text>
+              <Text color={subtleText} fontSize="sm">
+                {selectedImage?.fileName ?? "No input image selected"}
+              </Text>
+            </VStack>
+            <Badge width="fit-content" variant="subtle">
+              {cells.length} cell{cells.length === 1 ? "" : "s"}
+            </Badge>
+          </HStack>
+
           {loadingPipeline ? (
             <HStack color={subtleText}>
               <Spinner size="sm" />
               <Text fontSize="sm">Loading saved pipeline...</Text>
             </HStack>
           ) : null}
-          <Text fontWeight="semibold" fontSize="lg">
-            Input image • {selectedImage?.fileName ?? "N/A"}
-          </Text>
 
           {!selectedImage ? (
             <Text color={subtleText}>No image selected yet. Open this page from Home &gt; Edit.</Text>
@@ -275,14 +311,14 @@ export default function LaboratoryPage() {
       </GlassPanel>
 
       <Modal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} isCentered>
-        <ModalOverlay bg="rgba(4, 6, 12, 0.78)" backdropFilter="blur(10px)" />
+        <ModalOverlay bg={modalOverlay} backdropFilter="blur(10px)" />
         <ModalContent
-          bg="rgba(12, 14, 24, 0.88)"
-          color="white"
+          bg={modalBg}
+          color={pageText}
           border="1px solid"
-          borderColor="whiteAlpha.200"
-          borderRadius="18px"
-          boxShadow="0 24px 80px rgba(0, 0, 0, 0.48)"
+          borderColor={modalBorder}
+          borderRadius="8px"
+          boxShadow="none"
           backdropFilter="blur(8px)"
           px={{ base: 1, md: 2 }}
         >
@@ -292,16 +328,15 @@ export default function LaboratoryPage() {
           <ModalCloseButton
             top={4}
             right={4}
-            borderRadius="10px"
-            bg="rgba(17, 21, 32, 0.8)"
+            borderRadius="6px"
+            bg={closeBg}
             border="1px solid"
-            borderColor="whiteAlpha.200"
-            color="#b66dff"
-            _hover={{ borderColor: "rgba(182, 109, 255, 0.55)", bg: "rgba(20, 24, 36, 0.92)" }}
+            borderColor={closeBorder}
+            _hover={{ borderColor: modalBorder }}
           />
           <ModalBody pb={3}>
             <VStack align="stretch" spacing={4}>
-              <Text color="#95a0b8" fontSize="md" textAlign="center" maxW="420px" mx="auto">
+              <Text color={modalMuted} fontSize="md" textAlign="center" maxW="420px" mx="auto">
                 {activePipelineId
                   ? "Overwrite the current pipeline or create a new one from the current notebook."
                   : "Choose a name for this pipeline."}
@@ -311,17 +346,23 @@ export default function LaboratoryPage() {
                 value={pipelineName}
                 onChange={(event) => setPipelineName(event.target.value)}
                 size="lg"
-                bg="rgba(8, 11, 18, 0.62)"
-                border="1px solid"
-                borderColor="whiteAlpha.200"
-                color="white"
-                _placeholder={{ color: "#8894ac" }}
-                _hover={{ borderColor: "whiteAlpha.300" }}
-                _focusVisible={{
-                  borderColor: "#b66dff",
-                  boxShadow: "0 0 0 1px rgba(182, 109, 255, 0.45)",
-                }}
               />
+              {activePipelineId ? (
+                <Box
+                  border="1px solid"
+                  borderColor={modalBorder}
+                  bg={overwritePanelBg}
+                  borderRadius="8px"
+                  p={4}
+                >
+                  <Text fontWeight="700" mb={1}>
+                    Overwrite existing pipeline
+                  </Text>
+                  <Text color={modalMuted} fontSize="sm">
+                    Use overwrite to replace the saved steps and current output of this pipeline.
+                  </Text>
+                </Box>
+              ) : null}
             </VStack>
           </ModalBody>
           <ModalFooter pt={2} pb={7}>
@@ -336,9 +377,6 @@ export default function LaboratoryPage() {
                 variant="ghost"
                 onClick={() => setIsSaveModalOpen(false)}
                 isDisabled={savingPipeline}
-                color="#c7d0e3"
-                fontWeight="600"
-                _hover={{ bg: "whiteAlpha.100", color: "white" }}
                 w={{ base: "full", md: "auto" }}
               >
                 Cancel
@@ -349,22 +387,14 @@ export default function LaboratoryPage() {
                     variant="outline"
                     onClick={() => void onSavePipeline("save_as_new")}
                     isLoading={savingPipeline}
-                    borderColor="whiteAlpha.200"
-                    color="white"
-                    bg="rgba(17, 21, 32, 0.52)"
-                    _hover={{ bg: "whiteAlpha.100", borderColor: "whiteAlpha.300" }}
                     w={{ base: "full", md: "auto" }}
                   >
                     Save as new
                   </Button>
                 ) : null}
                 <Button
-                  bg="linear-gradient(90deg, #8f38ff 0%, #b947f4 100%)"
-                  color="white"
                   onClick={() => void onSavePipeline(activePipelineId ? "overwrite" : "save_as_new")}
                   isLoading={savingPipeline}
-                  _hover={{ bg: "linear-gradient(90deg, #7f2df0 0%, #aa3ee4 100%)" }}
-                  _active={{ bg: "linear-gradient(90deg, #7428d8 0%, #9738cb 100%)" }}
                   w={{ base: "full", md: "auto" }}
                 >
                   {activePipelineId ? "Overwrite" : "Save pipeline"}

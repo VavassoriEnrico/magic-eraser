@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { Stack } from "@chakra-ui/react";
 
-import { HomeToolbar } from "../components/home/HomeToolbar";
 import { ImageLightbox } from "../components/home/ImageLightbox";
 import { ProjectOverviewSection } from "../components/home/ProjectOverviewSection";
+import { SavedPipelinesSidebar } from "../components/home/SavedPipelinesSidebar";
 import { UploadImageSection } from "../components/home/UploadImageSection";
 import { PageHeader } from "../components/common/PageHeader";
 import { StatusNotice } from "../components/common/StatusNotice";
@@ -11,6 +11,7 @@ import { useHomeData } from "../hooks/useHomeData";
 import { useUploadImageSelection } from "../hooks/useUploadImageSelection";
 import type { ImageAsset, Project } from "../types/api";
 import type { OpenedImage, PreviewScrollState } from "../types/ui";
+import { setLaboratorySelectedImage } from "../utils/laboratorySelection";
 import { toImageUrl } from "../utils/images";
 
 export default function HomePage() {
@@ -29,7 +30,6 @@ export default function HomePage() {
     setUploadProjectId,
     setExpandedProjectId,
     setProjectName,
-    loadProjects,
     onCreateProject,
     onDeleteProject,
     onRenameProject,
@@ -47,7 +47,6 @@ export default function HomePage() {
   >({});
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingProjectName, setEditingProjectName] = useState("");
-  const [deleteConfirmProjectId, setDeleteConfirmProjectId] = useState("");
 
   const imageStripRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
@@ -91,7 +90,7 @@ export default function HomePage() {
 
   function openLaboratory(image: ImageAsset, projectId: number) {
     const selectedImage = { ...image, project_id: projectId };
-    window.sessionStorage.setItem("laboratory:selected-image", JSON.stringify(selectedImage));
+    setLaboratorySelectedImage(selectedImage);
     const params = new URLSearchParams({
       projectId: String(projectId),
       imageId: String(image.id),
@@ -143,7 +142,6 @@ export default function HomePage() {
 
   async function confirmDeleteProject(projectId: number) {
     await onDeleteProject(projectId);
-    setDeleteConfirmProjectId("");
   }
 
   function updatePreviewScrollState(projectId: number) {
@@ -192,78 +190,68 @@ export default function HomePage() {
       spacing={6}
       color="gray.800"
       minH="calc(100vh - 140px)"
-      maxW="1120px"
-      mx="auto"
+      maxW={{ base: "1480px", xl: "none" }}
+      w="full"
+      mx={{ base: "auto", xl: 0 }}
+      mt={{ base: 0, xl: "-28px" }}
+      pr={{ base: 0, xl: 28 }}
       _dark={{ color: "white" }}
     >
-      <PageHeader
-        eyebrow=""
-        title="dashboard"
-        titleProps={{
-          fontSize: { base: "3xl", md: "5xl" },
-          fontFamily: "'Inter', sans-serif",
-          textAlign: "center",
-          fontWeight: "800",
-          letterSpacing: "0.05em",
-          textTransform: "uppercase",
-          lineHeight: "0.95",
-          color: "black",
-          _dark: { color: "white" },
-        }}
-      />
+      <Stack direction={{ base: "column", xl: "row" }} align="start" spacing={{ base: 6, xl: 0 }}>
+        <SavedPipelinesSidebar />
 
-      <HomeToolbar loadingProjects={loadingProjects} onRefresh={() => void loadProjects()} />
+        <Stack spacing={6} color="gray.800" flex="1" minW={0} px={{ base: 0, xl: 8 }} _dark={{ color: "white" }}>
 
-      {error ? <StatusNotice tone="error">{error}</StatusNotice> : null}
-      {message ? <StatusNotice tone="success">{message}</StatusNotice> : null}
+          {error ? <StatusNotice tone="error">{error}</StatusNotice> : null}
+          {message ? <StatusNotice tone="success">{message}</StatusNotice> : null}
 
-      <ProjectOverviewSection
-        projects={projects}
-        orderedProjects={orderedProjects}
-        expandedProjectId={expandedProjectId}
-        projectImagesMap={projectImagesMap}
-        projectName={projectName}
-        loadingProjects={loadingProjects}
-        loadingImagesByProject={loadingImagesByProject}
-        submitting={submitting}
-        editingProjectId={editingProjectId}
-        editingProjectName={editingProjectName}
-        deleteConfirmProjectId={deleteConfirmProjectId}
-        previewScrollStateByProject={previewScrollStateByProject}
-        imageStripRefs={imageStripRefs}
-        onProjectNameChange={setProjectName}
-        onCreateProject={(event) => void onCreateProject(event)}
-        onToggleProject={onToggleProject}
-        onOpenImagePopup={onOpenImagePopup}
-        onOpenLaboratory={openLaboratory}
-        onDeleteImage={(imageId, projectId) => void onDeleteImage(imageId, projectId)}
-        onScrollPreview={onScrollPreview}
-        onUpdatePreviewScrollState={updatePreviewScrollState}
-        onStartInlineEdit={startInlineProjectEdit}
-        onEditingProjectNameChange={setEditingProjectName}
-        onSaveInlineEdit={(projectId) => void saveInlineProjectEdit(projectId)}
-        onCancelInlineEdit={cancelInlineProjectEdit}
-        onRequestDeleteProject={setDeleteConfirmProjectId}
-        onConfirmDeleteProject={(projectId) => void confirmDeleteProject(projectId)}
-      />
+          <ProjectOverviewSection
+            projects={projects}
+            orderedProjects={orderedProjects}
+            expandedProjectId={expandedProjectId}
+            projectImagesMap={projectImagesMap}
+            projectName={projectName}
+            loadingProjects={loadingProjects}
+            loadingImagesByProject={loadingImagesByProject}
+            submitting={submitting}
+            editingProjectId={editingProjectId}
+            editingProjectName={editingProjectName}
+            previewScrollStateByProject={previewScrollStateByProject}
+            imageStripRefs={imageStripRefs}
+            onProjectNameChange={setProjectName}
+            onCreateProject={(event) => void onCreateProject(event)}
+            onToggleProject={onToggleProject}
+            onOpenImagePopup={onOpenImagePopup}
+            onOpenLaboratory={openLaboratory}
+            onDeleteImage={(imageId, projectId) => void onDeleteImage(imageId, projectId)}
+            onScrollPreview={onScrollPreview}
+            onUpdatePreviewScrollState={updatePreviewScrollState}
+            onStartInlineEdit={startInlineProjectEdit}
+            onEditingProjectNameChange={setEditingProjectName}
+            onSaveInlineEdit={(projectId) => void saveInlineProjectEdit(projectId)}
+            onCancelInlineEdit={cancelInlineProjectEdit}
+            onConfirmDeleteProject={(projectId) => void confirmDeleteProject(projectId)}
+          />
 
-      <UploadImageSection
-        projects={projects}
-        uploadFiles={uploadFiles}
-        uploadPreviewUrls={uploadPreviewUrls}
-        uploadProjectId={uploadProjectId}
-        isDragOverUpload={isDragOverUpload}
-        submitting={submitting}
-        uploadInputRef={uploadInputRef}
-        onSubmit={(event) => void onCreateImage(event, uploadFiles, clearUploadFiles)}
-        onInputChange={(event) => onSelectUploadFiles(event.target.files)}
-        onUploadProjectChange={setUploadProjectId}
-        onOpenFilePicker={() => uploadInputRef.current?.click()}
-        onClearFiles={clearUploadFiles}
-        onDropUpload={onDropUpload}
-        onDragOverUpload={onDragOverUpload}
-        onDragLeaveUpload={onDragLeaveUpload}
-      />
+          <UploadImageSection
+            projects={projects}
+            uploadFiles={uploadFiles}
+            uploadPreviewUrls={uploadPreviewUrls}
+            uploadProjectId={uploadProjectId}
+            isDragOverUpload={isDragOverUpload}
+            submitting={submitting}
+            uploadInputRef={uploadInputRef}
+            onSubmit={(event) => void onCreateImage(event, uploadFiles, clearUploadFiles)}
+            onInputChange={(event) => onSelectUploadFiles(event.target.files)}
+            onUploadProjectChange={setUploadProjectId}
+            onOpenFilePicker={() => uploadInputRef.current?.click()}
+            onClearFiles={clearUploadFiles}
+            onDropUpload={onDropUpload}
+            onDragOverUpload={onDragOverUpload}
+            onDragLeaveUpload={onDragLeaveUpload}
+          />
+        </Stack>
+      </Stack>
 
       <ImageLightbox openedImage={openedImage} onClose={() => setOpenedImage(null)} />
     </Stack>

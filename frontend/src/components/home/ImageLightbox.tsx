@@ -38,7 +38,7 @@ export function ImageLightbox({ openedImage, onClose }: ImageLightboxProps) {
       <Box
         maxW="95vw"
         maxH="92vh"
-        borderRadius="lg"
+        borderRadius="8px"
         overflow="hidden"
         border="1px solid"
         borderColor="whiteAlpha.400"

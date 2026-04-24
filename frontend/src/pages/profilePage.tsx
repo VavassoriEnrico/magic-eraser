@@ -9,8 +9,10 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { BiLogOut, BiSave } from "react-icons/bi";
 
 import { PageHeader } from "../components/common/PageHeader";
+import { GlassPanel } from "../components/common/GlassPanel";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { requireSupabase } from "../api/client";
 import { getErrorMessage } from "../utils/errors";
@@ -26,7 +28,6 @@ export default function ProfilePage() {
   const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
   const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
   const mutedColor = useColorModeValue("gray.700", "whiteAlpha.800");
-  const panelBorder = useColorModeValue("blackAlpha.300", "whiteAlpha.200");
   const inputBg = useColorModeValue("whiteAlpha.900", "whiteAlpha.100");
   const inputBorder = useColorModeValue("gray.300", "whiteAlpha.200");
 
@@ -153,7 +154,7 @@ export default function ProfilePage() {
     <Stack spacing={6} color={textColor}>
       <PageHeader
         title="Profile"
-        description="Manage your account info."
+        description="Account details."
         eyebrowColor={sectionLabel}
         descriptionColor={mutedColor}
       />
@@ -165,14 +166,12 @@ export default function ProfilePage() {
         </Text>
       ) : null}
 
-      <Grid templateColumns={{ base: "1fr", lg: "220px 1fr" }} gap={8} alignItems="start">
+      <Grid templateColumns={{ base: "1fr", lg: "280px 1fr" }} gap={8} alignItems="start">
         <VStack align="stretch" spacing={4}>
-          <Box
+          <GlassPanel
             h="210px"
-            borderRadius="md"
-            bg="linear-gradient(180deg,rgb(0, 68, 214) 0%, #246b2d 100%)"
-            border="1px solid"
-            borderColor={panelBorder}
+            borderRadius="8px"
+            bg="linear-gradient(180deg, rgba(214,228,247,0.24) 0%, rgba(109,125,148,0.14) 100%)"
             position="relative"
             overflow="hidden"
           >
@@ -188,7 +187,7 @@ export default function ProfilePage() {
               transform="translateX(-50%)"
               w="86px"
               h="86px"
-              borderRadius="full"
+              borderRadius="8px"
               bg="rgba(255,255,255,0.16)"
               border="2px solid rgba(255,255,255,0.18)"
             />
@@ -199,17 +198,16 @@ export default function ProfilePage() {
               transform="translateX(-50%)"
               w="58px"
               h="58px"
-              borderRadius="full"
+              borderRadius="8px"
               bg="rgba(255,255,255,0.2)"
               border="2px solid rgba(255,255,255,0.22)"
             />
-          </Box>
+          </GlassPanel>
 
           <Button
             alignSelf="start"
-            bg="#B00000"
-            color="white"
-            _hover={{ bg: "#8f0000" }}
+            variant="outline"
+            leftIcon={<BiLogOut />}
             px={6}
             onClick={() => void onLogout()}
             isDisabled={!isSupabaseConfigured}
@@ -273,7 +271,7 @@ export default function ProfilePage() {
 
           <Button
             alignSelf="start"
-            colorScheme="blue"
+            leftIcon={<BiSave />}
             onClick={() => void onSaveProfile()}
             isLoading={saving}
             isDisabled={loading}

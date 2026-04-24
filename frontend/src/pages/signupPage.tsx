@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Box, Button, Input, Stack, Text, useColorMode } from "@chakra-ui/react";
+import { BiUserPlus } from "react-icons/bi";
 import logoBlack from "../assets/me_logo_black.png";
 import logoWhite from "../assets/me_logo_white.png";
 import { isSupabaseConfigured } from "../lib/supabase";
@@ -128,6 +129,7 @@ export default function SignupPage() {
             <Button
               type="submit"
               className="auth-submit-btn"
+              leftIcon={<BiUserPlus />}
               isLoading={submitting}
               isDisabled={!isSupabaseConfigured}
             >

@@ -1,5 +1,6 @@
 import {
   Button,
+  HStack,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -10,6 +11,7 @@ import {
   Select,
   Text,
 } from "@chakra-ui/react";
+import { BiMove, BiX } from "react-icons/bi";
 
 import type { Project } from "../../types/api";
 import type { MoveDialogState } from "../../types/ui";
@@ -35,22 +37,18 @@ export function MoveImageModal({
 }: MoveImageModalProps) {
   return (
     <Modal isOpen={Boolean(moveDialogImage)} onClose={onClose} isCentered>
-      <ModalOverlay />
+      <ModalOverlay bg="rgba(2, 6, 12, 0.74)" backdropFilter="blur(8px)" />
       <ModalContent
-        bg="rgba(241, 245, 249, 0.92)"
-        backdropFilter="blur(14px)"
+        bg="rgba(10, 17, 27, 0.96)"
         border="1px solid"
-        borderColor="rgba(148, 163, 184, 0.55)"
-        _dark={{
-          bg: "rgba(15, 23, 42, 0.8)",
-          borderColor: "rgba(255, 255, 255, 0.22)",
-        }}
+        borderColor="rgba(255,255,255,0.1)"
+        boxShadow="0 30px 90px rgba(0,0,0,0.45)"
       >
         <ModalHeader>Move image</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text fontSize="sm" mb={2}>
-            Select destination project
+          <Text fontSize="sm" mb={2} color="whiteAlpha.700">
+            Destination project
           </Text>
           <Select value={moveTargetProjectId} onChange={(event) => onTargetChange(event.target.value)}>
             {projects
@@ -63,17 +61,14 @@ export function MoveImageModal({
           </Select>
         </ModalBody>
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            colorScheme="blue"
-            onClick={onConfirm}
-            isDisabled={!moveTargetProjectId}
-            isLoading={submitting}
-          >
-            Move
-          </Button>
+          <HStack>
+            <Button variant="outline" leftIcon={<BiX />} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button leftIcon={<BiMove />} onClick={onConfirm} isDisabled={!moveTargetProjectId} isLoading={submitting}>
+              Move
+            </Button>
+          </HStack>
         </ModalFooter>
       </ModalContent>
     </Modal>
