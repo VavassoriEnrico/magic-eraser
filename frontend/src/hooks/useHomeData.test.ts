@@ -6,6 +6,16 @@ import { createProject, deleteProject, getProjects, updateProject } from "../api
 import type { ImageAsset, Project } from "../types/api";
 import { useHomeData } from "./useHomeData";
 
+vi.mock("../lib/supabase", () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: { session: { access_token: "test-token" } },
+      }),
+    },
+  },
+}));
+
 vi.mock("../api/images", () => ({
   deleteImage: vi.fn(),
   getProjectImages: vi.fn(),

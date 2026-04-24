@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -11,9 +10,9 @@ from app.db.session import Base
 class LaboratoryPipeline(Base):
     __tablename__ = "laboratory_pipelines"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, index=True, server_default=text("gen_random_uuid()"))
-    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
-    source_image_id = Column(UUID(as_uuid=True), ForeignKey("images.id"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    source_image_id = Column(Integer, ForeignKey("images.id"), nullable=False)
     name = Column(String, nullable=True)
     start_image_url = Column(String, nullable=False)
     final_image_url = Column(String, nullable=True)

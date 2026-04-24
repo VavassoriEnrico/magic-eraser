@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { deleteImage, getProjectImages, uploadImage } from "../api/images";
 import { createProject, deleteProject, getProjects, updateProject } from "../api/projects";
+import { supabase } from "../lib/supabase";
 import type { ImageAsset, Project } from "../types/api";
 import type { HomeData } from "../types/ui";
 import { getErrorMessage } from "../utils/errors";
@@ -82,6 +83,18 @@ export function useHomeData(): HomeData {
     setError("");
 
     try {
+      const accessToken = supabase
+        ? (await supabase.auth.getSession()).data.session?.access_token
+        : undefined;
+      if (!accessToken) {
+        setProjects([]);
+        setSelectedProjectId("");
+        setUploadProjectId("");
+        setExpandedProjectId("");
+        setProjectImagesMap({});
+        return;
+      }
+
       const data = await getProjects();
       const nextProjects = sortProjectsByLastUpdate(data ?? []);
       setProjects(nextProjects);
@@ -248,7 +261,7 @@ export function useHomeData(): HomeData {
         }
 
         if (successCount > 0) {
-          const uploadedImages = await loadImagesForProject(Number(uploadProjectId));
+          const uploadedImages = await loadImagesForProject(uploadProjectId);
           const latestUploadedImage = getLatestImageAsset(uploadedImages);
           if (latestUploadedImage) {
             setLaboratorySelectedImage(latestUploadedImage);

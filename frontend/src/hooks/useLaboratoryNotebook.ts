@@ -940,8 +940,8 @@ export function useLaboratoryNotebook() {
 
       let pipelineId = activePipelineId;
       if (!pipelineId || mode === "save_as_new") {
-        const projectId = queryProjectId ? Number(queryProjectId) : selectedImage.project_id;
-        const imageId = queryImageId ? Number(queryImageId) : selectedImage.id;
+        const projectId = queryProjectId ?? selectedImage.project_id;
+        const imageId = queryImageId ?? selectedImage.id;
         if (!projectId || !imageId) {
           setSaveError("Project or image id missing");
           return false;

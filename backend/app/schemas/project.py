@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
@@ -17,7 +16,7 @@ class ProjectUpdate(BaseModel):
 
 
 class ProjectRead(BaseModel):
-    id: UUID
+    id: str
     name: str
     created_at: datetime
     updated_at: datetime | None = None

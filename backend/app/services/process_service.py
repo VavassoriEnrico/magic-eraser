@@ -29,7 +29,7 @@ def _log_step_success(
 
     laboratory_pipeline_service.create_step(
         db,
-        pipeline_id=payload.pipeline_id,
+        pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(payload.pipeline_id),
         step_index=_resolve_step_index(payload),
         process_type=payload.process_type,
         priority=payload.priority,
@@ -53,7 +53,7 @@ def _log_step_failure(
 
     laboratory_pipeline_service.create_step(
         db,
-        pipeline_id=payload.pipeline_id,
+        pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(payload.pipeline_id),
         step_index=_resolve_step_index(payload),
         process_type=payload.process_type,
         priority=payload.priority,

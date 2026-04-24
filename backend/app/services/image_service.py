@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -10,12 +8,34 @@ from app.repositories import (
 )
 from app.services import storage_service
 
+ImageIdentifier = int
+
+
+def parse_image_identifier(raw_image_id: str) -> ImageIdentifier:
+    clean_value = raw_image_id.strip()
+    if not clean_value:
+        raise HTTPException(status_code=422, detail="image id is required")
+    if not clean_value.isdigit():
+        raise HTTPException(status_code=422, detail="invalid image id")
+    return int(clean_value)
+
+
+def serialize_image(image) -> dict[str, object]:
+    return {
+        "id": str(image.id),
+        "project_id": str(image.project_id),
+        "fileName": image.fileName,
+        "filePath": image.filePath,
+        "created_at": image.created_at,
+    }
+
+
 #list all images in the db
 def list_images(db: Session):
     return image_repository.list_all(db)
 
 #delete image using its id
-def delete_image(db: Session, image_id: UUID) -> None:
+def delete_image(db: Session, image_id: ImageIdentifier) -> None:
     image = image_repository.get_by_id(db, image_id)
     if image is None:
         raise HTTPException(status_code=404, detail="image not found")

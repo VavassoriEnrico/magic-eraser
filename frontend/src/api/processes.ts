@@ -94,14 +94,14 @@ export function renamePipeline(pipelineId: string, name: string) {
   });
 }
 
-export function replacePipeline(pipelineId: number, payload: PipelineReplacePayload) {
+export function replacePipeline(pipelineId: string | number, payload: PipelineReplacePayload) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
 }
 
-export function deletePipeline(pipelineId: number) {
+export function deletePipeline(pipelineId: string | number) {
   return request<void>(`/laboratory-pipelines/${pipelineId}`, {
     method: "DELETE",
   });

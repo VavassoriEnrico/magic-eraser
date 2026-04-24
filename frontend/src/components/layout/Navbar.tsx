@@ -144,7 +144,7 @@ function getLaboratorySearch() {
       return "";
     }
 
-    const parsed = JSON.parse(raw) as { id?: number; project_id?: number };
+    const parsed = JSON.parse(raw) as { id?: string | number; project_id?: string | number };
     if (!parsed.id || !parsed.project_id) {
       return "";
     }

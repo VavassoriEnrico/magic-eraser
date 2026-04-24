@@ -3,7 +3,7 @@ from io import BytesIO
 from urllib.error import HTTPError
 from urllib.parse import quote, unquote, urlparse
 from urllib.request import Request, urlopen
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from fastapi import UploadFile
 from PIL import Image, UnidentifiedImageError
@@ -11,7 +11,7 @@ from PIL import Image, UnidentifiedImageError
 from app.core.config import settings
 
 
-def save_project_upload(project_id: UUID, file: UploadFile) -> tuple[str, str]:
+def save_project_upload(project_id: int, file: UploadFile) -> tuple[str, str]:
     original_name = Path(file.filename or "upload.bin").name
     extension = Path(original_name).suffix
     stored_name = f"{uuid4().hex}{extension}"
@@ -23,7 +23,7 @@ def save_project_upload(project_id: UUID, file: UploadFile) -> tuple[str, str]:
 
 
 def save_project_bytes(
-    project_id: UUID,
+    project_id: int,
     content: bytes,
     original_name: str,
 ) -> str:
@@ -59,7 +59,7 @@ def delete_public_upload(public_path: str) -> None:
         file_path.unlink()
 
 
-def _build_object_key(project_id: UUID, stored_name: str) -> str:
+def _build_object_key(project_id: int, stored_name: str) -> str:
     return f"project_{project_id}/{stored_name}"
 
 

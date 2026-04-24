@@ -702,9 +702,9 @@ describe("useLaboratoryNotebook", () => {
   test("overwrites an existing pipeline with the current notebook snapshot", async () => {
     window.history.replaceState({}, "", "/laboratory?pipelineId=21&projectId=3&imageId=7");
     vi.mocked(getPipeline).mockResolvedValue({
-      id: 21,
-      project_id: 3,
-      source_image_id: 7,
+      id: "21",
+      project_id: "3",
+      source_image_id: "7",
       name: "Saved pipeline",
       start_image_url: "/uploads/source.png",
       final_image_url: "/uploads/old-result.png",
@@ -714,8 +714,8 @@ describe("useLaboratoryNotebook", () => {
     });
     vi.mocked(getPipelineSteps).mockResolvedValue([
       {
-        id: 1,
-        pipeline_id: 21,
+        id: "1",
+        pipeline_id: "21",
         step_index: 1,
         process_type: "segment_from_prompt",
         priority: 1,
@@ -732,9 +732,9 @@ describe("useLaboratoryNotebook", () => {
       },
     ]);
     vi.mocked(replacePipeline).mockResolvedValue({
-      id: 21,
-      project_id: 3,
-      source_image_id: 7,
+      id: "21",
+      project_id: "3",
+      source_image_id: "7",
       name: "Updated pipeline",
       start_image_url: "/uploads/source.png",
       final_image_url: "/uploads/new-mask.png",
@@ -746,7 +746,7 @@ describe("useLaboratoryNotebook", () => {
     const { result } = renderHook(() => useLaboratoryNotebook());
 
     await waitFor(() => {
-      expect(result.current.activePipelineId).toBe(21);
+      expect(result.current.activePipelineId).toBe("21");
       expect(result.current.cells).toHaveLength(1);
     });
 
@@ -762,7 +762,7 @@ describe("useLaboratoryNotebook", () => {
       await result.current.savePipeline("overwrite", "Updated pipeline");
     });
 
-    expect(replacePipeline).toHaveBeenCalledWith(21, {
+    expect(replacePipeline).toHaveBeenCalledWith("21", {
       name: "Updated pipeline",
       status: "done",
       final_image_url: "/uploads/new-mask.png",
@@ -784,7 +784,7 @@ describe("useLaboratoryNotebook", () => {
     });
     expect(startPipeline).not.toHaveBeenCalled();
     expect(createPipelineStep).not.toHaveBeenCalled();
-    expect(finishPipeline).not.toHaveBeenCalledWith(21, expect.anything());
+    expect(finishPipeline).not.toHaveBeenCalledWith("21", expect.anything());
     expect(result.current.saveMessage).toBe("Pipeline saved");
     expect(result.current.saveError).toBe("");
   });

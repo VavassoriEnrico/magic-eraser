@@ -48,8 +48,8 @@ interface ProjectOverviewSectionProps {
   submitting: boolean;
   editingProjectId: string;
   editingProjectName: string;
-  previewScrollStateByProject: Record<number, PreviewScrollState>;
-  imageStripRefs: MutableRefObject<Record<number, HTMLDivElement | null>>;
+  previewScrollStateByProject: Record<string, PreviewScrollState>;
+  imageStripRefs: MutableRefObject<Record<string, HTMLDivElement | null>>;
   onProjectNameChange: (value: string) => void;
   onCreateProject: (event: FormEvent<HTMLFormElement>) => void;
   onToggleProject: (projectId: string) => void;
@@ -62,7 +62,7 @@ interface ProjectOverviewSectionProps {
   onEditingProjectNameChange: (value: string) => void;
   onSaveInlineEdit: (projectId: string) => void;
   onCancelInlineEdit: () => void;
-  onConfirmDeleteProject: (projectId: number) => void;
+  onConfirmDeleteProject: (projectId: string) => void;
 }
 
 export function ProjectOverviewSection({
@@ -142,8 +142,8 @@ export function ProjectOverviewSection({
         ) : (
           <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={4}>
             {orderedProjects.map((project) => {
-              const isExpanded = project.id === Number(expandedProjectId);
-              const isEditing = project.id === Number(editingProjectId);
+              const isExpanded = project.id === expandedProjectId;
+              const isEditing = project.id === editingProjectId;
               const projectImages = projectImagesMap[project.id] ?? [];
               const projectLoading = loadingImagesByProject[project.id];
               const previewState = previewScrollStateByProject[project.id] ?? {
@@ -244,8 +244,8 @@ interface ProjectCardProps {
   previewState: PreviewScrollState;
   submitting: boolean;
   editingProjectName: string;
-  imageStripRefs: MutableRefObject<Record<number, HTMLDivElement | null>>;
-  onToggleProject: (projectId: number) => void;
+  imageStripRefs: MutableRefObject<Record<string, HTMLDivElement | null>>;
+  onToggleProject: (projectId: string) => void;
   onOpenImagePopup: (image: ImageAsset) => void;
   onOpenLaboratory: (image: ImageAsset, projectId: string) => void;
   onDeleteImage: (imageId: string, projectId: string) => void;

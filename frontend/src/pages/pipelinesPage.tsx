@@ -27,7 +27,7 @@ export default function PipelinesPage() {
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deletingPipelineId, setDeletingPipelineId] = useState<number | null>(null);
+  const [deletingPipelineId, setDeletingPipelineId] = useState<string | null>(null);
   const [pendingDeletePipeline, setPendingDeletePipeline] = useState<Pipeline | null>(null);
   const [searchValue, setSearchValue] = useState("");
 
@@ -98,7 +98,7 @@ export default function PipelinesPage() {
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
-  async function onDeletePipeline(pipelineId: number) {
+  async function onDeletePipeline(pipelineId: string) {
     setDeletingPipelineId(pipelineId);
     setError("");
     try {

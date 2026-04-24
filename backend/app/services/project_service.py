@@ -12,6 +12,42 @@ from app.repositories import (
 )
 from app.services import storage_service
 
+ProjectIdentifier = int
+
+
+def _read_value(entity: object, key: str) -> object:
+    if isinstance(entity, dict):
+        return entity.get(key)
+    return getattr(entity, key)
+
+
+def parse_project_identifier(raw_project_id: str) -> ProjectIdentifier:
+    clean_value = raw_project_id.strip()
+    if not clean_value:
+        raise HTTPException(status_code=422, detail="project id is required")
+    if not clean_value.isdigit():
+        raise HTTPException(status_code=422, detail="invalid project id")
+    return int(clean_value)
+
+
+def serialize_project(project) -> dict[str, object]:
+    return {
+        "id": str(_read_value(project, "id")),
+        "name": _read_value(project, "name"),
+        "created_at": _read_value(project, "created_at"),
+        "updated_at": _read_value(project, "updated_at"),
+    }
+
+
+def serialize_image(image) -> dict[str, object]:
+    return {
+        "id": str(_read_value(image, "id")),
+        "project_id": str(_read_value(image, "project_id")),
+        "fileName": _read_value(image, "fileName"),
+        "filePath": _read_value(image, "filePath"),
+        "created_at": _read_value(image, "created_at"),
+    }
+
 
 def create_project(db: Session, name: str, user_id: str):
     next_name = name.strip()
@@ -24,9 +60,15 @@ def create_project(db: Session, name: str, user_id: str):
 
     try:
         project = project_repository.create(db, name=next_name, user_id=owner_id)
+        db.flush()
+        created_project = {
+            "id": project.id,
+            "name": project.name,
+            "created_at": project.created_at,
+            "updated_at": project.updated_at,
+        }
         db.commit()
-        db.refresh(project)
-        return project
+        return created_project
     except Exception:
         db.rollback()
         raise
@@ -40,14 +82,14 @@ def list_projects(db: Session, user_id: str):
     return project_repository.list_by_user_id(db, owner_id)
 
 
-def get_project(db: Session, project_id: UUID):
+def get_project(db: Session, project_id: ProjectIdentifier):
     project = project_repository.get_by_id(db, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="project not found")
     return project
 
 
-def delete_project(db: Session, project_id: UUID) -> None:
+def delete_project(db: Session, project_id: ProjectIdentifier) -> None:
     project = get_project(db, project_id)
     try:
         pipelines = laboratory_pipeline_repository.list_pipelines_by_project_id(db, project_id)
@@ -60,7 +102,7 @@ def delete_project(db: Session, project_id: UUID) -> None:
         raise
 
 
-def update_project_name(db: Session, project_id: UUID, name: str):
+def update_project_name(db: Session, project_id: ProjectIdentifier, name: str):
     project = get_project(db, project_id)
 
     next_name = name.strip()
@@ -77,7 +119,7 @@ def update_project_name(db: Session, project_id: UUID, name: str):
         raise
 
 
-def upload_image(db: Session, project_id: UUID, file: UploadFile):
+def upload_image(db: Session, project_id: ProjectIdentifier, file: UploadFile):
     project = get_project(db, project_id)
     original_name, public_path = storage_service.save_project_upload(project_id, file)
     try:
@@ -94,14 +136,14 @@ def upload_image(db: Session, project_id: UUID, file: UploadFile):
         raise
 
 
-def list_project_images(db: Session, project_id: UUID):
+def list_project_images(db: Session, project_id: ProjectIdentifier):
     get_project(db, project_id)
     return image_repository.list_by_project_id(db, project_id)
 
 
 def upload_image_from_url(
     db: Session,
-    project_id: UUID,
+    project_id: ProjectIdentifier,
     image_url: str,
     file_name: str | None = None,
 ):

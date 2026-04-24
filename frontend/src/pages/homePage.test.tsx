@@ -164,9 +164,9 @@ describe("HomePage", () => {
     window.history.replaceState({}, "", "/");
     vi.mocked(listPipelines).mockResolvedValue([
       {
-        id: 21,
-        project_id: 4,
-        source_image_id: 12,
+        id: "21",
+        project_id: "4",
+        source_image_id: "12",
         name: "Pipeline Alpha",
         start_image_url: "/uploads/start.png",
         final_image_url: "/uploads/final.png",

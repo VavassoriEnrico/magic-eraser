@@ -1,15 +1,15 @@
-from uuid import UUID
-
 from sqlalchemy.orm import Session
 
 from app.models import LaboratoryPipeline, LaboratoryPipelineStep
+
+PipelineIdentifier = int
 
 
 def create_pipeline(
     db: Session,
     *,
-    project_id: UUID,
-    source_image_id: UUID,
+    project_id: int,
+    source_image_id: int,
     start_image_url: str,
     name: str | None = None,
 ) -> LaboratoryPipeline:
@@ -26,7 +26,7 @@ def create_pipeline(
     return pipeline
 
 
-def get_pipeline_by_id(db: Session, pipeline_id: UUID) -> LaboratoryPipeline | None:
+def get_pipeline_by_id(db: Session, pipeline_id: PipelineIdentifier) -> LaboratoryPipeline | None:
     return db.query(LaboratoryPipeline).filter(LaboratoryPipeline.id == pipeline_id).first()
 
 
@@ -34,7 +34,7 @@ def list_pipelines(db: Session) -> list[LaboratoryPipeline]:
     return db.query(LaboratoryPipeline).order_by(LaboratoryPipeline.updated_at.desc()).all()
 
 
-def list_pipelines_by_project_id(db: Session, project_id: UUID) -> list[LaboratoryPipeline]:
+def list_pipelines_by_project_id(db: Session, project_id: int) -> list[LaboratoryPipeline]:
     return (
         db.query(LaboratoryPipeline)
         .filter(LaboratoryPipeline.project_id == project_id)
@@ -43,7 +43,7 @@ def list_pipelines_by_project_id(db: Session, project_id: UUID) -> list[Laborato
     )
 
 
-def has_pipeline_for_source_image(db: Session, source_image_id: UUID) -> bool:
+def has_pipeline_for_source_image(db: Session, source_image_id: int) -> bool:
     return (
         db.query(LaboratoryPipeline.id)
         .filter(LaboratoryPipeline.source_image_id == source_image_id)
@@ -134,7 +134,7 @@ def delete_pipeline(db: Session, pipeline: LaboratoryPipeline) -> None:
 def create_step(
     db: Session,
     *,
-    pipeline_id: UUID,
+    pipeline_id: PipelineIdentifier,
     step_index: int,
     process_type: str,
     priority: int,
@@ -167,7 +167,7 @@ def create_step(
     return step
 
 
-def list_steps_by_pipeline(db: Session, pipeline_id: UUID) -> list[LaboratoryPipelineStep]:
+def list_steps_by_pipeline(db: Session, pipeline_id: PipelineIdentifier) -> list[LaboratoryPipelineStep]:
     return (
         db.query(LaboratoryPipelineStep)
         .filter(LaboratoryPipelineStep.pipeline_id == pipeline_id)

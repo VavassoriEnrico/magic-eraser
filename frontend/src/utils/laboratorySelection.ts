@@ -28,6 +28,6 @@ export function getLatestImageAsset(images: ImageAsset[]) {
       return rightTime - leftTime;
     }
 
-    return right.id - left.id;
+    return String(right.id).localeCompare(String(left.id));
   })[0] ?? null;
 }

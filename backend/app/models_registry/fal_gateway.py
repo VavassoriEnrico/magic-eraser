@@ -3,7 +3,6 @@ from __future__ import annotations
 import base64
 from io import BytesIO
 from urllib.request import urlopen
-from uuid import UUID
 
 from fastapi import HTTPException
 from PIL import Image, ImageChops
@@ -55,7 +54,7 @@ class FalModelGateway:
         self,
         items: list[object],
         *,
-        project_id: UUID | None = None,
+        project_id: int | None = None,
         apply_mask: bool = True,
         output_name: str = "merged-mask.png",
     ) -> str | None:
