@@ -11,6 +11,7 @@ def init_db() -> None:
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))
     Base.metadata.create_all(bind=engine)
     ensure_projects_columns()
+    ensure_laboratory_pipelines_columns()
 
 def ensure_projects_columns() -> None:
     inspector = inspect(engine)
@@ -28,3 +29,15 @@ def ensure_projects_columns() -> None:
 
         if "user_id" not in columns:
             connection.execute(text("ALTER TABLE projects ADD COLUMN user_id UUID"))
+
+
+def ensure_laboratory_pipelines_columns() -> None:
+    inspector = inspect(engine)
+    try:
+        columns = {column["name"] for column in inspector.get_columns("laboratory_pipelines")}
+    except NoSuchTableError:
+        return
+
+    with engine.begin() as connection:
+        if "user_id" not in columns:
+            connection.execute(text("ALTER TABLE laboratory_pipelines ADD COLUMN user_id UUID"))

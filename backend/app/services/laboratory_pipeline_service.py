@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -21,6 +23,7 @@ def serialize_pipeline(pipeline: LaboratoryPipeline) -> dict[str, object]:
         "id": str(pipeline.id),
         "project_id": str(pipeline.project_id),
         "source_image_id": str(pipeline.source_image_id),
+        "user_id": str(pipeline.user_id) if pipeline.user_id is not None else None,
         "name": pipeline.name,
         "start_image_url": pipeline.start_image_url,
         "final_image_url": pipeline.final_image_url,
@@ -55,14 +58,20 @@ def create_pipeline(
     *,
     project_id: int,
     source_image_id: int,
+    user_id: str,
     start_image_url: str,
     name: str | None = None,
 ) -> LaboratoryPipeline:
+    try:
+        owner_id = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="invalid token subject")
     try:
         return laboratory_pipeline_repository.create_pipeline(
             db,
             project_id=project_id,
             source_image_id=source_image_id,
+            user_id=owner_id,
             start_image_url=start_image_url,
             name=name,
         )
@@ -71,25 +80,35 @@ def create_pipeline(
         raise
 
 
-def get_pipeline(db: Session, pipeline_id: PipelineIdentifier) -> LaboratoryPipeline:
-    pipeline = laboratory_pipeline_repository.get_pipeline_by_id(db, pipeline_id)
+def get_pipeline(db: Session, pipeline_id: PipelineIdentifier, *, user_id: str) -> LaboratoryPipeline:
+    try:
+        owner_id = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="invalid token subject")
+
+    pipeline = laboratory_pipeline_repository.get_pipeline_by_id(db, pipeline_id, user_id=owner_id)
     if pipeline is None:
         raise HTTPException(status_code=404, detail="pipeline not found")
     return pipeline
 
 
-def list_pipelines(db: Session) -> list[LaboratoryPipeline]:
-    return laboratory_pipeline_repository.list_pipelines(db)
+def list_pipelines(db: Session, *, user_id: str) -> list[LaboratoryPipeline]:
+    try:
+        owner_id = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="invalid token subject")
+    return laboratory_pipeline_repository.list_pipelines(db, user_id=owner_id)
 
 
 def update_pipeline_status(
     db: Session,
     *,
     pipeline_id: PipelineIdentifier,
+    user_id: str,
     status: str,
     final_image_url: str | None = None,
 ) -> LaboratoryPipeline:
-    pipeline = get_pipeline(db, pipeline_id)
+    pipeline = get_pipeline(db, pipeline_id, user_id=user_id)
     try:
         return laboratory_pipeline_repository.update_pipeline_status(
             db,
@@ -106,9 +125,10 @@ def update_pipeline_name(
     db: Session,
     *,
     pipeline_id: PipelineIdentifier,
+    user_id: str,
     name: str | None,
 ) -> LaboratoryPipeline:
-    pipeline = get_pipeline(db, pipeline_id)
+    pipeline = get_pipeline(db, pipeline_id, user_id=user_id)
     clean_name = name.strip() if isinstance(name, str) else None
     clean_name = clean_name or None
     try:
@@ -126,12 +146,13 @@ def replace_pipeline_snapshot(
     db: Session,
     *,
     pipeline_id: PipelineIdentifier,
+    user_id: str,
     name: str | None,
     status: str,
     final_image_url: str | None,
     steps: list[dict[str, object]],
 ) -> LaboratoryPipeline:
-    pipeline = get_pipeline(db, pipeline_id)
+    pipeline = get_pipeline(db, pipeline_id, user_id=user_id)
     clean_name = name.strip() if isinstance(name, str) else None
     clean_name = clean_name or None
     try:
@@ -148,8 +169,8 @@ def replace_pipeline_snapshot(
         raise
 
 
-def delete_pipeline(db: Session, pipeline_id: PipelineIdentifier) -> None:
-    pipeline = get_pipeline(db, pipeline_id)
+def delete_pipeline(db: Session, pipeline_id: PipelineIdentifier, *, user_id: str) -> None:
+    pipeline = get_pipeline(db, pipeline_id, user_id=user_id)
     try:
         laboratory_pipeline_repository.delete_pipeline(db, pipeline)
         db.commit()
@@ -162,6 +183,7 @@ def create_step(
     db: Session,
     *,
     pipeline_id: PipelineIdentifier,
+    user_id: str,
     step_index: int,
     process_type: str,
     priority: int,
@@ -174,7 +196,7 @@ def create_step(
     status: str = "done",
     error_message: str | None = None,
 ) -> LaboratoryPipelineStep:
-    get_pipeline(db, pipeline_id)
+    get_pipeline(db, pipeline_id, user_id=user_id)
     try:
         return laboratory_pipeline_repository.create_step(
             db,
@@ -196,6 +218,6 @@ def create_step(
         raise
 
 
-def list_steps(db: Session, pipeline_id: PipelineIdentifier) -> list[LaboratoryPipelineStep]:
-    get_pipeline(db, pipeline_id)
+def list_steps(db: Session, pipeline_id: PipelineIdentifier, *, user_id: str) -> list[LaboratoryPipelineStep]:
+    get_pipeline(db, pipeline_id, user_id=user_id)
     return laboratory_pipeline_repository.list_steps_by_pipeline(db, pipeline_id)

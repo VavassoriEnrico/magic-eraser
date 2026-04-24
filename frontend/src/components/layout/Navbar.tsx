@@ -13,6 +13,7 @@ import {
 import logoBlack from "../../assets/me_logo_black.png";
 import logoWhite from "../../assets/me_logo_white.png";
 import type { AppPath } from "../../types/ui";
+import { getLaboratorySelectedImage } from "../../utils/laboratorySelection";
 
 interface NavbarProps {
   currentPath: AppPath;
@@ -139,13 +140,8 @@ function onLinkClick(
 
 function getLaboratorySearch() {
   try {
-    const raw = window.sessionStorage.getItem("laboratory:selected-image");
-    if (!raw) {
-      return "";
-    }
-
-    const parsed = JSON.parse(raw) as { id?: string | number; project_id?: string | number };
-    if (!parsed.id || !parsed.project_id) {
+    const parsed = getLaboratorySelectedImage();
+    if (!parsed?.id || !parsed.project_id) {
       return "";
     }
 

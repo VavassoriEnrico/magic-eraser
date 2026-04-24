@@ -7,6 +7,10 @@ import { useHomeData } from "../hooks/useHomeData";
 import { useUploadImageSelection } from "../hooks/useUploadImageSelection";
 import { listPipelines } from "../api/processes";
 import type { ImageAsset, Project } from "../types/api";
+import {
+  LABORATORY_SELECTED_IMAGE_STORAGE_KEY,
+  getLaboratorySelectedImageStorageKey,
+} from "../utils/laboratorySelection";
 import HomePage from "./homePage";
 import theme from "../theme";
 
@@ -21,6 +25,34 @@ vi.mock("../hooks/useUploadImageSelection", () => ({
 vi.mock("../api/processes", () => ({
   listPipelines: vi.fn(),
 }));
+
+function mockLocalStorage() {
+  const store = new Map<string, string>();
+
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: {
+      get length() {
+        return store.size;
+      },
+      key(index: number) {
+        return Array.from(store.keys())[index] ?? null;
+      },
+      getItem(key: string) {
+        return store.get(key) ?? null;
+      },
+      setItem(key: string, value: string) {
+        store.set(key, value);
+      },
+      removeItem(key: string) {
+        store.delete(key);
+      },
+      clear() {
+        store.clear();
+      },
+    },
+  });
+}
 
 vi.mock("../components/common/PageHeader", () => ({
   PageHeader: ({ title }: { title: string }) => <div>{title}</div>,
@@ -160,6 +192,7 @@ describe("HomePage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocalStorage();
     window.sessionStorage.clear();
     window.history.replaceState({}, "", "/");
     vi.mocked(listPipelines).mockResolvedValue([
@@ -239,12 +272,20 @@ describe("HomePage", () => {
     const pushStateSpy = vi.spyOn(window.history, "pushState");
     const dispatchEventSpy = vi.spyOn(window, "dispatchEvent");
     const user = userEvent.setup();
+    window.localStorage.setItem(
+      "sb-test-auth-token",
+      JSON.stringify({
+        access_token: "token",
+        user: { id: "user-1" },
+      }),
+    );
 
     renderPage();
 
     await user.click(screen.getByRole("button", { name: "Open laboratory" }));
 
-    expect(window.sessionStorage.getItem("laboratory:selected-image")).toContain("\"id\":\"7\"");
+    const storageKey = getLaboratorySelectedImageStorageKey("user-1") ?? LABORATORY_SELECTED_IMAGE_STORAGE_KEY;
+    expect(window.sessionStorage.getItem(storageKey)).toContain("\"id\":\"7\"");
     expect(pushStateSpy).toHaveBeenCalledWith({}, "", "/laboratory?projectId=1&imageId=7");
     expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
   });

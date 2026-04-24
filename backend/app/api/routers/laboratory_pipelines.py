@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 from app.db_dependencies import get_db
+from app.dependencies_auth import get_current_user_id
 from app.schemas.laboratory_pipeline import (
     PipelineFinishRequest,
     PipelineReplaceRequest,
@@ -17,27 +18,43 @@ router = APIRouter(prefix="/laboratory-pipelines", tags=["laboratory-pipelines"]
 
 
 @router.get("", response_model=list[PipelineRead])
-def list_pipelines(db: Session = Depends(get_db)):
-    return [laboratory_pipeline_service.serialize_pipeline(pipeline) for pipeline in laboratory_pipeline_service.list_pipelines(db)]
+def list_pipelines(
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    return [
+        laboratory_pipeline_service.serialize_pipeline(pipeline)
+        for pipeline in laboratory_pipeline_service.list_pipelines(db, user_id=user_id)
+    ]
 
 
 @router.get("/{pipeline_id}", response_model=PipelineRead)
-def get_pipeline(pipeline_id: str, db: Session = Depends(get_db)):
+def get_pipeline(
+    pipeline_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
     return laboratory_pipeline_service.serialize_pipeline(
         laboratory_pipeline_service.get_pipeline(
             db,
             laboratory_pipeline_service.parse_pipeline_identifier(pipeline_id),
+            user_id=user_id,
         )
     )
 
 
 @router.post("/start", response_model=PipelineStartResponse)
-def start_pipeline(payload: PipelineStartRequest, db: Session = Depends(get_db)):
+def start_pipeline(
+    payload: PipelineStartRequest,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
     return laboratory_pipeline_service.serialize_pipeline(
         laboratory_pipeline_service.create_pipeline(
             db,
             project_id=project_service.parse_project_identifier(payload.project_id),
             source_image_id=image_service.parse_image_identifier(payload.source_image_id),
+            user_id=user_id,
             start_image_url=payload.start_image_url,
             name=payload.name,
         )
@@ -49,11 +66,13 @@ def finish_pipeline(
     pipeline_id: str,
     payload: PipelineFinishRequest,
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
 ):
     return laboratory_pipeline_service.serialize_pipeline(
         laboratory_pipeline_service.update_pipeline_status(
             db,
             pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(pipeline_id),
+            user_id=user_id,
             status=payload.status,
             final_image_url=payload.final_image_url,
         )
@@ -65,11 +84,13 @@ def rename_pipeline(
     pipeline_id: str,
     payload: PipelineRenameRequest,
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
 ):
     return laboratory_pipeline_service.serialize_pipeline(
         laboratory_pipeline_service.update_pipeline_name(
             db,
             pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(pipeline_id),
+            user_id=user_id,
             name=payload.name,
         )
     )
@@ -80,11 +101,13 @@ def replace_pipeline(
     pipeline_id: str,
     payload: PipelineReplaceRequest,
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
 ):
     return laboratory_pipeline_service.serialize_pipeline(
         laboratory_pipeline_service.replace_pipeline_snapshot(
             db,
             pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(pipeline_id),
+            user_id=user_id,
             name=payload.name,
             status=payload.status,
             final_image_url=payload.final_image_url,
@@ -94,21 +117,31 @@ def replace_pipeline(
 
 
 @router.delete("/{pipeline_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_pipeline(pipeline_id: str, db: Session = Depends(get_db)):
+def delete_pipeline(
+    pipeline_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
     laboratory_pipeline_service.delete_pipeline(
         db,
         laboratory_pipeline_service.parse_pipeline_identifier(pipeline_id),
+        user_id=user_id,
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/{pipeline_id}/steps", response_model=list[PipelineStepRead])
-def list_pipeline_steps(pipeline_id: str, db: Session = Depends(get_db)):
+def list_pipeline_steps(
+    pipeline_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
     return [
         laboratory_pipeline_service.serialize_pipeline_step(step)
         for step in laboratory_pipeline_service.list_steps(
             db,
             laboratory_pipeline_service.parse_pipeline_identifier(pipeline_id),
+            user_id=user_id,
         )
     ]
 
@@ -118,11 +151,13 @@ def create_pipeline_step(
     pipeline_id: str,
     payload: PipelineStepCreateRequest,
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
 ):
     return laboratory_pipeline_service.serialize_pipeline_step(
         laboratory_pipeline_service.create_step(
             db,
             pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(pipeline_id),
+            user_id=user_id,
             step_index=payload.step_index,
             process_type=payload.process_type,
             priority=payload.priority,

@@ -14,6 +14,10 @@ import {
   startPipeline,
 } from "../api/processes";
 import type { ImageAsset, ProcessCatalogItem } from "../types/api";
+import {
+  LABORATORY_SELECTED_IMAGE_STORAGE_KEY,
+  getLaboratorySelectedImageStorageKey,
+} from "../utils/laboratorySelection";
 import { getMaskOverlayForCell, getSelectedModelOption, getVisibleAdditionalSettings, useLaboratoryNotebook } from "./useLaboratoryNotebook";
 
 vi.mock("../api/images", () => ({
@@ -39,6 +43,34 @@ const selectedImage: ImageAsset = {
   filePath: "/uploads/source.png",
   created_at: "2026-04-20T08:00:00Z",
 };
+
+function mockLocalStorage() {
+  const store = new Map<string, string>();
+
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: {
+      get length() {
+        return store.size;
+      },
+      key(index: number) {
+        return Array.from(store.keys())[index] ?? null;
+      },
+      getItem(key: string) {
+        return store.get(key) ?? null;
+      },
+      setItem(key: string, value: string) {
+        store.set(key, value);
+      },
+      removeItem(key: string) {
+        store.delete(key);
+      },
+      clear() {
+        store.clear();
+      },
+    },
+  });
+}
 
 const catalog: ProcessCatalogItem[] = [
   {
@@ -194,8 +226,19 @@ describe("useLaboratoryNotebook helpers", () => {
 describe("useLaboratoryNotebook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocalStorage();
     window.sessionStorage.clear();
-    window.sessionStorage.setItem("laboratory:selected-image", JSON.stringify(selectedImage));
+    window.localStorage.setItem(
+      "sb-test-auth-token",
+      JSON.stringify({
+        access_token: "token",
+        user: { id: "user-1" },
+      }),
+    );
+    window.sessionStorage.setItem(
+      getLaboratorySelectedImageStorageKey("user-1") ?? LABORATORY_SELECTED_IMAGE_STORAGE_KEY,
+      JSON.stringify(selectedImage),
+    );
     window.history.replaceState({}, "", "/laboratory?projectId=3&imageId=7");
     vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.mocked(getProcessCatalog).mockResolvedValue(catalog);
@@ -221,6 +264,7 @@ describe("useLaboratoryNotebook", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    window.localStorage.clear();
   });
 
   test("initializes the notebook with the selected image and a default cell", async () => {
@@ -243,7 +287,7 @@ describe("useLaboratoryNotebook", () => {
       outputPreviewLoading: false,
     });
     expect(result.current.notebookExplanationList).toContain(
-      "Segmentation creates a mask from your prompt so you can isolate the part you want to edit.",
+      "- Segmentation: write as prompt what you want to edit, ex. 'cat' 'bottle'",
     );
   });
 

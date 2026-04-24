@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models import LaboratoryPipeline, LaboratoryPipelineStep
@@ -10,12 +12,14 @@ def create_pipeline(
     *,
     project_id: int,
     source_image_id: int,
+    user_id: UUID,
     start_image_url: str,
     name: str | None = None,
 ) -> LaboratoryPipeline:
     pipeline = LaboratoryPipeline(
         project_id=project_id,
         source_image_id=source_image_id,
+        user_id=user_id,
         start_image_url=start_image_url,
         name=name,
         status="running",
@@ -26,12 +30,26 @@ def create_pipeline(
     return pipeline
 
 
-def get_pipeline_by_id(db: Session, pipeline_id: PipelineIdentifier) -> LaboratoryPipeline | None:
-    return db.query(LaboratoryPipeline).filter(LaboratoryPipeline.id == pipeline_id).first()
+def get_pipeline_by_id(
+    db: Session,
+    pipeline_id: PipelineIdentifier,
+    *,
+    user_id: UUID,
+) -> LaboratoryPipeline | None:
+    return (
+        db.query(LaboratoryPipeline)
+        .filter(LaboratoryPipeline.id == pipeline_id, LaboratoryPipeline.user_id == user_id)
+        .first()
+    )
 
 
-def list_pipelines(db: Session) -> list[LaboratoryPipeline]:
-    return db.query(LaboratoryPipeline).order_by(LaboratoryPipeline.updated_at.desc()).all()
+def list_pipelines(db: Session, *, user_id: UUID) -> list[LaboratoryPipeline]:
+    return (
+        db.query(LaboratoryPipeline)
+        .filter(LaboratoryPipeline.user_id == user_id)
+        .order_by(LaboratoryPipeline.updated_at.desc())
+        .all()
+    )
 
 
 def list_pipelines_by_project_id(db: Session, project_id: int) -> list[LaboratoryPipeline]:
