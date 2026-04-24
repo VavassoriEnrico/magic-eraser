@@ -186,19 +186,18 @@ export default function HomePage() {
   return (
     <Stack
       spacing={6}
-      color="gray.800"
+      color="white"
       minH="calc(100vh - 140px)"
       maxW={{ base: "1480px", xl: "none" }}
       w="full"
       mx={{ base: "auto", xl: 0 }}
       mt={{ base: 0, xl: "-28px" }}
       pr={{ base: 0, xl: 28 }}
-      _dark={{ color: "white" }}
     >
       <Stack direction={{ base: "column", xl: "row" }} align="start" spacing={{ base: 6, xl: 0 }}>
         <SavedPipelinesSidebar />
 
-        <Stack spacing={6} color="gray.800" flex="1" minW={0} px={{ base: 0, xl: 8 }} _dark={{ color: "white" }}>
+        <Stack spacing={6} color="white" flex="1" minW={0} px={{ base: 0, xl: 8 }}>
 
           {error ? <StatusNotice tone="error">{error}</StatusNotice> : null}
           {message ? <StatusNotice tone="success">{message}</StatusNotice> : null}

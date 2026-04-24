@@ -11,7 +11,7 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { BiFolderOpen, BiSearch, BiTrash } from "react-icons/bi";
+import { BiFolderOpen, BiTrash } from "react-icons/bi";
 
 import { deletePipeline, listPipelines } from "../api/processes";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
@@ -31,13 +31,13 @@ export default function PipelinesPage() {
   const [pendingDeletePipeline, setPendingDeletePipeline] = useState<Pipeline | null>(null);
   const [searchValue, setSearchValue] = useState("");
 
-  const pageText = useColorModeValue("gray.800", "white");
-  const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const panelBg = useColorModeValue("#eef3f8", "#151b23");
+  const pageText = useColorModeValue("white", "white");
+  const subtleText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
+  const panelBg = useColorModeValue("transparent", "#151b23");
   const panelBorder = useColorModeValue("rgba(148,163,184,0.22)", "rgba(255,255,255,0.09)");
-  const previewBg = useColorModeValue("#dfe6ef", "#1b2430");
-  const compactPanelBg = useColorModeValue("rgba(255,255,255,0.44)", "rgba(255,255,255,0.03)");
-  const inputBg = useColorModeValue("#f8fafc", "#1b2430");
+  const previewBg = useColorModeValue("#242424", "#1b2430");
+  const compactPanelBg = useColorModeValue("#222222", "rgba(255,255,255,0.03)");
+  const inputBg = useColorModeValue("#242424", "#1b2430");
 
   useEffect(() => {
     let cancelled = false;
@@ -152,7 +152,7 @@ export default function PipelinesPage() {
       <GlassPanel p={{ base: 4, md: 5 }} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
         <Stack direction={{ base: "column", lg: "row" }} align={{ base: "stretch", lg: "center" }} spacing={4}>
           <HStack spacing={3} flexWrap="wrap">
-            <Badge width="fit-content" colorScheme="blue" variant="subtle">
+            <Badge width="fit-content" variant="subtle">
               {filteredPipelines.length} pipeline{filteredPipelines.length === 1 ? "" : "s"}
             </Badge>
             {sortedPipelines[0] ? (
@@ -162,15 +162,11 @@ export default function PipelinesPage() {
             ) : null}
           </HStack>
 
-          <Box position="relative" flex="1" maxW={{ lg: "360px" }} ml={{ lg: "auto" }}>
-            <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color={subtleText}>
-              <BiSearch />
-            </Box>
+          <Box flex="1" maxW={{ lg: "360px" }} ml={{ lg: "auto" }}>
             <Input
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
               placeholder="Find a pipeline..."
-              pl={3}
               bg={inputBg}
               borderColor={panelBorder}
             />
@@ -264,11 +260,12 @@ function ImagePanel({
   previewBg: string;
   emptyLabel?: string;
 }) {
+  const mutedText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
+
   return (
     <Box minW={0}>
       <Text
-        color="gray.500"
-        _dark={{ color: "whiteAlpha.700" }}
+        color={mutedText}
         fontSize="xs"
         textTransform="uppercase"
         mb={2}
@@ -294,7 +291,7 @@ function ImagePanel({
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         ) : (
-          <Text color="gray.500" _dark={{ color: "whiteAlpha.700" }} fontSize="sm">
+          <Text color={mutedText} fontSize="sm">
             {emptyLabel}
           </Text>
         )}

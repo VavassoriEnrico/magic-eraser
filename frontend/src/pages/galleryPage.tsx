@@ -42,11 +42,11 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const pageText = useColorModeValue("gray.800", "white");
-  const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
-  const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
+  const pageText = useColorModeValue("white", "white");
+  const sectionLabel = useColorModeValue("rgba(245,241,235,0.6)", "whiteAlpha.600");
+  const subtleText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
   const panelBg = useColorModeValue(
-    "linear-gradient(180deg, rgba(238,243,248,0.96) 0%, rgba(229,235,242,0.94) 100%)",
+    "transparent",
     "linear-gradient(180deg, rgba(18,23,32,0.98) 0%, rgba(15,20,29,0.96) 100%)",
   );
   const panelBorder = useColorModeValue("rgba(148,163,184,0.2)", "rgba(255,255,255,0.09)");
@@ -106,10 +106,10 @@ export default function GalleryPage() {
       />
 
       <HStack spacing={3}>
-        <Badge colorScheme="blue" variant="subtle" px={2} py={1} borderRadius="6px">
+        <Badge variant="subtle" px={2} py={1} borderRadius="6px">
           {groups.length} {projectsLabel}
         </Badge>
-        <Badge colorScheme="purple" variant="subtle" px={2} py={1} borderRadius="6px">
+        <Badge variant="subtle" px={2} py={1} borderRadius="6px">
           {groups.reduce((sum, group) => sum + group.images.length, 0)} {imagesLabel}
         </Badge>
       </HStack>
@@ -167,7 +167,7 @@ function ProjectRow({
           </Text>
         </VStack>
 
-        <Badge variant="outline" borderColor="whiteAlpha.400" color="whiteAlpha.900">
+        <Badge variant="outline" borderColor="whiteAlpha.300" color="rgba(245,241,235,0.9)">
           {images.length} {imagesLabel}
         </Badge>
       </HStack>
@@ -196,7 +196,7 @@ function ProjectRow({
                 borderRadius="8px"
                 border="1px solid"
                 borderColor="whiteAlpha.300"
-                bg="blackAlpha.400"
+                bg="#222222"
                 overflow="hidden"
                 flexShrink={0}
               >

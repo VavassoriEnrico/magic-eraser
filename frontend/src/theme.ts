@@ -1,7 +1,7 @@
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 
 const config: ThemeConfig = {
-  initialColorMode: "dark",
+  initialColorMode: "light",
   useSystemColorMode: false,
 };
 
@@ -40,12 +40,12 @@ const theme = extendTheme({
       },
       variants: {
         solid: {
-          bg: "#eef3f7",
-          color: "#1f2937",
-          borderColor: "rgba(148, 163, 184, 0.36)",
+          bg: "#2e2e2e",
+          color: "#f5f1eb",
+          borderColor: "rgba(255, 255, 255, 0.16)",
           boxShadow: "none",
-          _hover: { bg: "#f5f8fb", borderColor: "rgba(148, 163, 184, 0.48)" },
-          _active: { bg: "#e4ebf2" },
+          _hover: { bg: "#343434", borderColor: "rgba(255, 255, 255, 0.24)" },
+          _active: { bg: "#383838" },
           _dark: {
             bg: "#1b2430",
             color: "#f0f6fc",
@@ -60,12 +60,12 @@ const theme = extendTheme({
         },
         outline: {
           borderWidth: "1px",
-          borderColor: "rgba(148, 163, 184, 0.34)",
-          bg: "rgba(255,255,255,0.02)",
+          borderColor: "rgba(255, 255, 255, 0.14)",
+          bg: "#232323",
           color: "inherit",
           boxShadow: "none",
-          _hover: { bg: "rgba(255,255,255,0.04)", borderColor: "rgba(148, 163, 184, 0.48)" },
-          _active: { bg: "rgba(255,255,255,0.06)" },
+          _hover: { bg: "#292929", borderColor: "rgba(255, 255, 255, 0.22)" },
+          _active: { bg: "#2d2d2d" },
           _dark: {
             borderColor: "rgba(240, 246, 252, 0.16)",
             bg: "#161b22",
@@ -95,13 +95,24 @@ const theme = extendTheme({
         filled: {
           field: {
             borderRadius: "6px",
-            bg: "#f1f5f9",
-            border: "1px solid rgba(148,163,184,0.34)",
-            _hover: { bg: "#f8fafc", borderColor: "rgba(148,163,184,0.46)" },
+            bg: "rgba(255,255,255,0.02)",
+            color: "#f5f1eb",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderColor: "rgba(255,255,255,0.08)",
+            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08)",
+            _placeholder: {
+              color: "rgba(245,241,235,0.36)",
+            },
+            _hover: {
+              bg: "rgba(255,255,255,0.04)",
+              borderColor: "rgba(255,255,255,0.12)",
+              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
+            },
             _focusVisible: {
-              bg: "#f8fafc",
-              borderColor: "#94a3b8",
-              boxShadow: "0 0 0 1px rgba(148,163,184,0.42)",
+              bg: "rgba(255,255,255,0.04)",
+              borderColor: "rgba(255,255,255,0.12)",
+              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
             },
             _dark: {
               bg: "#151b23",
@@ -122,11 +133,21 @@ const theme = extendTheme({
         filled: {
           field: {
             borderRadius: "6px",
-            bg: "#f1f5f9",
-            border: "1px solid rgba(148,163,184,0.34)",
+            bg: "rgba(255,255,255,0.02)",
+            color: "#f5f1eb",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderColor: "rgba(255,255,255,0.08)",
+            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08)",
+            _hover: {
+              bg: "rgba(255,255,255,0.04)",
+              borderColor: "rgba(255,255,255,0.12)",
+              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
+            },
             _focusVisible: {
-              borderColor: "#94a3b8",
-              boxShadow: "0 0 0 1px rgba(148,163,184,0.42)",
+              bg: "rgba(255,255,255,0.04)",
+              borderColor: "rgba(255,255,255,0.12)",
+              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
             },
             _dark: {
               bg: "#151b23",
@@ -143,10 +164,18 @@ const theme = extendTheme({
       baseStyle: {
         borderRadius: "6px",
         px: 2.5,
-        py: 1,
+        py: 0.9,
         textTransform: "none",
         fontWeight: "600",
         borderWidth: "1px",
+        bg: "#3b3b3b",
+        color: "#f5f1eb",
+        borderColor: "rgba(255,255,255,0.12)",
+        _dark: {
+          bg: "rgba(59,130,246,0.14)",
+          color: "#8fd3ff",
+          borderColor: "rgba(96,165,250,0.22)",
+        },
       },
     },
     Modal: {

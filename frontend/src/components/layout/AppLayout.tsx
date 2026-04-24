@@ -1,7 +1,6 @@
 import { useColorModeValue } from "@chakra-ui/react";
 
 import defaultBackgroundDarkImage from "../../assets/background2.jpg";
-import defaultBackgroundLightImage from "../../assets/background2_light.jpg";
 import Navbar from "./Navbar";
 import Footbar from "./Footbar";
 import type { AppLayoutProps } from "../../types/ui";
@@ -13,21 +12,21 @@ export default function AppLayout({
   backgroundImageUrl,
 }: AppLayoutProps) {
   const defaultResolvedBackgroundImageUrl = useColorModeValue(
-    defaultBackgroundLightImage,
+    undefined,
     defaultBackgroundDarkImage
   );
   const themedBackgroundSource =
     typeof backgroundImageUrl === "string"
       ? {
-          light: defaultBackgroundLightImage,
+          light: "",
           dark: defaultBackgroundDarkImage,
         }
       : backgroundImageUrl ?? {
-          light: defaultBackgroundLightImage,
+          light: "",
           dark: defaultBackgroundDarkImage,
         };
   const themedBackgroundImageUrl = useColorModeValue(
-    themedBackgroundSource.light,
+    undefined,
     themedBackgroundSource.dark
   );
 
@@ -39,7 +38,7 @@ export default function AppLayout({
         : defaultResolvedBackgroundImageUrl;
 
   const overlayGradient = useColorModeValue(
-    "linear-gradient(180deg, rgba(239, 243, 248, 0.9) 0%, rgba(227, 233, 240, 0.94) 100%)",
+    undefined,
     "linear-gradient(180deg, rgba(4, 8, 15, 0.9) 0%, rgba(4, 8, 15, 0.96) 100%)"
   );
 

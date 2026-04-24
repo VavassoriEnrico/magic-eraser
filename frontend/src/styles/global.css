@@ -1,16 +1,16 @@
 :root {
-  --shell-bg: #d7dee7;
-  --shell-surface: #f1f5f9;
-  --shell-surface-strong: #f8fafc;
-  --shell-line: rgba(148, 163, 184, 0.34);
-  --shell-line-strong: rgba(100, 116, 139, 0.24);
-  --shell-text: #0f172a;
-  --shell-muted: rgba(15, 23, 42, 0.64);
-  --shell-soft: rgba(15, 23, 42, 0.5);
-  --shell-accent: #d6e4f7;
-  --shell-accent-text: #0b1320;
-  --shell-shadow: 0 28px 80px rgba(15, 23, 42, 0.08);
-  --shell-avatar: linear-gradient(135deg, #dfe9f8, #aebfd7);
+  --shell-bg: #181818;
+  --shell-surface: #222222;
+  --shell-surface-strong: #2b2b2b;
+  --shell-line: rgba(255, 255, 255, 0.12);
+  --shell-line-strong: rgba(255, 255, 255, 0.18);
+  --shell-text: #f5f1eb;
+  --shell-muted: rgba(245, 241, 235, 0.72);
+  --shell-soft: rgba(245, 241, 235, 0.5);
+  --shell-accent: #d8c2a4;
+  --shell-accent-text: #181818;
+  --shell-shadow: 0 32px 90px rgba(0, 0, 0, 0.32);
+  --shell-avatar: linear-gradient(135deg, #d5c0a1, #8d745b);
 }
 
 body.chakra-ui-dark {
@@ -44,6 +44,10 @@ body {
   min-width: 320px;
   color: var(--shell-text);
   font-family: "Manrope", "Segoe UI", sans-serif;
+  background: var(--shell-bg);
+}
+
+body.chakra-ui-dark {
   background:
     radial-gradient(circle at top left, rgba(155, 175, 198, 0.08), transparent 24%),
     radial-gradient(circle at bottom right, rgba(120, 136, 160, 0.08), transparent 18%),
@@ -64,6 +68,11 @@ textarea {
 
 #root,
 .app-shell {
+  background: var(--shell-bg);
+}
+
+body.chakra-ui-dark #root,
+body.chakra-ui-dark .app-shell {
   background:
     radial-gradient(circle at top left, rgba(155, 175, 198, 0.08), transparent 24%),
     radial-gradient(circle at bottom right, rgba(120, 136, 160, 0.08), transparent 18%),
@@ -169,8 +178,8 @@ body:not(.chakra-ui-dark) .app-topbar {
 
 .app-topbar__link.is-active {
   color: var(--shell-text);
-  background: color-mix(in srgb, var(--shell-surface-strong) 88%, transparent);
-  border-color: transparent;
+  background: #20262d;
+  border-color: rgba(255, 255, 255, 0.04);
 }
 
 .app-topbar__link-icon {
@@ -265,6 +274,10 @@ body:not(.chakra-ui-dark) .app-topbar {
   display: grid;
   place-items: center;
   padding: 24px;
+  background: var(--shell-bg);
+}
+
+body.chakra-ui-dark .auth-page {
   background:
     radial-gradient(circle at 18% 22%, rgba(158, 176, 197, 0.16), transparent 24%),
     radial-gradient(circle at 82% 80%, rgba(120, 136, 160, 0.14), transparent 18%),
@@ -331,8 +344,19 @@ body:not(.chakra-ui-dark) .app-topbar {
   color: #f8fafc !important;
 }
 
+body:not(.chakra-ui-dark) .auth-input {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+  color: #f5f1eb !important;
+}
+
 .auth-input::placeholder {
   color: rgba(226, 232, 240, 0.48) !important;
+}
+
+body:not(.chakra-ui-dark) .auth-input::placeholder {
+  color: rgba(245, 241, 235, 0.36) !important;
 }
 
 .auth-submit-btn {

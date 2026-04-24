@@ -1,12 +1,9 @@
-import { Box, Text, VStack, useColorMode } from "@chakra-ui/react";
-
-import logoBlack from "../../assets/me_logo_black.png";
+import { Box, Text, VStack } from "@chakra-ui/react";
 import logoWhite from "../../assets/me_logo_white.png";
 
 export default function Footbar() {
   const logoLabel = "Magic Eraser";
-  const { colorMode } = useColorMode();
-  const logoSource = colorMode === "dark" ? logoWhite : logoBlack;
+  const logoSource = logoWhite;
 
   return (
     <Box className="app-footbar">

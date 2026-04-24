@@ -45,31 +45,33 @@ export function UploadImageSection({
   onDragOverUpload,
   onDragLeaveUpload,
 }: UploadImageSectionProps) {
+  const mutedText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
   const dropBorderColor = useColorModeValue(
-    isDragOverUpload ? "rgba(100,116,139,0.36)" : "rgba(148,163,184,0.28)",
+    isDragOverUpload ? "rgba(216,194,164,0.28)" : "rgba(255,255,255,0.14)",
     isDragOverUpload ? "rgba(240,246,252,0.24)" : "rgba(240,246,252,0.16)",
   );
   const dropBg = useColorModeValue(
-    isDragOverUpload ? "#eef3f8" : "#f8fafc",
+    isDragOverUpload ? "rgba(255,255,255,0.05)" : "transparent",
     isDragOverUpload ? "#1b2430" : "#151b23",
   );
-  const previewPanelBg = useColorModeValue("#e2e8f0", "#1b2430");
-  const previewPanelBorder = useColorModeValue("rgba(148,163,184,0.3)", "rgba(240,246,252,0.12)");
-  const sidebarBg = useColorModeValue("#f8fafc", "#1b2430");
-  const sidebarBorder = useColorModeValue("rgba(148,163,184,0.3)", "rgba(240,246,252,0.12)");
-  const previewStripBg = useColorModeValue("rgba(226,232,240,0.42)", "rgba(11,18,28,0.58)");
-  const projectListBg = useColorModeValue("white", "rgba(11,18,28,0.42)");
-  const projectListBorder = useColorModeValue("rgba(148,163,184,0.24)", "rgba(240,246,252,0.08)");
-  const projectButtonHoverBg = useColorModeValue("rgba(226,232,240,0.7)", "rgba(255,255,255,0.08)");
-  const selectedProjectBg = useColorModeValue("rgba(59,130,246,0.12)", "rgba(96,165,250,0.22)");
-  const selectedProjectBorder = useColorModeValue("rgba(59,130,246,0.38)", "rgba(147,197,253,0.44)");
+  const previewPanelBg = useColorModeValue("transparent", "#1b2430");
+  const previewPanelBorder = useColorModeValue("rgba(255,255,255,0.12)", "rgba(240,246,252,0.12)");
+  const sidebarBg = useColorModeValue("transparent", "#1b2430");
+  const sidebarBorder = useColorModeValue("rgba(255,255,255,0.12)", "rgba(240,246,252,0.12)");
+  const previewStripBg = useColorModeValue("transparent", "rgba(11,18,28,0.58)");
+  const projectListBg = useColorModeValue("transparent", "rgba(11,18,28,0.42)");
+  const projectListBorder = useColorModeValue("rgba(255,255,255,0.08)", "rgba(240,246,252,0.08)");
+  const projectButtonHoverBg = useColorModeValue("rgba(255,255,255,0.04)", "rgba(255,255,255,0.08)");
+  const selectedProjectBg = useColorModeValue("#20262d", "rgba(96,165,250,0.22)");
+  const selectedProjectBorder = useColorModeValue("rgba(255,255,255,0.08)", "rgba(147,197,253,0.44)");
+  const selectedProjectShadow = useColorModeValue("inset 0 0 0 1px rgba(255,255,255,0.04)", "none");
 
   return (
-    <GlassPanel p={{ base: 4, md: 5 }}>
+    <GlassPanel p={{ base: 4, md: 5 }} lightBg="transparent" darkBg="#151b23">
       <Text fontWeight="800" fontSize={{ base: "xl", md: "2xl" }} mb={1} letterSpacing="-0.04em">
         Upload
       </Text>
-      <Text color="gray.500" mb={5} _dark={{ color: "whiteAlpha.700" }}>
+      <Text color={mutedText} mb={5}>
         Select a project and add images.
       </Text>
 
@@ -107,7 +109,7 @@ export function UploadImageSection({
                 <Text fontSize="lg" fontWeight="700" mb={2}>
                   Drop files here
                 </Text>
-                <Text color="gray.500" mb={5} _dark={{ color: "whiteAlpha.700" }}>
+                <Text color={mutedText} mb={5}>
                   PNG, JPG, JPEG, WEBP, BMP
                 </Text>
                 <Button
@@ -123,11 +125,10 @@ export function UploadImageSection({
               <Box flex="1" minW={0}>
                 <Text
                   fontSize="xs"
-                  color="gray.500"
+                  color={mutedText}
                   mb={2}
                   textTransform="uppercase"
                   letterSpacing="0.12em"
-                  _dark={{ color: "whiteAlpha.700" }}
                 >
                   Preview
                 </Text>
@@ -216,10 +217,9 @@ export function UploadImageSection({
                 ) : null}
                 <Text
                   fontSize="sm"
-                  color="gray.500"
+                  color={mutedText}
                   mt={3}
                   noOfLines={1}
-                  _dark={{ color: "whiteAlpha.700" }}
                 >
                   {uploadFiles.length === 1 ? uploadFiles[0].name : `${uploadFiles.length} files selected`}
                 </Text>
@@ -283,6 +283,7 @@ export function UploadImageSection({
                       border="1px solid"
                       borderColor={isSelected ? selectedProjectBorder : "transparent"}
                       bg={isSelected ? selectedProjectBg : "transparent"}
+                      boxShadow={isSelected ? selectedProjectShadow : "none"}
                       _hover={{ bg: isSelected ? selectedProjectBg : projectButtonHoverBg }}
                       _active={{ bg: isSelected ? selectedProjectBg : projectButtonHoverBg }}
                       onClick={() => onUploadProjectChange(String(project.id))}
@@ -296,7 +297,7 @@ export function UploadImageSection({
             </Box>
 
             {projects.length === 0 ? (
-              <Text color="gray.500" fontSize="sm" _dark={{ color: "whiteAlpha.700" }}>
+              <Text color={mutedText} fontSize="sm">
                 Create a project first.
               </Text>
             ) : null}

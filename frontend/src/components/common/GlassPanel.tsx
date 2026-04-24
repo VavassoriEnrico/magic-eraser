@@ -11,9 +11,9 @@ interface GlassPanelProps extends BoxProps {
 
 export function GlassPanel({
   children,
-  lightBg = "#f1f5f9",
+  lightBg = "#202020",
   darkBg = "#151b23",
-  lightBorder = "rgba(148, 163, 184, 0.34)",
+  lightBorder = "rgba(255, 255, 255, 0.1)",
   darkBorder = "rgba(240, 246, 252, 0.1)",
   shadow = "none",
   darkShadow = "none",
