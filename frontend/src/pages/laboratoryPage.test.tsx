@@ -110,13 +110,13 @@ describe("LaboratoryPage", () => {
       queryProjectId: "3",
       queryImageId: "7",
       selectedImage: {
-        id: 7,
-        project_id: 3,
+        id: "7",
+        project_id: "3",
         fileName: "source.png",
         filePath: "/uploads/source.png",
         created_at: "2026-04-20T08:00:00Z",
       },
-      activePipelineId: 21,
+      activePipelineId: "21",
       catalog: [],
       cells: [
         {
@@ -209,8 +209,8 @@ describe("LaboratoryPage", () => {
       queryProjectId: null,
       queryImageId: null,
       selectedImage: {
-        id: 7,
-        project_id: 3,
+        id: "7",
+        project_id: "3",
         fileName: "source.png",
         filePath: "/uploads/source.png",
         created_at: "2026-04-20T08:00:00Z",

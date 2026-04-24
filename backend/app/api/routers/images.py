@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from app.db_dependencies import get_db
 from app.schemas import ImageRead
@@ -9,7 +10,7 @@ router = APIRouter(prefix="/images", tags=["images"])
 
 #delete image using its id
 @router.delete("/{image_id}")
-def delete_image(image_id: int, db: Session = Depends(get_db)):
+def delete_image(image_id: UUID, db: Session = Depends(get_db)):
     image_service.delete_image(db, image_id)
     return {"message": "Image deleted"}
 

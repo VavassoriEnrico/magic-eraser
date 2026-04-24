@@ -1,13 +1,13 @@
 export interface Project {
-  id: number;
+  id: string;
   name: string;
   created_at: string;
   updated_at: string | null;
 }
 
 export interface ImageAsset {
-  id: number;
-  project_id: number;
+  id: string;
+  project_id: string;
   fileName: string;
   filePath: string;
   created_at: string;
@@ -16,13 +16,13 @@ export interface ImageAsset {
 export interface ProcessRunPayload {
   process_type: string;
   priority: number;
-  pipeline_id?: number;
+  pipeline_id?: string;
   step_index?: number;
   prompt?: string;
   input_image_url?: string;
   mask_image_url?: string;
-  project_id?: number;
-  image_id?: number;
+  project_id?: string;
+  image_id?: string;
   model_key?: string;
   additional_settings?: Record<string, string | number | boolean>;
 }
@@ -76,9 +76,9 @@ export interface ProcessCatalogItem {
 }
 
 export interface Pipeline {
-  id: number;
-  project_id: number;
-  source_image_id: number;
+  id: string;
+  project_id: string;
+  source_image_id: string;
   name?: string;
   start_image_url: string;
   final_image_url?: string;
@@ -88,8 +88,8 @@ export interface Pipeline {
 }
 
 export interface PipelineStep {
-  id: number;
-  pipeline_id: number;
+  id: string;
+  pipeline_id: string;
   step_index: number;
   process_type: string;
   priority: number;
@@ -106,8 +106,8 @@ export interface PipelineStep {
 }
 
 export interface PipelineStartPayload {
-  project_id: number;
-  source_image_id: number;
+  project_id: string;
+  source_image_id: string;
   start_image_url: string;
   name?: string;
 }

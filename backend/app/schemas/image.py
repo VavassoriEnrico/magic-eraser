@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
@@ -7,8 +8,8 @@ from pydantic import BaseModel, ConfigDict
 #it is used to validate the data and to serialize it to json when sending it to the client
 
 class ImageRead(BaseModel):
-    id: int
-    project_id: int
+    id: UUID
+    project_id: UUID
     fileName: str
     filePath: str
     created_at: datetime

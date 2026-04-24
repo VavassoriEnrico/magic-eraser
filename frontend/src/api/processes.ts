@@ -43,7 +43,7 @@ export function listPipelines() {
   return request<Pipeline[]>("/laboratory-pipelines");
 }
 
-export function getPipeline(pipelineId: number) {
+export function getPipeline(pipelineId: string) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}`);
 }
 
@@ -54,19 +54,19 @@ export function startPipeline(payload: PipelineStartPayload) {
   });
 }
 
-export function finishPipeline(pipelineId: number, payload: PipelineFinishPayload) {
+export function finishPipeline(pipelineId: string, payload: PipelineFinishPayload) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}/finish`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export function getPipelineSteps(pipelineId: number) {
+export function getPipelineSteps(pipelineId: string) {
   return request<PipelineStep[]>(`/laboratory-pipelines/${pipelineId}/steps`);
 }
 
 export function createPipelineStep(
-  pipelineId: number,
+  pipelineId: string,
   payload: {
     step_index: number;
     process_type: string;
@@ -87,7 +87,7 @@ export function createPipelineStep(
   });
 }
 
-export function renamePipeline(pipelineId: number, name: string) {
+export function renamePipeline(pipelineId: string, name: string) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}/name`, {
     method: "PATCH",
     body: JSON.stringify({ name }),

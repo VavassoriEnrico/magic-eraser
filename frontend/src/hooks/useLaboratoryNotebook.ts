@@ -294,8 +294,8 @@ export function useLaboratoryNotebook() {
   const queryImageId = urlParams.get("imageId");
   const queryPipelineId = urlParams.get("pipelineId");
   const [selectedImage, setSelectedImage] = useState<ImageAsset | null>(() => getSelectedImageFromSession());
-  const [activePipelineId, setActivePipelineId] = useState<number | null>(() =>
-    queryPipelineId ? Number(queryPipelineId) : null,
+  const [activePipelineId, setActivePipelineId] = useState<string | null>(() =>
+    queryPipelineId ? queryPipelineId : null,
   );
   const [catalog, setCatalog] = useState<ProcessCatalogItem[]>(FALLBACK_CATALOG);
   const [cells, setCells] = useState<LabCell[]>([]);
@@ -331,12 +331,12 @@ export function useLaboratoryNotebook() {
   }, []);
 
   useEffect(() => {
-    if (!queryPipelineId || Number.isNaN(Number(queryPipelineId)) || catalog.length === 0) {
+    if (!queryPipelineId || catalog.length === 0) {
       return;
     }
 
     let cancelled = false;
-    const pipelineId = Number(queryPipelineId);
+    const pipelineId = queryPipelineId;
 
     async function loadPipelineData() {
       setLoadingPipeline(true);
@@ -356,7 +356,7 @@ export function useLaboratoryNotebook() {
         });
 
         const loadedCells = [...steps]
-          .sort((a, b) => a.step_index - b.step_index || a.id - b.id)
+          .sort((a, b) => a.step_index - b.step_index || a.id.localeCompare(b.id))
           .map((step) => {
             const definition = catalog.find((item) => item.process_type === step.process_type);
             if (!definition) return null;
@@ -714,8 +714,8 @@ export function useLaboratoryNotebook() {
       priority: cell.priority,
       pipeline_id: activePipelineId ?? undefined,
       step_index: cellIndex + 1,
-      project_id: queryProjectId ? Number(queryProjectId) : selectedImage?.project_id,
-      image_id: queryImageId ? Number(queryImageId) : selectedImage?.id,
+      project_id: queryProjectId ?? selectedImage?.project_id,
+      image_id: queryImageId ?? selectedImage?.id,
     };
 
     if (cell.processType === "segment_from_prompt") {
@@ -994,7 +994,7 @@ export function useLaboratoryNotebook() {
   async function saveCellOutputToProject(cell: LabCell) {
     if (!cell.outputUrl || !selectedImage) return;
 
-    const targetProjectId = queryProjectId ? Number(queryProjectId) : selectedImage.project_id;
+    const targetProjectId = queryProjectId ?? selectedImage.project_id;
     if (!targetProjectId) {
       setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "Project id missing" }));
       return;

@@ -23,9 +23,9 @@ function renderPage() {
 
 const pipelines: Pipeline[] = [
   {
-    id: 1,
-    project_id: 10,
-    source_image_id: 100,
+    id: "1",
+    project_id: "10",
+    source_image_id: "100",
     name: "Older pipeline",
     start_image_url: "/uploads/start-1.png",
     final_image_url: "/uploads/final-1.png",
@@ -34,9 +34,9 @@ const pipelines: Pipeline[] = [
     updated_at: "2026-04-18T10:00:00Z",
   },
   {
-    id: 2,
-    project_id: 11,
-    source_image_id: 101,
+    id: "2",
+    project_id: "11",
+    source_image_id: "101",
     name: "Newest pipeline",
     start_image_url: "/uploads/start-2.png",
     final_image_url: undefined,

@@ -43,35 +43,33 @@ export default function HomePage() {
   const [isDragOverUpload, setIsDragOverUpload] = useState(false);
   const [openedImage, setOpenedImage] = useState<OpenedImage | null>(null);
   const [previewScrollStateByProject, setPreviewScrollStateByProject] = useState<
-    Record<number, PreviewScrollState>
+    Record<string, PreviewScrollState>
   >({});
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingProjectName, setEditingProjectName] = useState("");
 
-  const imageStripRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const imageStripRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const orderedProjects = useMemo(() => {
-    const expandedId = Number(expandedProjectId);
-
-    if (!expandedId) {
+    if (!expandedProjectId) {
       return projects;
     }
 
-    const expandedProject = projects.find((project) => project.id === expandedId);
+    const expandedProject = projects.find((project) => project.id === expandedProjectId);
     if (!expandedProject) {
       return projects;
     }
 
-    return [expandedProject, ...projects.filter((project) => project.id !== expandedId)];
+    return [expandedProject, ...projects.filter((project) => project.id !== expandedProjectId)];
   }, [projects, expandedProjectId]);
 
-  function onToggleProject(projectId: number) {
-    const next = expandedProjectId === String(projectId) ? "" : String(projectId);
+  function onToggleProject(projectId: string) {
+    const next = expandedProjectId === projectId ? "" : projectId;
     setExpandedProjectId(next);
-    setSelectedProjectId(String(projectId));
+    setSelectedProjectId(projectId);
   }
 
-  function onScrollPreview(projectId: number, direction: number) {
+  function onScrollPreview(projectId: string, direction: number) {
     const node = imageStripRefs.current[projectId];
     if (!node) {
       return;
@@ -88,7 +86,7 @@ export default function HomePage() {
     });
   }
 
-  function openLaboratory(image: ImageAsset, projectId: number) {
+  function openLaboratory(image: ImageAsset, projectId: string) {
     const selectedImage = { ...image, project_id: projectId };
     setLaboratorySelectedImage(selectedImage);
     const params = new URLSearchParams({
@@ -133,18 +131,18 @@ export default function HomePage() {
     setEditingProjectName("");
   }
 
-  async function saveInlineProjectEdit(projectId: number) {
+  async function saveInlineProjectEdit(projectId: string) {
     const success = await onRenameProject(projectId, editingProjectName);
     if (success) {
       cancelInlineProjectEdit();
     }
   }
 
-  async function confirmDeleteProject(projectId: number) {
+  async function confirmDeleteProject(projectId: string) {
     await onDeleteProject(projectId);
   }
 
-  function updatePreviewScrollState(projectId: number) {
+  function updatePreviewScrollState(projectId: string) {
     const node = imageStripRefs.current[projectId];
     if (!node) {
       return;

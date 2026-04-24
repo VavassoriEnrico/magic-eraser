@@ -1,6 +1,7 @@
 import base64
 from io import BytesIO
 from urllib.request import urlopen
+from uuid import UUID
 
 from fastapi import HTTPException
 from PIL import Image, ImageChops
@@ -130,7 +131,7 @@ class FalAIProvider(AIProvider):
     def _merge_mask_items(
         self,
         items: list[object],
-        project_id: int | None = None,
+        project_id: UUID | None = None,
         apply_mask: bool = True,
     ) -> str | None:
         mask_urls = [mask_url for item in items if (mask_url := self._read_image_item(item))]

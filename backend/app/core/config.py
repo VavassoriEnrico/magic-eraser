@@ -15,6 +15,10 @@ class Settings:
         if not self.database_url:
             raise RuntimeError("DATABASE_URL is not set")
 
+        self.supabase_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+        self.supabase_service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+        self.supabase_storage_bucket = os.getenv("SUPABASE_STORAGE_BUCKET", "images").strip() or "images"
+
         self.uploads_dir = Path(__file__).resolve().parents[2] / "uploads"
         self.cors_origins = ["*"]
 

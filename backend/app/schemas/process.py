@@ -1,4 +1,5 @@
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -24,9 +25,9 @@ class AdditionalSettingDefinition(BaseModel):
 
 class BaseProcessRequest(BaseModel):
     process_type: str
-    project_id: int | None = None
-    image_id: int | None = None
-    pipeline_id: int | None = None
+    project_id: UUID | None = None
+    image_id: UUID | None = None
+    pipeline_id: UUID | None = None
     step_index: int | None = None
     priority: int
 

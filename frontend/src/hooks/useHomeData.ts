@@ -32,7 +32,7 @@ function sortProjectsByLastUpdate(projectList: Project[]) {
   });
 }
 
-async function cloneImageToProject(image: ImageAsset, projectId: number) {
+async function cloneImageToProject(image: ImageAsset, projectId: string) {
   const response = await fetch(image.filePath);
   if (!response.ok) {
     throw new Error(`Unable to read source image (${response.status})`);
@@ -52,17 +52,17 @@ export function useHomeData(): HomeData {
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [uploadProjectId, setUploadProjectId] = useState("");
   const [expandedProjectId, setExpandedProjectId] = useState("");
-  const [projectImagesMap, setProjectImagesMap] = useState<Record<number, ImageAsset[]>>({});
+  const [projectImagesMap, setProjectImagesMap] = useState<Record<string, ImageAsset[]>>({});
   const [projectName, setProjectName] = useState("");
   const [loadingProjects, setLoadingProjects] = useState(false);
-  const [loadingImagesByProject, setLoadingImagesByProject] = useState<Record<number, boolean>>(
+  const [loadingImagesByProject, setLoadingImagesByProject] = useState<Record<string, boolean>>(
     {}
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const loadImagesForProject = useCallback(async (projectId: number) => {
+  const loadImagesForProject = useCallback(async (projectId: string) => {
     setLoadingImagesByProject((prev) => ({ ...prev, [projectId]: true }));
 
     try {
@@ -98,7 +98,7 @@ export function useHomeData(): HomeData {
           nextProjects.some((project) => String(project.id) === prev) ? prev : ""
         );
 
-        await Promise.all(nextProjects.map((project) => loadImagesForProject(project.id)));
+        await Promise.all(nextProjects.map((project) => loadImagesForProject(String(project.id))));
       } else {
         setSelectedProjectId("");
         setUploadProjectId("");
@@ -144,7 +144,7 @@ export function useHomeData(): HomeData {
   );
 
   const onDeleteProject = useCallback(
-    async (projectId: number) => {
+    async (projectId: string) => {
       setSubmitting(true);
       setError("");
       setMessage("");
@@ -153,7 +153,7 @@ export function useHomeData(): HomeData {
         await deleteProject(projectId);
         setMessage(`Project deleted: #${projectId}`);
 
-        const nextProjects = projects.filter((project) => project.id !== projectId);
+        const nextProjects = projects.filter((project) => String(project.id) !== projectId);
         const orderedProjects = sortProjectsByLastUpdate(nextProjects);
         setProjects(orderedProjects);
 
@@ -181,7 +181,7 @@ export function useHomeData(): HomeData {
     [expandedProjectId, projects, selectedProjectId, uploadProjectId]
   );
 
-  const onRenameProject = useCallback(async (projectId: number, nextName: string) => {
+  const onRenameProject = useCallback(async (projectId: string, nextName: string) => {
     const trimmedName = nextName.trim();
     if (!trimmedName) {
       setError("Project name cannot be empty");
@@ -197,7 +197,7 @@ export function useHomeData(): HomeData {
       setProjects((prev) =>
         sortProjectsByLastUpdate(
           prev.map((project) =>
-            project.id === projectId
+            String(project.id) === String(projectId)
               ? {
                   ...project,
                   name: updated.name,
@@ -238,7 +238,7 @@ export function useHomeData(): HomeData {
       try {
         for (const file of uploadFiles) {
           try {
-            await uploadImage(Number(uploadProjectId), file);
+            await uploadImage(uploadProjectId, file);
             successCount += 1;
           } catch (caughtError) {
             if (!firstUploadError) {
@@ -256,7 +256,7 @@ export function useHomeData(): HomeData {
           setProjects((prev) =>
             sortProjectsByLastUpdate(
               prev.map((project) =>
-                project.id === Number(uploadProjectId)
+                String(project.id) === uploadProjectId
                   ? { ...project, updated_at: new Date().toISOString() }
                   : project
               )
@@ -276,7 +276,7 @@ export function useHomeData(): HomeData {
     [loadImagesForProject, uploadProjectId]
   );
 
-  const onDeleteImage = useCallback(async (imageId: number, projectId: number) => {
+  const onDeleteImage = useCallback(async (imageId: string, projectId: string) => {
     setSubmitting(true);
     setError("");
     setMessage("");
@@ -291,7 +291,7 @@ export function useHomeData(): HomeData {
       setProjects((prev) =>
         sortProjectsByLastUpdate(
           prev.map((project) =>
-            project.id === projectId
+            String(project.id) === projectId
               ? { ...project, updated_at: new Date().toISOString() }
               : project
           )
@@ -304,13 +304,13 @@ export function useHomeData(): HomeData {
     }
   }, []);
 
-  const onEditImage = useCallback((imageId: number, projectId: number) => {
+  const onEditImage = useCallback((imageId: string, projectId: string) => {
     setError("");
     setMessage(`Edit feature TO IMPLEMENT: image #${imageId} in project #${projectId}`);
   }, []);
 
   const onDuplicateImage = useCallback(
-    async (image: ImageAsset, projectId: number) => {
+    async (image: ImageAsset, projectId: string) => {
       setSubmitting(true);
       setError("");
       setMessage("");
@@ -321,7 +321,7 @@ export function useHomeData(): HomeData {
         setProjects((prev) =>
           sortProjectsByLastUpdate(
             prev.map((project) =>
-              project.id === projectId
+              String(project.id) === projectId
                 ? { ...project, updated_at: new Date().toISOString() }
                 : project
             )
@@ -338,7 +338,7 @@ export function useHomeData(): HomeData {
   );
 
   const onMoveImage = useCallback(
-    async (image: ImageAsset, sourceProjectId: number, targetProjectId: number) => {
+    async (image: ImageAsset, sourceProjectId: string, targetProjectId: string) => {
       if (!targetProjectId) {
         setError("Select a target project");
         return;
@@ -370,7 +370,7 @@ export function useHomeData(): HomeData {
         setProjects((prev) =>
           sortProjectsByLastUpdate(
             prev.map((project) =>
-              project.id === sourceProjectId || project.id === targetProjectId
+              String(project.id) === sourceProjectId || String(project.id) === targetProjectId
                 ? { ...project, updated_at: now }
                 : project
             )
