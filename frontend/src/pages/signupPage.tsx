@@ -1,8 +1,10 @@
 import { FormEvent, useState } from "react";
 import { Box, Button, Input, Stack, Text, useColorMode } from "@chakra-ui/react";
+import { BiUserPlus } from "react-icons/bi";
 import logoBlack from "../assets/me_logo_black.png";
 import logoWhite from "../assets/me_logo_white.png";
-import { supabase } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
+import { requireSupabase } from "../api/client";
 
 export default function SignupPage() {
   const { colorMode } = useColorMode();
@@ -25,6 +27,7 @@ export default function SignupPage() {
     }
 
     try {
+      const supabase = requireSupabase();
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -87,6 +90,13 @@ export default function SignupPage() {
         <Text className="auth-title">Create account</Text>
         <Text className="auth-subtitle">Sign up to start managing your images.</Text>
 
+        {!isSupabaseConfigured ? (
+          <Text className="auth-message">
+            Supabase is not configured yet. Add `VITE_SUPABASE_URL` and
+            `VITE_SUPABASE_ANON_KEY` to the frontend environment.
+          </Text>
+        ) : null}
+
         <Box as="form" onSubmit={onSubmit}>
           <Stack spacing={3}>
             <Input
@@ -96,6 +106,7 @@ export default function SignupPage() {
               type="email"
               required
               className="auth-input"
+              isDisabled={!isSupabaseConfigured}
             />
             <Input
               placeholder="Password"
@@ -104,6 +115,7 @@ export default function SignupPage() {
               type="password"
               required
               className="auth-input"
+              isDisabled={!isSupabaseConfigured}
             />
             <Input
               placeholder="Confirm password"
@@ -112,8 +124,15 @@ export default function SignupPage() {
               type="password"
               required
               className="auth-input"
+              isDisabled={!isSupabaseConfigured}
             />
-            <Button type="submit" className="auth-submit-btn" isLoading={submitting}>
+            <Button
+              type="submit"
+              className="auth-submit-btn"
+              leftIcon={<BiUserPlus />}
+              isLoading={submitting}
+              isDisabled={!isSupabaseConfigured}
+            >
               {submitting ? "Signing up..." : "Sign up"}
             </Button>
           </Stack>

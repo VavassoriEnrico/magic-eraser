@@ -1,7 +1,7 @@
 import type { ChangeEvent, DragEvent, FormEvent, RefObject } from "react";
 
-import { Box, Button, HStack, Select, Stack, Text, VStack } from "@chakra-ui/react";
-import { BiArrowFromBottom } from "react-icons/bi";
+import { Box, Button, HStack, Stack, Text, VStack, useColorModeValue } from "@chakra-ui/react";
+import { BiCloudUpload, BiFolderOpen, BiTrash, BiUpload } from "react-icons/bi";
 
 import { GlassPanel } from "../common/GlassPanel";
 
@@ -45,18 +45,37 @@ export function UploadImageSection({
   onDragOverUpload,
   onDragLeaveUpload,
 }: UploadImageSectionProps) {
+  const dropBorderColor = useColorModeValue(
+    isDragOverUpload ? "rgba(100,116,139,0.36)" : "rgba(148,163,184,0.28)",
+    isDragOverUpload ? "rgba(240,246,252,0.24)" : "rgba(240,246,252,0.16)",
+  );
+  const dropBg = useColorModeValue(
+    isDragOverUpload ? "#eef3f8" : "#f8fafc",
+    isDragOverUpload ? "#1b2430" : "#151b23",
+  );
+  const previewPanelBg = useColorModeValue("#e2e8f0", "#1b2430");
+  const previewPanelBorder = useColorModeValue("rgba(148,163,184,0.3)", "rgba(240,246,252,0.12)");
+  const sidebarBg = useColorModeValue("#f8fafc", "#1b2430");
+  const sidebarBorder = useColorModeValue("rgba(148,163,184,0.3)", "rgba(240,246,252,0.12)");
+  const previewStripBg = useColorModeValue("rgba(226,232,240,0.42)", "rgba(11,18,28,0.58)");
+  const projectListBg = useColorModeValue("white", "rgba(11,18,28,0.42)");
+  const projectListBorder = useColorModeValue("rgba(148,163,184,0.24)", "rgba(240,246,252,0.08)");
+  const projectButtonHoverBg = useColorModeValue("rgba(226,232,240,0.7)", "rgba(255,255,255,0.08)");
+  const selectedProjectBg = useColorModeValue("rgba(59,130,246,0.12)", "rgba(96,165,250,0.22)");
+  const selectedProjectBorder = useColorModeValue("rgba(59,130,246,0.38)", "rgba(147,197,253,0.44)");
+
   return (
-    <GlassPanel p={{ base: 4, md: 5 }} lightBg="rgba(241, 245, 249, 0.94)" darkBg="rgba(15, 23, 42, 0.66)">
-      <Text fontWeight="semibold" fontSize="2xl" mb={1}>
-        Upload a new image
+    <GlassPanel p={{ base: 4, md: 5 }}>
+      <Text fontWeight="800" fontSize={{ base: "xl", md: "2xl" }} mb={1} letterSpacing="-0.04em">
+        Upload
       </Text>
-      <Text color="gray.600" mb={5} _dark={{ color: "whiteAlpha.700" }}>
-        Select the destination project, then add one or more images from the area below.
+      <Text color="gray.500" mb={5} _dark={{ color: "whiteAlpha.700" }}>
+        Select a project and add images.
       </Text>
 
       <form onSubmit={onSubmit}>
         <Stack direction={{ base: "column", xl: "row" }} align="stretch" spacing={5}>
-          <VStack align="stretch" spacing={4} flex="1">
+          <VStack align="stretch" spacing={4} flex="1" minW={0}>
             <input
               ref={uploadInputRef}
               type="file"
@@ -69,91 +88,121 @@ export function UploadImageSection({
 
             {uploadFiles.length === 0 ? (
               <Box
-                border="2px dashed"
-                borderColor={isDragOverUpload ? "blue.400" : "rgba(148, 163, 184, 0.5)"}
-                bg="rgba(248, 250, 252, 0.88)"
-                borderRadius="xl"
+                border="1px dashed"
+                borderColor={dropBorderColor}
+                bg={dropBg}
+                borderRadius="8px"
                 px={5}
-                py={8}
+                py={10}
                 textAlign="center"
                 onDrop={onDropUpload}
                 onDragOver={onDragOverUpload}
                 onDragLeave={onDragLeaveUpload}
-                _dark={{
-                  borderColor: isDragOverUpload ? "blue.300" : "rgba(255, 255, 255, 0.24)",
-                  bg: "rgba(255, 255, 255, 0.06)",
-                }}
               >
-                <BiArrowFromBottom
-                  size={56}
-                  style={{ display: "block", margin: "0 auto 12px auto" }}
+                <BiCloudUpload
+                  size={52}
+                  style={{ display: "block", margin: "0 auto 14px auto", opacity: 0.92 }}
                   color="currentColor"
                 />
-                <Text fontSize="lg" fontWeight="medium" mb={2}>
-                  Drag and drop
+                <Text fontSize="lg" fontWeight="700" mb={2}>
+                  Drop files here
                 </Text>
-                <Text color="gray.600" mb={4} _dark={{ color: "whiteAlpha.700" }}>
-                  OR
+                <Text color="gray.500" mb={5} _dark={{ color: "whiteAlpha.700" }}>
+                  PNG, JPG, JPEG, WEBP, BMP
                 </Text>
-                <Button colorScheme="blue" onClick={onOpenFilePicker} isDisabled={projects.length === 0}>
-                  Upload image
+                <Button
+                  size="sm"
+                  leftIcon={<BiFolderOpen />}
+                  onClick={onOpenFilePicker}
+                  isDisabled={projects.length === 0}
+                >
+                  Choose files
                 </Button>
-                <Text fontSize="sm" color="gray.600" mt={2} _dark={{ color: "whiteAlpha.700" }}>
-                  No file selected
-                </Text>
               </Box>
             ) : (
-              <Box flex="1">
+              <Box flex="1" minW={0}>
                 <Text
                   fontSize="xs"
-                  color="gray.600"
+                  color="gray.500"
                   mb={2}
                   textTransform="uppercase"
-                  letterSpacing="0.08em"
+                  letterSpacing="0.12em"
                   _dark={{ color: "whiteAlpha.700" }}
                 >
-                  Images preview ({uploadFiles.length})
+                  Preview
                 </Text>
                 <Box
                   position="relative"
-                  h="230px"
-                  borderRadius="xl"
+                  h={{ base: "220px", md: "280px" }}
+                  w="full"
+                  borderRadius="8px"
                   overflow="hidden"
                   border="1px solid"
-                  borderColor="rgba(148, 163, 184, 0.48)"
-                  bg="rgba(241, 245, 249, 0.92)"
-                  backdropFilter="blur(10px)"
-                  _dark={{
-                    borderColor: "rgba(255, 255, 255, 0.22)",
-                    bg: "rgba(15, 23, 42, 0.8)",
-                  }}
+                  borderColor={previewPanelBorder}
+                  bg={previewPanelBg}
                 >
                   <img
                     src={uploadPreviewUrls[0]}
                     alt={uploadFiles[0]?.name || "Upload preview"}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                      objectPosition: "center",
+                      display: "block",
+                      background: "transparent",
+                    }}
                   />
-                  <Button type="button" size="sm" position="absolute" top={2} right={2} colorScheme="red" onClick={onClearFiles}>
-                    -
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    position="absolute"
+                    top={3}
+                    right={3}
+                    leftIcon={<BiTrash />}
+                    onClick={onClearFiles}
+                  >
+                    Clear
                   </Button>
                 </Box>
                 {uploadPreviewUrls.length > 1 ? (
-                  <HStack mt={2} gap={2} overflowX="auto" py={1}>
+                  <Box
+                    mt={3}
+                    p={2}
+                    borderRadius="8px"
+                    border="1px solid"
+                    borderColor={previewPanelBorder}
+                    bg={previewStripBg}
+                    overflow="hidden"
+                  >
+                    <HStack
+                      gap={2}
+                      overflowX="auto"
+                      py={1}
+                      pr={1}
+                      minW={0}
+                      sx={{
+                        "&::-webkit-scrollbar": { height: "8px" },
+                        "&::-webkit-scrollbar-thumb": {
+                          background: previewPanelBorder,
+                          borderRadius: "999px",
+                        },
+                        "&::-webkit-scrollbar-track": {
+                          background: "transparent",
+                        },
+                      }}
+                    >
                     {uploadPreviewUrls.slice(1).map((previewUrl, index) => (
                       <Box
                         key={previewUrl}
-                        w="56px"
-                        h="56px"
-                        borderRadius="md"
+                        w="68px"
+                        h="68px"
+                        borderRadius="6px"
                         overflow="hidden"
                         border="1px solid"
-                        borderColor="rgba(148, 163, 184, 0.48)"
+                        borderColor={previewPanelBorder}
                         flexShrink={0}
-                        bg="rgba(241, 245, 249, 0.92)"
-                        _dark={{
-                          borderColor: "rgba(255, 255, 255, 0.22)",
-                          bg: "rgba(15, 23, 42, 0.8)",
-                        }}
                       >
                         <img
                           src={previewUrl}
@@ -162,48 +211,99 @@ export function UploadImageSection({
                         />
                       </Box>
                     ))}
-                  </HStack>
+                    </HStack>
+                  </Box>
                 ) : null}
-                <Text fontSize="sm" color="gray.600" mt={2} _dark={{ color: "whiteAlpha.700" }}>
+                <Text
+                  fontSize="sm"
+                  color="gray.500"
+                  mt={3}
+                  noOfLines={1}
+                  _dark={{ color: "whiteAlpha.700" }}
+                >
                   {uploadFiles.length === 1 ? uploadFiles[0].name : `${uploadFiles.length} files selected`}
                 </Text>
               </Box>
             )}
           </VStack>
 
-          <VStack align="stretch" spacing={4} w={{ base: "100%", xl: "320px" }} justify="space-between">
+          <VStack
+            align="stretch"
+            spacing={4}
+            w={{ base: "100%", xl: "320px" }}
+            justify="space-between"
+            p={4}
+            borderRadius="8px"
+            border="1px solid"
+            borderColor={sidebarBorder}
+            bg={sidebarBg}
+          >
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={2}>
-                Project for upload
+              <Text fontSize="sm" fontWeight="700" mb={2}>
+                Destination project
               </Text>
-              <Select
-                value={uploadProjectId}
-                onChange={(event) => onUploadProjectChange(event.target.value)}
-                bg="rgba(255, 255, 255, 0.88)"
-                borderColor="rgba(148, 163, 184, 0.48)"
-                isDisabled={projects.length === 0}
-                _dark={{
-                  bg: "rgba(255, 255, 255, 0.1)",
-                  borderColor: "rgba(255, 255, 255, 0.22)",
+              <VStack
+                align="stretch"
+                spacing={1}
+                maxH="188px"
+                minH="188px"
+                overflowY="auto"
+                p={2}
+                borderRadius="8px"
+                border="1px solid"
+                borderColor={projectListBorder}
+                bg={projectListBg}
+                sx={{
+                  "&::-webkit-scrollbar": { width: "8px" },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: projectListBorder,
+                    borderRadius: "999px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    background: "transparent",
+                  },
                 }}
               >
-                {projects.map((project) => (
-                  <option key={project.id} value={String(project.id)}>
-                    {project.name}
-                  </option>
-                ))}
-              </Select>
+                {projects.map((project) => {
+                  const isSelected = uploadProjectId === String(project.id);
+
+                  return (
+                    <Button
+                      key={project.id}
+                      type="button"
+                      justifyContent="flex-start"
+                      h="auto"
+                      py={5}
+                      px={3}
+                      borderRadius="8px"
+                      variant="ghost"
+                      fontWeight={isSelected ? "700" : "600"}
+                      whiteSpace="normal"
+                      textAlign="left"
+                      border="1px solid"
+                      borderColor={isSelected ? selectedProjectBorder : "transparent"}
+                      bg={isSelected ? selectedProjectBg : "transparent"}
+                      _hover={{ bg: isSelected ? selectedProjectBg : projectButtonHoverBg }}
+                      _active={{ bg: isSelected ? selectedProjectBg : projectButtonHoverBg }}
+                      onClick={() => onUploadProjectChange(String(project.id))}
+                      isDisabled={projects.length === 0}
+                    >
+                      {project.name}
+                    </Button>
+                  );
+                })}
+              </VStack>
             </Box>
 
             {projects.length === 0 ? (
-              <Text color="gray.600" fontSize="sm" _dark={{ color: "whiteAlpha.700" }}>
-                Create a project first to upload images.
+              <Text color="gray.500" fontSize="sm" _dark={{ color: "whiteAlpha.700" }}>
+                Create a project first.
               </Text>
             ) : null}
 
             <Button
               type="submit"
-              colorScheme="blue"
+              leftIcon={<BiUpload />}
               isDisabled={!uploadProjectId || uploadFiles.length === 0 || projects.length === 0}
               isLoading={submitting}
               mt={{ xl: "auto" }}

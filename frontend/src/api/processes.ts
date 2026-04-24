@@ -1,7 +1,10 @@
 import { request } from "./client";
 import type {
+  ConvexHullPreviewPayload,
+  ConvexHullPreviewResponse,
   Pipeline,
   PipelineFinishPayload,
+  PipelineReplacePayload,
   PipelineStartPayload,
   PipelineStep,
   ProcessRunPayload,
@@ -17,8 +20,19 @@ export function runProcess(payload: ProcessRunPayload) {
   });
 }
 
+export function buildConvexHullPreview(payload: ConvexHullPreviewPayload) {
+  return request<ConvexHullPreviewResponse>("/processes/convex-hull-preview", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getSegmentModels() {
   return request<SegmentModel[]>("/processes/segment-models");
+}
+
+export function getRemovalModels() {
+  return request<SegmentModel[]>("/processes/remove-models");
 }
 
 export function getProcessCatalog() {
@@ -80,7 +94,14 @@ export function renamePipeline(pipelineId: string, name: string) {
   });
 }
 
-export function deletePipeline(pipelineId: string) {
+export function replacePipeline(pipelineId: number, payload: PipelineReplacePayload) {
+  return request<Pipeline>(`/laboratory-pipelines/${pipelineId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deletePipeline(pipelineId: number) {
   return request<void>(`/laboratory-pipelines/${pipelineId}`, {
     method: "DELETE",
   });

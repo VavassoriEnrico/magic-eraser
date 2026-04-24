@@ -2,20 +2,23 @@ import {
   Badge,
   Box,
   Button,
+  ButtonGroup,
   FormControl,
   FormLabel,
   HStack,
   Input,
   Select,
+  Spinner,
   Stack,
   Switch,
   Text,
   VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { BiChevronRight } from "react-icons/bi";
+import { BiChevronRight, BiRefresh, BiSave, BiTrash } from "react-icons/bi";
 
-import type { LabCell } from "../../types/laboratory";
+import type { ConvexHullPreviewMode, LabCell } from "../../types/laboratory";
 import { getSelectedModelOption, getVisibleAdditionalSettings } from "../../hooks/useLaboratoryNotebook";
 import { toImageUrl } from "../../utils/images";
 
@@ -40,6 +43,8 @@ interface LabCellCardProps {
   onRunCell: () => void;
   onReset: () => void;
   onRemove: () => void;
+  onSetSegmentOutputConvexHull: (enabled: boolean) => void;
+  onSetSegmentOutputConvexHullMode: (mode: ConvexHullPreviewMode) => void;
   onUpdateCell: (patch: Partial<LabCell>) => void;
   onUpdateModel: (modelKey: string) => void;
   onUpdateAdditionalSetting: (settingKey: string, value: string | number | boolean) => void;
@@ -67,33 +72,52 @@ export function LabCellCard({
   onRunCell,
   onReset,
   onRemove,
+  onSetSegmentOutputConvexHull,
+  onSetSegmentOutputConvexHullMode,
   onUpdateCell,
   onUpdateModel,
   onUpdateAdditionalSetting,
   onSaveOutput,
 }: LabCellCardProps) {
+  const cardBg = useColorModeValue("rgba(255,255,255,0.44)", "rgba(255,255,255,0.03)");
   const selectedModel = getSelectedModelOption(cell);
+  const segmentOutputMode = !cell.outputConvexHullEnabled
+    ? "original"
+    : cell.outputConvexHullMode === "rectangle"
+      ? "rectangle"
+      : "simple";
   const settingDefinitions = getVisibleAdditionalSettings(
     selectedModel?.additional_settings ?? [],
     cell.additionalSettings,
-  );
+  ).filter((setting) => !["use_convex_hull_mask", "convex_hull_expand_px"].includes(setting.key));
   const [showMaskOverlay, setShowMaskOverlay] = useState(true);
+  const isWorking = cell.status === "running" || cell.outputPreviewLoading;
+  const supportsMaskOverlay =
+    cell.processType === "generate_from_prompt" || cell.processType === "remove_with_mask";
 
   useEffect(() => {
-    if (cell.processType !== "generate_from_prompt" || !maskOverlayUrl) {
+    if (!supportsMaskOverlay || !maskOverlayUrl) {
       setShowMaskOverlay(false);
       return;
     }
 
     setShowMaskOverlay(true);
-  }, [cell.processType, maskOverlayUrl]);
+  }, [maskOverlayUrl, supportsMaskOverlay]);
 
   return (
-    <Box p={4} borderRadius="lg" border="1px solid" borderColor={panelBorder}>
+    <Box
+      p={4}
+      borderRadius="8px"
+      border="1px solid"
+      borderColor={panelBorder}
+      bg={cardBg}
+    >
       <HStack justify="space-between" align="center" flexWrap="wrap" mb={3}>
         <HStack>
           <Badge>{`Cell ${index + 1}`}</Badge>
-          <Text fontWeight="semibold">{cell.title}</Text>
+          <Text fontWeight="800" letterSpacing="-0.03em">
+            {cell.title}
+          </Text>
           <Badge variant="subtle">{cell.status}</Badge>
         </HStack>
 
@@ -107,10 +131,10 @@ export function LabCellCard({
           >
             {runCellLabel}
           </Button>
-          <Button size="sm" variant="outline" onClick={onReset} isDisabled={index === cellsLength - 1}>
+          <Button size="sm" variant="outline" leftIcon={<BiRefresh />} onClick={onReset} isDisabled={index === cellsLength - 1}>
             {resetFromLabel}
           </Button>
-          <Button size="sm" colorScheme="red" variant="ghost" onClick={onRemove} isDisabled={index === 0}>
+          <Button size="sm" variant="outline" leftIcon={<BiTrash />} onClick={onRemove} isDisabled={index === 0}>
             {removeCellLabel}
           </Button>
         </HStack>
@@ -120,7 +144,7 @@ export function LabCellCard({
         <VStack align="stretch" flex={1} spacing={3}>
           <Box
             position="relative"
-            borderRadius="md"
+            borderRadius="6px"
             overflow="hidden"
             border="1px solid"
             borderColor={panelBorder}
@@ -136,7 +160,7 @@ export function LabCellCard({
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
             ) : null}
-            {inputUrl && maskOverlayUrl && cell.processType === "generate_from_prompt" && showMaskOverlay ? (
+            {inputUrl && maskOverlayUrl && supportsMaskOverlay && showMaskOverlay ? (
               <Box
                 as="img"
                 src={maskOverlayUrl}
@@ -152,22 +176,24 @@ export function LabCellCard({
               />
             ) : null}
           </Box>
-          {maskOverlayUrl && cell.processType === "generate_from_prompt" ? (
-            <FormControl display="flex" alignItems="center" justifyContent="space-between">
-              <Box pr={4}>
-                <FormLabel mb={0} fontSize="sm">
-                  Show mask overlay
-                </FormLabel>
-                <Text color={subtleText} fontSize="xs">
-                  Overlay the white masked area on top of the fill input preview.
-                </Text>
-              </Box>
-              <Switch
-                isChecked={showMaskOverlay}
-                onChange={(event) => setShowMaskOverlay(event.target.checked)}
-                isDisabled={cell.status === "running" || runningAll}
-              />
-            </FormControl>
+          {maskOverlayUrl && supportsMaskOverlay ? (
+            <VStack align="stretch" spacing={3}>
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <Box pr={4}>
+                  <FormLabel mb={0} fontSize="sm">
+                    Show mask overlay
+                  </FormLabel>
+                  <Text color={subtleText} fontSize="xs">
+                    Overlay the white masked area on top of the process input preview.
+                  </Text>
+                </Box>
+                <Switch
+                  isChecked={showMaskOverlay}
+                  onChange={(event) => setShowMaskOverlay(event.target.checked)}
+                  isDisabled={cell.status === "running" || runningAll}
+                />
+              </FormControl>
+            </VStack>
           ) : null}
           {cell.promptRequired ? (
             <Input
@@ -220,6 +246,36 @@ export function LabCellCard({
                 }
 
                 if (setting.type === "select") {
+                  const isRemovalModeButtons =
+                    setting.key === "mode" &&
+                    cell.processType === "remove_with_mask" &&
+                    (setting.options ?? []).length === 3;
+
+                  if (isRemovalModeButtons) {
+                    return (
+                      <FormControl key={setting.key}>
+                        <FormLabel fontSize="sm">{setting.label}</FormLabel>
+                        <ButtonGroup isAttached size="sm" variant="outline">
+                          {(setting.options ?? []).map((option) => (
+                            <Button
+                              key={option.value}
+                              variant={currentValue === option.value ? "solid" : "outline"}
+                              onClick={() => onUpdateAdditionalSetting(setting.key, option.value)}
+                              isDisabled={cell.status === "running" || runningAll}
+                            >
+                              {option.label}
+                            </Button>
+                          ))}
+                        </ButtonGroup>
+                        {setting.description ? (
+                          <Text color={subtleText} fontSize="xs" mt={1}>
+                            {setting.description}
+                          </Text>
+                        ) : null}
+                      </FormControl>
+                    );
+                  }
+
                   return (
                     <FormControl key={setting.key}>
                       <FormLabel fontSize="sm">{setting.label}</FormLabel>
@@ -294,7 +350,7 @@ export function LabCellCard({
           <Box
             role="group"
             position="relative"
-            borderRadius="md"
+            borderRadius="6px"
             overflow="hidden"
             border="1px solid"
             borderColor={panelBorder}
@@ -319,6 +375,22 @@ export function LabCellCard({
                     transform: "scale(1.01)",
                   }}
                 />
+                {isWorking ? (
+                  <VStack
+                    position="absolute"
+                    inset={0}
+                    bg="blackAlpha.700"
+                    justify="center"
+                    align="center"
+                    spacing={3}
+                    zIndex={1}
+                  >
+                    <Spinner size="xl" thickness="4px" color="white" />
+                    <Text color="white" fontSize="sm" fontWeight="medium">
+                      {cell.outputPreviewLoading ? "Building convex hull preview..." : "Processing image..."}
+                    </Text>
+                  </VStack>
+                ) : null}
                 <Box
                   position="absolute"
                   top={3}
@@ -335,18 +407,30 @@ export function LabCellCard({
                     _hover={{ bg: "blackAlpha.800" }}
                     _active={{ bg: "blackAlpha.900" }}
                     backdropFilter="blur(8px)"
-                    borderRadius="full"
+                    borderRadius="6px"
                     onClick={onSaveOutput}
                     isLoading={savingCellId === cell.id}
+                    leftIcon={<BiSave />}
                   >
                     {saveToProjectLabel}
                   </Button>
                 </Box>
               </>
             ) : (
-              <Text color={subtleText} fontSize="sm">
-                {waitingOutputLabel}
-              </Text>
+              <VStack spacing={3}>
+                {isWorking ? (
+                  <>
+                    <Spinner size="xl" thickness="4px" />
+                    <Text color={subtleText} fontSize="sm">
+                      {cell.outputPreviewLoading ? "Building convex hull preview..." : "Processing image..."}
+                    </Text>
+                  </>
+                ) : (
+                  <Text color={subtleText} fontSize="sm">
+                    {waitingOutputLabel}
+                  </Text>
+                )}
+              </VStack>
             )}
           </Box>
 
@@ -360,6 +444,44 @@ export function LabCellCard({
             <Text color="red.400" fontSize="sm">
               {saveError}
             </Text>
+          ) : null}
+
+          {cell.processType === "segment_from_prompt" && cell.originalOutputUrl ? (
+            <VStack align="stretch" spacing={3} pt={2}>
+              <FormControl>
+                <Box pr={4} mb={2}>
+                  <FormLabel mb={0} fontSize="sm">
+                    Output mask mode
+                  </FormLabel>
+                  <Text color={subtleText} fontSize="xs">
+                    Choose the original mask, the light convex hull, or the bounding box.
+                  </Text>
+                </Box>
+                <ButtonGroup isAttached size="sm" variant="outline">
+                  <Button
+                    variant={segmentOutputMode === "original" ? "solid" : "outline"}
+                    onClick={() => onSetSegmentOutputConvexHull(false)}
+                    isDisabled={isWorking || runningAll}
+                  >
+                    Original
+                  </Button>
+                  <Button
+                    variant={segmentOutputMode === "simple" ? "solid" : "outline"}
+                    onClick={() => onSetSegmentOutputConvexHullMode("simple")}
+                    isDisabled={isWorking || runningAll}
+                  >
+                    ConvexHull
+                  </Button>
+                  <Button
+                    variant={segmentOutputMode === "rectangle" ? "solid" : "outline"}
+                    onClick={() => onSetSegmentOutputConvexHullMode("rectangle")}
+                    isDisabled={isWorking || runningAll}
+                  >
+                    Box
+                  </Button>
+                </ButtonGroup>
+              </FormControl>
+            </VStack>
           ) : null}
 
           {cell.error ? (

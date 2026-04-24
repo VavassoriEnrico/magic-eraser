@@ -82,6 +82,51 @@ def update_pipeline_name(
     return pipeline
 
 
+def replace_pipeline_snapshot(
+    db: Session,
+    *,
+    pipeline: LaboratoryPipeline,
+    name: str | None,
+    status: str,
+    final_image_url: str | None,
+    steps: list[dict[str, object]],
+) -> LaboratoryPipeline:
+    pipeline.name = name
+    pipeline.status = status
+    pipeline.final_image_url = final_image_url
+
+    (
+        db.query(LaboratoryPipelineStep)
+        .filter(LaboratoryPipelineStep.pipeline_id == pipeline.id)
+        .delete(synchronize_session=False)
+    )
+
+    db.add(pipeline)
+    db.flush()
+
+    for step_data in steps:
+        db.add(
+            LaboratoryPipelineStep(
+                pipeline_id=pipeline.id,
+                step_index=step_data["step_index"],
+                process_type=step_data["process_type"],
+                priority=step_data["priority"],
+                model_key=step_data.get("model_key"),
+                prompt=step_data.get("prompt"),
+                additional_settings_json=step_data.get("additional_settings_json"),
+                input_image_url=step_data["input_image_url"],
+                mask_image_url=step_data.get("mask_image_url"),
+                output_image_url=step_data.get("output_image_url"),
+                status=step_data.get("status", "done"),
+                error_message=step_data.get("error_message"),
+            )
+        )
+
+    db.commit()
+    db.refresh(pipeline)
+    return pipeline
+
+
 def delete_pipeline(db: Session, pipeline: LaboratoryPipeline) -> None:
     db.delete(pipeline)
 

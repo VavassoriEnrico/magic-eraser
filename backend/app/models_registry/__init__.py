@@ -4,10 +4,11 @@ from app.models_registry.base import (
     GenerationModelRequest,
     PrimitiveSettingMap,
     ProcessModelDefinition,
+    RemovalModelRequest,
     SegmentModelRequest,
     validate_additional_settings,
 )
-from app.models_registry.registries import GENERATION_MODELS, SEGMENTATION_MODELS, get_process_model_registry
+from app.models_registry.registries import GENERATION_MODELS, REMOVAL_MODELS, SEGMENTATION_MODELS, get_process_model_registry
 
 __all__ = [
     "AdditionalSettingDefinitionData",
@@ -15,8 +16,10 @@ __all__ = [
     "GenerationModelRequest",
     "PrimitiveSettingMap",
     "ProcessModelDefinition",
+    "RemovalModelRequest",
     "SegmentModelRequest",
     "SEGMENTATION_MODELS",
+    "REMOVAL_MODELS",
     "GENERATION_MODELS",
     "get_process_model_registry",
     "validate_additional_settings",

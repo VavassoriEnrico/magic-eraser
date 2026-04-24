@@ -50,7 +50,6 @@ describe("PipelinesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.history.replaceState({}, "", "/pipelines");
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     vi.mocked(listPipelines).mockResolvedValue(pipelines);
     vi.mocked(deletePipeline).mockResolvedValue(undefined as never);
   });
@@ -104,9 +103,12 @@ describe("PipelinesPage", () => {
     });
 
     await user.click(screen.getAllByRole("button", { name: "Delete" })[0]);
+    await waitFor(() => {
+      expect(screen.getByText("Delete pipeline")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Delete pipeline" }));
 
-    expect(window.confirm).toHaveBeenCalledWith("Delete this pipeline?");
-    expect(deletePipeline).toHaveBeenCalledWith("2");
+    expect(deletePipeline).toHaveBeenCalledWith(2);
 
     await waitFor(() => {
       expect(screen.queryByText("Newest pipeline")).not.toBeInTheDocument();
@@ -115,7 +117,6 @@ describe("PipelinesPage", () => {
   });
 
   test("does not delete when the user cancels the confirmation", async () => {
-    vi.mocked(window.confirm).mockReturnValue(false);
     const user = userEvent.setup();
 
     renderPage();
@@ -125,6 +126,10 @@ describe("PipelinesPage", () => {
     });
 
     await user.click(screen.getAllByRole("button", { name: "Delete" })[0]);
+    await waitFor(() => {
+      expect(screen.getByText("Delete pipeline")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(deletePipeline).not.toHaveBeenCalled();
     expect(screen.getByText("Newest pipeline")).toBeInTheDocument();

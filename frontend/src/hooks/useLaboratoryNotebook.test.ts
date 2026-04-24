@@ -3,12 +3,13 @@ import { afterEach, beforeEach, describe, expect, it as test, vi } from "vitest"
 
 import { uploadImageFromUrl } from "../api/images";
 import {
+  buildConvexHullPreview,
   createPipelineStep,
   finishPipeline,
   getPipeline,
   getPipelineSteps,
   getProcessCatalog,
-  renamePipeline,
+  replacePipeline,
   runProcess,
   startPipeline,
 } from "../api/processes";
@@ -20,12 +21,13 @@ vi.mock("../api/images", () => ({
 }));
 
 vi.mock("../api/processes", () => ({
+  buildConvexHullPreview: vi.fn(),
   createPipelineStep: vi.fn(),
   finishPipeline: vi.fn(),
   getPipeline: vi.fn(),
   getPipelineSteps: vi.fn(),
   getProcessCatalog: vi.fn(),
-  renamePipeline: vi.fn(),
+  replacePipeline: vi.fn(),
   runProcess: vi.fn(),
   startPipeline: vi.fn(),
 }));
@@ -44,7 +46,6 @@ const catalog: ProcessCatalogItem[] = [
     title: "Segment",
     priority: 1,
     prompt_required: true,
-    explanation: "Create a mask",
     model_options: [
       {
         key: "sam3",
@@ -74,12 +75,39 @@ const catalog: ProcessCatalogItem[] = [
     title: "Remove",
     priority: 2,
     prompt_required: false,
+    model_options: [
+      {
+        key: "finegrain-eraser",
+        label: "Finegrain Eraser",
+        default: true,
+        additional_settings: [
+          {
+            key: "mode",
+            label: "Mode",
+            type: "select",
+            default_value: "standard",
+            options: [
+              { value: "express", label: "Express" },
+              { value: "standard", label: "Standard" },
+              { value: "premium", label: "Premium" },
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     process_type: "generate_from_prompt",
     title: "Fill",
     priority: 3,
     prompt_required: true,
+    model_options: [
+      {
+        key: "flux-fill-pro",
+        label: "FLUX.1 [pro] Fill",
+        default: true,
+      },
+    ],
   },
 ];
 
@@ -113,6 +141,10 @@ describe("useLaboratoryNotebook helpers", () => {
         prompt: "object",
         modelKey: "sam3",
         additionalSettings: {},
+        originalOutputUrl: "/uploads/mask.png",
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: "medium",
+        outputPreviewLoading: false,
         status: "done",
         outputUrl: "/uploads/mask.png",
         error: "",
@@ -127,6 +159,28 @@ describe("useLaboratoryNotebook helpers", () => {
         prompt: "fill it",
         modelKey: "flux-fill-pro",
         additionalSettings: {},
+        originalOutputUrl: "/uploads/mask.png",
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: "medium",
+        outputPreviewLoading: false,
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        error: "",
+      },
+      {
+        id: "fill-1",
+        processType: "generate_from_prompt",
+        title: "Fill",
+        priority: 3,
+        promptRequired: true,
+        modelOptions: [],
+        prompt: "fill it",
+        modelKey: "flux-fill-pro",
+        additionalSettings: {},
+        originalOutputUrl: "",
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: "medium",
+        outputPreviewLoading: false,
         status: "idle",
         outputUrl: "",
         error: "",
@@ -144,7 +198,6 @@ describe("useLaboratoryNotebook", () => {
     window.sessionStorage.setItem("laboratory:selected-image", JSON.stringify(selectedImage));
     window.history.replaceState({}, "", "/laboratory?projectId=3&imageId=7");
     vi.spyOn(window, "alert").mockImplementation(() => {});
-    vi.spyOn(window, "prompt").mockImplementation(() => null);
     vi.mocked(getProcessCatalog).mockResolvedValue(catalog);
     vi.mocked(getPipeline).mockResolvedValue({} as never);
     vi.mocked(getPipelineSteps).mockResolvedValue([]);
@@ -157,11 +210,12 @@ describe("useLaboratoryNotebook", () => {
       name: "Saved pipeline",
     } as never);
     vi.mocked(createPipelineStep).mockResolvedValue({} as never);
-    vi.mocked(renamePipeline).mockResolvedValue({} as never);
+    vi.mocked(replacePipeline).mockResolvedValue({} as never);
     vi.mocked(runProcess).mockResolvedValue({
       process_type: "segment_from_prompt",
       output_image_url: "/uploads/output-mask.png",
     });
+    vi.mocked(buildConvexHullPreview).mockResolvedValue({ output_image_url: "data:image/png;base64,convex" });
     vi.mocked(uploadImageFromUrl).mockResolvedValue({} as never);
   });
 
@@ -183,8 +237,400 @@ describe("useLaboratoryNotebook", () => {
       prompt: "",
       modelKey: "sam3",
       additionalSettings: { refine: true, passes: 2 },
+      originalOutputUrl: "",
+      outputConvexHullEnabled: false,
+      outputConvexHullMode: "medium",
+      outputPreviewLoading: false,
     });
-    expect(result.current.notebookExplanationList).toContain("Create a mask");
+    expect(result.current.notebookExplanationList).toContain(
+      "Segmentation creates a mask from your prompt so you can isolate the part you want to edit.",
+    );
+  });
+
+  test("auto-selects remove after segmentation, fill after removal, and segment after fill", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    expect(result.current.getSelectedProcessTypeFor(0)).toBe("remove_with_mask");
+
+    act(() => {
+      result.current.updateCell(0, {
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+      result.current.setSelectedProcessTypeFor(0, "remove_with_mask");
+    });
+
+    act(() => {
+      result.current.addCell(0);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(2);
+    });
+
+    expect(result.current.getSelectedProcessTypeFor(1)).toBe("generate_from_prompt");
+
+    act(() => {
+      result.current.updateCell(1, {
+        status: "done",
+        outputUrl: "/uploads/removed.png",
+        originalOutputUrl: "/uploads/removed.png",
+      });
+      result.current.setSelectedProcessTypeFor(1, "generate_from_prompt");
+    });
+
+    act(() => {
+      result.current.addCell(1);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(3);
+    });
+
+    expect(result.current.getSelectedProcessTypeFor(2)).toBe("segment_from_prompt");
+    expect(result.current.getAvailableProcessesAfter(2).map((process) => process.process_type)).toContain("segment_from_prompt");
+  });
+
+  test("initializes removal cells with standard mode by default", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        prompt: "Select the object",
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    act(() => {
+      result.current.setSelectedProcessTypeFor(0, "remove_with_mask");
+    });
+
+    act(() => {
+      result.current.addCell(0);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(2);
+    });
+
+    expect(result.current.cells[1]).toMatchObject({
+      processType: "remove_with_mask",
+      modelKey: "finegrain-eraser",
+      additionalSettings: { mode: "standard" },
+    });
+  });
+
+  test("stores the original segmentation output when a cell completes", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        prompt: "Select the object",
+        additionalSettings: { refine: true, passes: 2 },
+      });
+    });
+
+    vi.mocked(runProcess).mockResolvedValueOnce({
+      process_type: "segment_from_prompt",
+      output_image_url: "/uploads/mask.png",
+    });
+
+    await act(async () => {
+      await result.current.runCell(0);
+    });
+
+    expect(runProcess).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        process_type: "segment_from_prompt",
+        input_image_url: "http://127.0.0.1:8000/uploads/source.png",
+        additional_settings: { refine: true, passes: 2 },
+      }),
+    );
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "/uploads/mask.png",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: false,
+      outputConvexHullMode: "medium",
+      outputPreviewLoading: false,
+    });
+  });
+
+  test("runs removal with the latest segmentation mask and current editable image", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        prompt: "Select the object",
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    act(() => {
+      result.current.setSelectedProcessTypeFor(0, "remove_with_mask");
+    });
+
+    act(() => {
+      result.current.addCell(0);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(2);
+    });
+
+    act(() => {
+      result.current.updateAdditionalSetting(1, "mode", "premium");
+    });
+
+    vi.mocked(runProcess).mockResolvedValueOnce({
+      process_type: "remove_with_mask",
+      output_image_url: "/uploads/removed.png",
+    });
+
+    await act(async () => {
+      await result.current.runCell(1);
+    });
+
+    expect(runProcess).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        process_type: "remove_with_mask",
+        input_image_url: "http://127.0.0.1:8000/uploads/source.png",
+        mask_image_url: "http://127.0.0.1:8000/uploads/mask.png",
+        model_key: "finegrain-eraser",
+        additional_settings: { mode: "premium" },
+      }),
+    );
+  });
+
+  test("reuses the removal mask when a fill runs after remove", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        prompt: "Select the object",
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    act(() => {
+      result.current.setSelectedProcessTypeFor(0, "remove_with_mask");
+    });
+
+    act(() => {
+      result.current.addCell(0);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(2);
+    });
+
+    act(() => {
+      result.current.updateCell(1, {
+        status: "done",
+        outputUrl: "/uploads/removed.png",
+        originalOutputUrl: "/uploads/removed.png",
+      });
+    });
+
+    act(() => {
+      result.current.setSelectedProcessTypeFor(1, "generate_from_prompt");
+    });
+
+    act(() => {
+      result.current.addCell(1);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(3);
+    });
+
+    vi.mocked(runProcess).mockResolvedValueOnce({
+      process_type: "generate_from_prompt",
+      output_image_url: "/uploads/filled.png",
+    });
+
+    await act(async () => {
+      await result.current.runCell(2);
+    });
+
+    expect(runProcess).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        process_type: "generate_from_prompt",
+        input_image_url: "http://127.0.0.1:8000/uploads/removed.png",
+        mask_image_url: "http://127.0.0.1:8000/uploads/mask.png",
+        model_key: "flux-fill-pro",
+      }),
+    );
+  });
+
+  test("allows a new segmentation after remove using the removed image as input", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        prompt: "Select the object",
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    act(() => {
+      result.current.setSelectedProcessTypeFor(0, "remove_with_mask");
+    });
+
+    act(() => {
+      result.current.addCell(0);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(2);
+    });
+
+    act(() => {
+      result.current.updateCell(1, {
+        status: "done",
+        outputUrl: "/uploads/removed.png",
+        originalOutputUrl: "/uploads/removed.png",
+      });
+    });
+
+    act(() => {
+      result.current.setSelectedProcessTypeFor(1, "segment_from_prompt");
+    });
+
+    act(() => {
+      result.current.addCell(1);
+    });
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(3);
+    });
+
+    act(() => {
+      result.current.updateCell(2, { prompt: "Select another object" });
+    });
+
+    vi.mocked(runProcess).mockResolvedValueOnce({
+      process_type: "segment_from_prompt",
+      output_image_url: "/uploads/mask-2.png",
+    });
+
+    await act(async () => {
+      await result.current.runCell(2);
+    });
+
+    expect(runProcess).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        process_type: "segment_from_prompt",
+        input_image_url: "http://127.0.0.1:8000/uploads/removed.png",
+      }),
+    );
+  });
+
+  test("can switch a segmentation output to a convex hull variant", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    await act(async () => {
+      await result.current.setSegmentOutputConvexHull(0, true);
+    });
+
+    expect(buildConvexHullPreview).toHaveBeenCalledWith({
+      mask_image_url: "http://127.0.0.1:8000/uploads/mask.png",
+      mode: "medium",
+    });
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "data:image/png;base64,convex",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: true,
+      outputConvexHullMode: "medium",
+      outputPreviewLoading: false,
+    });
+
+    await act(async () => {
+      await result.current.setSegmentOutputConvexHull(0, false);
+    });
+
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "/uploads/mask.png",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: false,
+      outputPreviewLoading: false,
+    });
+  });
+
+  test("can activate a segmentation preview directly by choosing a hull mode", async () => {
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        status: "done",
+        outputUrl: "/uploads/mask.png",
+        originalOutputUrl: "/uploads/mask.png",
+      });
+    });
+
+    await act(async () => {
+      await result.current.setSegmentOutputConvexHullMode(0, "simple");
+    });
+
+    expect(buildConvexHullPreview).toHaveBeenCalledWith({
+      mask_image_url: "http://127.0.0.1:8000/uploads/mask.png",
+      mode: "simple",
+    });
+    expect(result.current.cells[0]).toMatchObject({
+      outputUrl: "data:image/png;base64,convex",
+      originalOutputUrl: "/uploads/mask.png",
+      outputConvexHullEnabled: true,
+      outputConvexHullMode: "simple",
+      outputPreviewLoading: false,
+    });
   });
 
   test("fails a required prompt cell when the prompt is empty", async () => {
@@ -207,7 +653,6 @@ describe("useLaboratoryNotebook", () => {
   });
 
   test("creates and saves a new pipeline using completed cells", async () => {
-    vi.mocked(window.prompt).mockReturnValue("  My pipeline  ");
     const { result } = renderHook(() => useLaboratoryNotebook());
 
     await waitFor(() => {
@@ -223,7 +668,7 @@ describe("useLaboratoryNotebook", () => {
     });
 
     await act(async () => {
-      await result.current.savePipelineName();
+      await result.current.savePipeline("save_as_new", "  My pipeline  ");
     });
 
     expect(startPipeline).toHaveBeenCalledWith({
@@ -254,8 +699,97 @@ describe("useLaboratoryNotebook", () => {
     expect(result.current.saveError).toBe("");
   });
 
+  test("overwrites an existing pipeline with the current notebook snapshot", async () => {
+    window.history.replaceState({}, "", "/laboratory?pipelineId=21&projectId=3&imageId=7");
+    vi.mocked(getPipeline).mockResolvedValue({
+      id: 21,
+      project_id: 3,
+      source_image_id: 7,
+      name: "Saved pipeline",
+      start_image_url: "/uploads/source.png",
+      final_image_url: "/uploads/old-result.png",
+      status: "done",
+      created_at: "2026-04-20T08:00:00Z",
+      updated_at: "2026-04-20T08:00:00Z",
+    });
+    vi.mocked(getPipelineSteps).mockResolvedValue([
+      {
+        id: 1,
+        pipeline_id: 21,
+        step_index: 1,
+        process_type: "segment_from_prompt",
+        priority: 1,
+        model_key: "sam3",
+        prompt: "Old prompt",
+        additional_settings_json: { refine: true, passes: 2 },
+        input_image_url: "/uploads/source.png",
+        mask_image_url: undefined,
+        output_image_url: "/uploads/old-mask.png",
+        status: "done",
+        error_message: undefined,
+        created_at: "2026-04-20T08:00:00Z",
+        updated_at: "2026-04-20T08:00:00Z",
+      },
+    ]);
+    vi.mocked(replacePipeline).mockResolvedValue({
+      id: 21,
+      project_id: 3,
+      source_image_id: 7,
+      name: "Updated pipeline",
+      start_image_url: "/uploads/source.png",
+      final_image_url: "/uploads/new-mask.png",
+      status: "done",
+      created_at: "2026-04-20T08:00:00Z",
+      updated_at: "2026-04-20T09:00:00Z",
+    });
+
+    const { result } = renderHook(() => useLaboratoryNotebook());
+
+    await waitFor(() => {
+      expect(result.current.activePipelineId).toBe(21);
+      expect(result.current.cells).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.updateCell(0, {
+        prompt: "New prompt",
+        status: "done",
+        outputUrl: "/uploads/new-mask.png",
+      });
+    });
+
+    await act(async () => {
+      await result.current.savePipeline("overwrite", "Updated pipeline");
+    });
+
+    expect(replacePipeline).toHaveBeenCalledWith(21, {
+      name: "Updated pipeline",
+      status: "done",
+      final_image_url: "/uploads/new-mask.png",
+      steps: [
+        {
+          step_index: 1,
+          process_type: "segment_from_prompt",
+          priority: 1,
+          model_key: "sam3",
+          prompt: "New prompt",
+          additional_settings_json: { refine: true, passes: 2 },
+          input_image_url: "http://127.0.0.1:8000/uploads/source.png",
+          mask_image_url: undefined,
+          output_image_url: "/uploads/new-mask.png",
+          status: "done",
+          error_message: undefined,
+        },
+      ],
+    });
+    expect(startPipeline).not.toHaveBeenCalled();
+    expect(createPipelineStep).not.toHaveBeenCalled();
+    expect(finishPipeline).not.toHaveBeenCalledWith(21, expect.anything());
+    expect(result.current.saveMessage).toBe("Pipeline saved");
+    expect(result.current.saveError).toBe("");
+  });
+
   test("saves a cell output to the project and syncs the active pipeline", async () => {
-    vi.mocked(window.prompt).mockReturnValue("Pipeline");
     const { result } = renderHook(() => useLaboratoryNotebook());
 
     await waitFor(() => {
@@ -271,7 +805,7 @@ describe("useLaboratoryNotebook", () => {
     });
 
     await act(async () => {
-      await result.current.savePipelineName();
+      await result.current.savePipeline("save_as_new", "Pipeline");
     });
 
     const firstCell = result.current.cells[0];

@@ -1,7 +1,15 @@
 import { useEffect, useState, type MouseEvent } from "react";
 
 import { IconButton, useColorMode } from "@chakra-ui/react";
-import { BiSolidMoon, BiSolidSun } from "react-icons/bi";
+import {
+  BiBookContent,
+  BiHomeAlt2,
+  BiSolidMoon,
+  BiSolidSun,
+  BiUserCircle,
+  BiWrench,
+} from "react-icons/bi";
+
 import logoBlack from "../../assets/me_logo_black.png";
 import logoWhite from "../../assets/me_logo_white.png";
 import type { AppPath } from "../../types/ui";
@@ -17,10 +25,13 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
 
   const titleLabel = "Magic Eraser";
   const logoSource = colorMode === "dark" ? logoWhite : logoBlack;
-  const homeLabel = "Home";
-  const pipelinesLabel = "Pipelines";
   const loginLabel = "Login";
   const profileLabel = "Profile";
+  const navigationItems: Array<{ path: AppPath; label: string; icon: JSX.Element }> = [
+    { path: "/", label: "Home", icon: <BiHomeAlt2 /> },
+    { path: "/pipelines", label: "Pipelines", icon: <BiBookContent /> },
+    { path: "/laboratory", label: "Laboratory", icon: <BiWrench /> },
+  ];
 
   useEffect(() => {
     const checkAuth = () => setIsLoggedIn(hasSupabaseSession());
@@ -37,40 +48,46 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
   }, []);
 
   return (
-    <header className="app-navbar">
-      <div className="app-navbar__inner">
+    <>
+      <header className="app-topbar">
         <a
           href="/"
-          className="app-navbar__brand"
+          className="app-topbar__brand"
           onClick={(event) => onLinkClick(event, "/", onNavigate)}
           aria-label={titleLabel}
         >
-          <img className="app-navbar__logo-image" src={logoSource} alt={titleLabel} />
+          <img className="app-topbar__logo-image" src={logoSource} alt={titleLabel} />
         </a>
 
-        <nav className="app-navbar__nav" aria-label="Main navigation">
-          <a
-            href="/"
-            className={navClass(currentPath === "/")}
-            onClick={(event) => onLinkClick(event, "/", onNavigate)}
-          >
-            {homeLabel}
-          </a>
-          <a
-            href="/pipelines"
-            className={navClass(currentPath === "/pipelines")}
-            onClick={(event) => onLinkClick(event, "/pipelines", onNavigate)}
-          >
-            {pipelinesLabel}
-          </a>
+        <nav className="app-topbar__nav" aria-label="Main navigation">
+          {navigationItems.map((item) => (
+            <a
+              key={item.path}
+              href={item.path}
+              className={navClass(currentPath === item.path)}
+              onClick={(event) =>
+                onLinkClick(
+                  event,
+                  item.path,
+                  onNavigate,
+                  item.path === "/laboratory" ? getLaboratorySearch() : ""
+                )
+              }
+            >
+              <span className="app-topbar__link-icon" aria-hidden="true">
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+            </a>
+          ))}
         </nav>
 
-        <div className="app-navbar__actions">
+        <div className="app-topbar__actions">
           <IconButton
             size="sm"
             variant="outline"
             onClick={toggleColorMode}
-            className="app-navbar__theme-btn"
+            className="app-topbar__theme-btn"
             aria-label={colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             icon={
               <span aria-hidden="true">
@@ -78,41 +95,68 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
               </span>
             }
           />
+
           {isLoggedIn ? (
             <a
               href="/profile"
-              className="app-navbar__profile"
+              className="app-topbar__profile"
               onClick={(event) => onLinkClick(event, "/profile", onNavigate)}
             >
               <span>{profileLabel}</span>
-              <span className="app-navbar__avatar" aria-hidden="true" />
+              <span className="app-topbar__avatar" aria-hidden="true" />
             </a>
           ) : (
             <a
               href="/login"
-              className="app-navbar__login-btn"
+              className="app-topbar__profile app-topbar__login-btn"
               onClick={(event) => onLinkClick(event, "/login", onNavigate)}
             >
-              {loginLabel}
+              <span className="app-topbar__link-icon" aria-hidden="true">
+                <BiUserCircle />
+              </span>
+              <span>{loginLabel}</span>
             </a>
           )}
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
 function navClass(isActive: boolean) {
-  return `app-navbar__link${isActive ? " is-active" : ""}`;
+  return `app-topbar__link${isActive ? " is-active" : ""}`;
 }
 
 function onLinkClick(
   event: MouseEvent<HTMLAnchorElement>,
   path: AppPath,
-  onNavigate: (path: AppPath, search?: string) => void
+  onNavigate: (path: AppPath, search?: string) => void,
+  search = "",
 ) {
   event.preventDefault();
-  onNavigate(path);
+  onNavigate(path, search);
+}
+
+function getLaboratorySearch() {
+  try {
+    const raw = window.sessionStorage.getItem("laboratory:selected-image");
+    if (!raw) {
+      return "";
+    }
+
+    const parsed = JSON.parse(raw) as { id?: number; project_id?: number };
+    if (!parsed.id || !parsed.project_id) {
+      return "";
+    }
+
+    const params = new URLSearchParams({
+      projectId: String(parsed.project_id),
+      imageId: String(parsed.id),
+    });
+    return `?${params.toString()}`;
+  } catch {
+    return "";
+  }
 }
 
 function hasSupabaseSession() {

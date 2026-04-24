@@ -39,8 +39,8 @@ export default function AppLayout({
         : defaultResolvedBackgroundImageUrl;
 
   const overlayGradient = useColorModeValue(
-    "linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 247, 250, 0.7) 100%)",
-    "linear-gradient(180deg, rgba(7, 11, 18, 0.58) 0%, rgba(7, 11, 18, 0.8) 100%)"
+    "linear-gradient(180deg, rgba(239, 243, 248, 0.9) 0%, rgba(227, 233, 240, 0.94) 100%)",
+    "linear-gradient(180deg, rgba(4, 8, 15, 0.9) 0%, rgba(4, 8, 15, 0.96) 100%)"
   );
 
   return (
@@ -58,9 +58,13 @@ export default function AppLayout({
           : undefined
       }
     >
-      <Navbar currentPath={currentPath} onNavigate={onNavigate} />
-      <main className="app-shell__content">{children}</main>
-      <Footbar />
+      <div className="app-shell__workspace">
+        <Navbar currentPath={currentPath} onNavigate={onNavigate} />
+        <main className={`app-shell__content${currentPath === "/" ? " app-shell__content--home" : ""}`}>
+          {children}
+        </main>
+        <Footbar />
+      </div>
     </div>
   );
 }

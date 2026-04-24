@@ -6,6 +6,7 @@ import { createProject, deleteProject, getProjects, updateProject } from "../api
 import type { ImageAsset, Project } from "../types/api";
 import type { HomeData } from "../types/ui";
 import { getErrorMessage } from "../utils/errors";
+import { getLatestImageAsset, setLaboratorySelectedImage } from "../utils/laboratorySelection";
 
 function convertToMilliseconds(dateInput?: string | null) {
   if (!dateInput) {
@@ -247,7 +248,11 @@ export function useHomeData(): HomeData {
         }
 
         if (successCount > 0) {
-          await loadImagesForProject(uploadProjectId);
+          const uploadedImages = await loadImagesForProject(Number(uploadProjectId));
+          const latestUploadedImage = getLatestImageAsset(uploadedImages);
+          if (latestUploadedImage) {
+            setLaboratorySelectedImage(latestUploadedImage);
+          }
           setProjects((prev) =>
             sortProjectsByLastUpdate(
               prev.map((project) =>
