@@ -11,12 +11,12 @@ interface GlassPanelProps extends BoxProps {
 
 export function GlassPanel({
   children,
-  lightBg = "rgba(241, 245, 249, 0.92)",
-  darkBg = "rgba(15, 23, 42, 0.8)",
-  lightBorder = "rgba(148, 163, 184, 0.55)",
-  darkBorder = "rgba(255, 255, 255, 0.22)",
-  shadow = "0 18px 45px rgba(148, 163, 184, 0.24)",
-  darkShadow = "0 18px 45px rgba(0, 0, 0, 0.28)",
+  lightBg = "#f1f5f9",
+  darkBg = "#151b23",
+  lightBorder = "rgba(148, 163, 184, 0.34)",
+  darkBorder = "rgba(240, 246, 252, 0.1)",
+  shadow = "none",
+  darkShadow = "none",
   ...boxProps
 }: GlassPanelProps) {
   const bg = useColorModeValue(lightBg, darkBg);
@@ -28,9 +28,9 @@ export function GlassPanel({
       border="1px solid"
       borderColor={borderColor}
       bg={bg}
-      backdropFilter="blur(12px)"
+      backdropFilter="blur(18px)"
       boxShadow={boxShadow}
-      borderRadius="xl"
+      borderRadius="8px"
       {...boxProps}
     >
       {children}

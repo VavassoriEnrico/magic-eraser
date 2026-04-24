@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Box, Button, Input, Stack, Text, useColorMode } from "@chakra-ui/react";
+import { BiLogIn } from "react-icons/bi";
 import logoBlack from "../assets/me_logo_black.png";
 import logoWhite from "../assets/me_logo_white.png";
 import { isSupabaseConfigured } from "../lib/supabase";
@@ -97,6 +98,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="auth-submit-btn"
+              leftIcon={<BiLogIn />}
               isLoading={submitting}
               isDisabled={!isSupabaseConfigured}
             >

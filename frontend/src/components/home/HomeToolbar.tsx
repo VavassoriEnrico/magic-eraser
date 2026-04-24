@@ -1,4 +1,5 @@
-import { Button, HStack, Link, Text } from "@chakra-ui/react";
+import { Button, HStack, Link, Text, VStack, useColorModeValue } from "@chakra-ui/react";
+import { BiLinkExternal, BiRefresh } from "react-icons/bi";
 
 import { API_BASE_URL } from "../../api/client";
 import { GlassPanel } from "../common/GlassPanel";
@@ -9,22 +10,36 @@ interface HomeToolbarProps {
 }
 
 export function HomeToolbar({ loadingProjects, onRefresh }: HomeToolbarProps) {
+  const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
+
   return (
-    <GlassPanel p={4}>
-      <HStack justify="space-between" align={{ base: "start", md: "center" }} flexWrap="wrap" gap={3}>
-        <Text color="gray.600" _dark={{ color: "whiteAlpha.700" }}>
-          Backend API:{" "}
+    <GlassPanel p={{ base: 4, md: 5 }}>
+      <HStack justify="space-between" align={{ base: "start", md: "center" }} flexWrap="wrap" gap={4}>
+        <VStack align="start" spacing={1}>
+          <Text fontSize="sm" color={subtleText}>
+            Backend
+          </Text>
           <Link
             href={`${API_BASE_URL}/docs`}
             isExternal
-            color="#754397"
-            textDecoration="underline"
-            _dark={{ color: "#89b1c9" }}
+            display="inline-flex"
+            alignItems="center"
+            gap={2}
+            color="inherit"
+            fontWeight="700"
           >
-            {API_BASE_URL}
+            <span>{API_BASE_URL}</span>
+            <BiLinkExternal />
           </Link>
-        </Text>
-        <Button size="sm" variant="outline" onClick={onRefresh} isLoading={loadingProjects}>
+        </VStack>
+
+        <Button
+          size="sm"
+          variant="outline"
+          leftIcon={<BiRefresh />}
+          onClick={onRefresh}
+          isLoading={loadingProjects}
+        >
           Refresh
         </Button>
       </HStack>

@@ -13,9 +13,10 @@ import {
   Switch,
   Text,
   VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { BiChevronRight } from "react-icons/bi";
+import { BiChevronRight, BiRefresh, BiSave, BiTrash } from "react-icons/bi";
 
 import type { ConvexHullPreviewMode, LabCell } from "../../types/laboratory";
 import { getSelectedModelOption, getVisibleAdditionalSettings } from "../../hooks/useLaboratoryNotebook";
@@ -78,6 +79,7 @@ export function LabCellCard({
   onUpdateAdditionalSetting,
   onSaveOutput,
 }: LabCellCardProps) {
+  const cardBg = useColorModeValue("rgba(255,255,255,0.44)", "rgba(255,255,255,0.03)");
   const selectedModel = getSelectedModelOption(cell);
   const segmentOutputMode = !cell.outputConvexHullEnabled
     ? "original"
@@ -103,11 +105,19 @@ export function LabCellCard({
   }, [maskOverlayUrl, supportsMaskOverlay]);
 
   return (
-    <Box p={4} borderRadius="lg" border="1px solid" borderColor={panelBorder}>
+    <Box
+      p={4}
+      borderRadius="8px"
+      border="1px solid"
+      borderColor={panelBorder}
+      bg={cardBg}
+    >
       <HStack justify="space-between" align="center" flexWrap="wrap" mb={3}>
         <HStack>
           <Badge>{`Cell ${index + 1}`}</Badge>
-          <Text fontWeight="semibold">{cell.title}</Text>
+          <Text fontWeight="800" letterSpacing="-0.03em">
+            {cell.title}
+          </Text>
           <Badge variant="subtle">{cell.status}</Badge>
         </HStack>
 
@@ -121,10 +131,10 @@ export function LabCellCard({
           >
             {runCellLabel}
           </Button>
-          <Button size="sm" variant="outline" onClick={onReset} isDisabled={index === cellsLength - 1}>
+          <Button size="sm" variant="outline" leftIcon={<BiRefresh />} onClick={onReset} isDisabled={index === cellsLength - 1}>
             {resetFromLabel}
           </Button>
-          <Button size="sm" colorScheme="red" variant="ghost" onClick={onRemove} isDisabled={index === 0}>
+          <Button size="sm" variant="outline" leftIcon={<BiTrash />} onClick={onRemove} isDisabled={index === 0}>
             {removeCellLabel}
           </Button>
         </HStack>
@@ -134,7 +144,7 @@ export function LabCellCard({
         <VStack align="stretch" flex={1} spacing={3}>
           <Box
             position="relative"
-            borderRadius="md"
+            borderRadius="6px"
             overflow="hidden"
             border="1px solid"
             borderColor={panelBorder}
@@ -340,7 +350,7 @@ export function LabCellCard({
           <Box
             role="group"
             position="relative"
-            borderRadius="md"
+            borderRadius="6px"
             overflow="hidden"
             border="1px solid"
             borderColor={panelBorder}
@@ -397,9 +407,10 @@ export function LabCellCard({
                     _hover={{ bg: "blackAlpha.800" }}
                     _active={{ bg: "blackAlpha.900" }}
                     backdropFilter="blur(8px)"
-                    borderRadius="full"
+                    borderRadius="6px"
                     onClick={onSaveOutput}
                     isLoading={savingCellId === cell.id}
+                    leftIcon={<BiSave />}
                   >
                     {saveToProjectLabel}
                   </Button>

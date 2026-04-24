@@ -23,9 +23,9 @@ import type {
 } from "../types/api";
 import type { ConvexHullPreviewMode, LabCell } from "../types/laboratory";
 import { getErrorMessage } from "../utils/errors";
+import { getLaboratorySelectedImage } from "../utils/laboratorySelection";
 import { toImageUrl } from "../utils/images";
 
-const STORAGE_KEY = "laboratory:selected-image";
 const DEFAULT_FILL_PROMPT = "Fill the missing area naturally using the surrounding background.";
 const DEFAULT_OUTPUT_CONVEX_HULL_MODE: ConvexHullPreviewMode = "medium";
 export type PipelineSaveMode = "overwrite" | "save_as_new";
@@ -109,13 +109,7 @@ function sanitizeAdditionalSettings(
 }
 
 function getSelectedImageFromSession(): ImageAsset | null {
-  try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as ImageAsset;
-  } catch {
-    return null;
-  }
+  return getLaboratorySelectedImage();
 }
 
 function createCell(def: ProcessCatalogItem): LabCell {

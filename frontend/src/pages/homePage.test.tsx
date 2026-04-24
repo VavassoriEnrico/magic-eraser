@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it as test, vi } from "vitest";
 
 import { useHomeData } from "../hooks/useHomeData";
 import { useUploadImageSelection } from "../hooks/useUploadImageSelection";
+import { listPipelines } from "../api/processes";
 import type { ImageAsset, Project } from "../types/api";
 import HomePage from "./homePage";
 import theme from "../theme";
@@ -17,26 +18,16 @@ vi.mock("../hooks/useUploadImageSelection", () => ({
   useUploadImageSelection: vi.fn(),
 }));
 
+vi.mock("../api/processes", () => ({
+  listPipelines: vi.fn(),
+}));
+
 vi.mock("../components/common/PageHeader", () => ({
   PageHeader: ({ title }: { title: string }) => <div>{title}</div>,
 }));
 
 vi.mock("../components/common/StatusNotice", () => ({
   StatusNotice: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
-
-vi.mock("../components/home/HomeToolbar", () => ({
-  HomeToolbar: ({
-    loadingProjects,
-    onRefresh,
-  }: {
-    loadingProjects: boolean;
-    onRefresh: () => void;
-  }) => (
-    <button onClick={onRefresh} disabled={loadingProjects}>
-      Refresh
-    </button>
-  ),
 }));
 
 vi.mock("../components/home/ProjectOverviewSection", () => ({
@@ -171,6 +162,19 @@ describe("HomePage", () => {
     vi.clearAllMocks();
     window.sessionStorage.clear();
     window.history.replaceState({}, "", "/");
+    vi.mocked(listPipelines).mockResolvedValue([
+      {
+        id: 21,
+        project_id: 4,
+        source_image_id: 12,
+        name: "Pipeline Alpha",
+        start_image_url: "/uploads/start.png",
+        final_image_url: "/uploads/final.png",
+        status: "done",
+        created_at: "2026-04-19T08:00:00Z",
+        updated_at: "2026-04-20T10:00:00Z",
+      },
+    ]);
 
     vi.mocked(useHomeData).mockReturnValue({
       projects,
@@ -215,15 +219,13 @@ describe("HomePage", () => {
     });
   });
 
-  test("wires refresh, create project and upload submit to the hooks", async () => {
+  test("wires create project and upload submit to the hooks", async () => {
     const user = userEvent.setup();
     renderPage();
 
-    await user.click(screen.getByRole("button", { name: "Refresh" }));
     await user.click(screen.getByRole("button", { name: "Create project from section" }));
     await user.click(screen.getByRole("button", { name: "Upload image" }));
 
-    expect(loadProjects).toHaveBeenCalledTimes(1);
     expect(onCreateProject).toHaveBeenCalledTimes(1);
     expect(onCreateImage).toHaveBeenCalledTimes(1);
     expect(onCreateImage).toHaveBeenCalledWith(
@@ -286,5 +288,19 @@ describe("HomePage", () => {
     renderPage();
 
     expect(screen.getByTestId("ordered-projects")).toHaveTextContent("Beta,Alpha");
+  });
+
+  test("opens a pipeline from the home sidebar", async () => {
+    const pushStateSpy = vi.spyOn(window.history, "pushState");
+    const dispatchEventSpy = vi.spyOn(window, "dispatchEvent");
+    const user = userEvent.setup();
+
+    renderPage();
+
+    await screen.findByText("Saved pipelines");
+    await user.click(screen.getByRole("button", { name: /Pipeline Alpha #21 done/i }));
+
+    expect(pushStateSpy).toHaveBeenCalledWith({}, "", "/laboratory?pipelineId=21&projectId=4&imageId=12");
+    expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
   });
 });

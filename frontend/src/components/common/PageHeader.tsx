@@ -12,7 +12,7 @@ interface PageHeaderProps extends StackProps {
 }
 
 export function PageHeader({
-  eyebrow = "Workspace",
+  eyebrow = "",
   title,
   description,
   descriptionColor,
@@ -22,22 +22,34 @@ export function PageHeader({
   ...stackProps
 }: PageHeaderProps) {
   return (
-    <VStack align="stretch" spacing={1} {...stackProps}>
+    <VStack align="stretch" spacing={3} {...stackProps}>
       {eyebrow ? (
         <Text
-          color={eyebrowColor ?? "gray.500"}
-          fontSize="sm"
-          letterSpacing="0.12em"
+          color={eyebrowColor ?? "rgba(226, 232, 240, 0.72)"}
+          fontSize="xs"
+          letterSpacing="0.16em"
           textTransform="uppercase"
-          _dark={{ color: eyebrowColor ?? "whiteAlpha.600" }}
+          fontWeight="700"
+          _dark={{ color: eyebrowColor ?? "rgba(226, 232, 240, 0.72)" }}
         >
+          {eyebrow}
         </Text>
       ) : null}
-      <Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold" letterSpacing="-0.03em" {...titleProps}>
+      <Text
+        fontSize={{ base: "3xl", md: "4xl" }}
+        fontWeight="800"
+        letterSpacing="-0.05em"
+        lineHeight="0.95"
+        {...titleProps}
+      >
         {title}
       </Text>
       {description ? (
-        <Text color={descriptionColor ?? "gray.600"} _dark={{ color: descriptionColor ?? "whiteAlpha.700" }}>
+        <Text
+          maxW="68ch"
+          color={descriptionColor ?? "rgba(15, 23, 42, 0.72)"}
+          _dark={{ color: descriptionColor ?? "rgba(226, 232, 240, 0.7)" }}
+        >
           {description}
         </Text>
       ) : null}
