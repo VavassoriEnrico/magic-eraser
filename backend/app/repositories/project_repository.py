@@ -18,7 +18,7 @@ def list_by_user_id(db: Session, user_id: UUID) -> list[Project]:
     return db.query(Project).filter(Project.user_id == user_id).all()
 
 
-def get_by_id(db: Session, project_id: int) -> Project | None:
+def get_by_id(db: Session, project_id: str) -> Project | None:
     return db.query(Project).filter(Project.id == project_id).first()
 
 

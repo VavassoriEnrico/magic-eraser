@@ -8,16 +8,14 @@ from app.repositories import (
 )
 from app.services import storage_service
 
-ImageIdentifier = int
+ImageIdentifier = str
 
 
 def parse_image_identifier(raw_image_id: str) -> ImageIdentifier:
     clean_value = raw_image_id.strip()
     if not clean_value:
         raise HTTPException(status_code=422, detail="image id is required")
-    if not clean_value.isdigit():
-        raise HTTPException(status_code=422, detail="invalid image id")
-    return int(clean_value)
+    return clean_value
 
 
 def serialize_image(image) -> dict[str, object]:

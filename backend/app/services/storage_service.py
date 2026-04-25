@@ -43,20 +43,6 @@ def delete_public_upload(public_path: str) -> None:
     object_key = _extract_bucket_object_key(path)
     if object_key:
         _delete_supabase_object(object_key)
-        return
-
-    if not path.startswith("/uploads/"):
-        return
-    relative_path = path.removeprefix("/uploads/").lstrip("/")
-    file_path = (settings.uploads_dir / relative_path).resolve()
-    uploads_root = settings.uploads_dir.resolve()
-    try:
-        file_path.relative_to(uploads_root)
-    except ValueError:
-        return
-
-    if file_path.exists():
-        file_path.unlink()
 
 
 def _build_object_key(project_id: int, stored_name: str) -> str:
@@ -113,9 +99,6 @@ def _delete_supabase_object(object_key: str) -> None:
 
 
 def _extract_bucket_object_key(path_or_url: str) -> str | None:
-    if path_or_url.startswith("/uploads/"):
-        return None
-
     parsed = urlparse(path_or_url)
     path = parsed.path or path_or_url
     public_prefix = f"/storage/v1/object/public/{settings.supabase_storage_bucket}/"

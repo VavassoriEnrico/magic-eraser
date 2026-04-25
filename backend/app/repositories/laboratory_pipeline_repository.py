@@ -4,14 +4,14 @@ from sqlalchemy.orm import Session
 
 from app.models import LaboratoryPipeline, LaboratoryPipelineStep
 
-PipelineIdentifier = int
+PipelineIdentifier = str
 
 
 def create_pipeline(
     db: Session,
     *,
-    project_id: int,
-    source_image_id: int,
+    project_id: str,
+    source_image_id: str,
     user_id: UUID,
     start_image_url: str,
     name: str | None = None,
@@ -52,7 +52,7 @@ def list_pipelines(db: Session, *, user_id: UUID) -> list[LaboratoryPipeline]:
     )
 
 
-def list_pipelines_by_project_id(db: Session, project_id: int) -> list[LaboratoryPipeline]:
+def list_pipelines_by_project_id(db: Session, project_id: str) -> list[LaboratoryPipeline]:
     return (
         db.query(LaboratoryPipeline)
         .filter(LaboratoryPipeline.project_id == project_id)
@@ -61,7 +61,7 @@ def list_pipelines_by_project_id(db: Session, project_id: int) -> list[Laborator
     )
 
 
-def has_pipeline_for_source_image(db: Session, source_image_id: int) -> bool:
+def has_pipeline_for_source_image(db: Session, source_image_id: str) -> bool:
     return (
         db.query(LaboratoryPipeline.id)
         .filter(LaboratoryPipeline.source_image_id == source_image_id)

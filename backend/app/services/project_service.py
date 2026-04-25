@@ -12,7 +12,7 @@ from app.repositories import (
 )
 from app.services import storage_service
 
-ProjectIdentifier = int
+ProjectIdentifier = str
 
 
 def _read_value(entity: object, key: str) -> object:
@@ -25,9 +25,7 @@ def parse_project_identifier(raw_project_id: str) -> ProjectIdentifier:
     clean_value = raw_project_id.strip()
     if not clean_value:
         raise HTTPException(status_code=422, detail="project id is required")
-    if not clean_value.isdigit():
-        raise HTTPException(status_code=422, detail="invalid project id")
-    return int(clean_value)
+    return clean_value
 
 
 def serialize_project(project) -> dict[str, object]:

@@ -13,9 +13,7 @@ def parse_pipeline_identifier(raw_pipeline_id: str) -> PipelineIdentifier:
     clean_value = raw_pipeline_id.strip()
     if not clean_value:
         raise HTTPException(status_code=422, detail="pipeline id is required")
-    if not clean_value.isdigit():
-        raise HTTPException(status_code=422, detail="invalid pipeline id")
-    return int(clean_value)
+    return clean_value
 
 
 def serialize_pipeline(pipeline: LaboratoryPipeline) -> dict[str, object]:

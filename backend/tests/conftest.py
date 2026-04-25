@@ -6,6 +6,7 @@ from sqlalchemy import event
 
 TEST_DB_PATH = Path("/tmp/magic_eraser_pytest.sqlite3")
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH}"
+os.environ["PYTEST_CURRENT_TEST"] = "1"
 os.environ.setdefault("SUPABASE_URL", "https://example.supabase.co")
 os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key")
 os.environ.setdefault("SUPABASE_ANON_KEY", "test-anon-key")
@@ -14,7 +15,6 @@ import app.db.init_db as init_db_module
 
 init_db_module.init_db = lambda: None
 
-from app.core.config import settings
 from app.db.session import Base, SessionLocal, engine
 from app.main import app
 
@@ -32,15 +32,6 @@ def reset_database():
     Base.metadata.create_all(bind=engine)
     yield
     app.dependency_overrides.clear()
-
-
-@pytest.fixture(autouse=True)
-def isolated_uploads_dir(tmp_path, monkeypatch):
-    uploads_dir = tmp_path / "uploads"
-    uploads_dir.mkdir()
-    monkeypatch.setattr(settings, "uploads_dir", uploads_dir)
-    yield uploads_dir
-
 
 @pytest.fixture
 def db_session():
