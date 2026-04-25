@@ -25,11 +25,11 @@ async function onLogout() {
 }
 
 export default function ProfilePage() {
-  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
-  const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
-  const mutedColor = useColorModeValue("gray.700", "whiteAlpha.800");
-  const inputBg = useColorModeValue("whiteAlpha.900", "whiteAlpha.100");
-  const inputBorder = useColorModeValue("gray.300", "whiteAlpha.200");
+  const textColor = useColorModeValue("rgba(245,241,235,0.92)", "whiteAlpha.900");
+  const sectionLabel = useColorModeValue("rgba(245,241,235,0.6)", "whiteAlpha.600");
+  const mutedColor = useColorModeValue("rgba(245,241,235,0.76)", "whiteAlpha.800");
+  const inputBg = useColorModeValue("#222222", "whiteAlpha.100");
+  const inputBorder = useColorModeValue("rgba(255,255,255,0.14)", "whiteAlpha.200");
 
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
@@ -171,14 +171,18 @@ export default function ProfilePage() {
           <GlassPanel
             h="210px"
             borderRadius="8px"
-            bg="linear-gradient(180deg, rgba(214,228,247,0.24) 0%, rgba(109,125,148,0.14) 100%)"
+            bg={useColorModeValue("#222222", "linear-gradient(180deg, rgba(214,228,247,0.24) 0%, rgba(109,125,148,0.14) 100%)")}
+            borderColor={useColorModeValue("rgba(255,255,255,0.12)", undefined)}
             position="relative"
             overflow="hidden"
           >
             <Box
               position="absolute"
               inset="0"
-              bg="radial-gradient(circle at 50% 15%, rgba(255,255,255,0.22), transparent 45%)"
+              bg={useColorModeValue(
+                "radial-gradient(circle at 50% 15%, rgba(216,194,164,0.14), transparent 45%)",
+                "radial-gradient(circle at 50% 15%, rgba(255,255,255,0.22), transparent 45%)",
+              )}
             />
             <Box
               position="absolute"
@@ -188,8 +192,8 @@ export default function ProfilePage() {
               w="86px"
               h="86px"
               borderRadius="8px"
-              bg="rgba(255,255,255,0.16)"
-              border="2px solid rgba(255,255,255,0.18)"
+              bg={useColorModeValue("rgba(216,194,164,0.1)", "rgba(255,255,255,0.16)")}
+              border={useColorModeValue("2px solid rgba(216,194,164,0.18)", "2px solid rgba(255,255,255,0.18)")}
             />
             <Box
               position="absolute"
@@ -199,8 +203,8 @@ export default function ProfilePage() {
               w="58px"
               h="58px"
               borderRadius="8px"
-              bg="rgba(255,255,255,0.2)"
-              border="2px solid rgba(255,255,255,0.22)"
+              bg={useColorModeValue("rgba(216,194,164,0.12)", "rgba(255,255,255,0.2)")}
+              border={useColorModeValue("2px solid rgba(216,194,164,0.2)", "2px solid rgba(255,255,255,0.22)")}
             />
           </GlassPanel>
 
@@ -318,8 +322,8 @@ function FieldBlock({
         disabled={disabled}
         _hover={{ borderColor: inputBorder }}
         _focusVisible={{
-          borderColor: "cyan.300",
-          boxShadow: "0 0 0 1px rgba(103,232,249,0.7)",
+          borderColor: "rgba(216,194,164,0.52)",
+          boxShadow: "0 0 0 1px rgba(216,194,164,0.26)",
         }}
       />
     </VStack>

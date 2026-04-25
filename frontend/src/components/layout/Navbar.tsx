@@ -23,9 +23,12 @@ interface NavbarProps {
 export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
   const { colorMode, toggleColorMode } = useColorMode();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isColorTheme = colorMode === "dark";
+  const currentThemeLabel = isColorTheme ? "Colorato" : "Grigio";
+  const nextThemeLabel = isColorTheme ? "Grigio" : "Colorato";
 
   const titleLabel = "Magic Eraser";
-  const logoSource = colorMode === "dark" ? logoWhite : logoBlack;
+  const logoSource = logoWhite;
   const loginLabel = "Login";
   const profileLabel = "Profile";
   const navigationItems: Array<{ path: AppPath; label: string; icon: JSX.Element }> = [
@@ -89,10 +92,11 @@ export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
             variant="outline"
             onClick={toggleColorMode}
             className="app-topbar__theme-btn"
-            aria-label={colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={`Tema attuale: ${currentThemeLabel}. Passa a ${nextThemeLabel}`}
+            title={`Tema attuale: ${currentThemeLabel}. Passa a ${nextThemeLabel}`}
             icon={
               <span aria-hidden="true">
-                {colorMode === "dark" ? <BiSolidSun /> : <BiSolidMoon />}
+                {isColorTheme ? <BiSolidSun /> : <BiSolidMoon />}
               </span>
             }
           />

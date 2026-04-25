@@ -1,19 +1,17 @@
 import { FormEvent, useState } from "react";
-import { Box, Button, Input, Stack, Text, useColorMode } from "@chakra-ui/react";
+import { Box, Button, Input, Stack, Text } from "@chakra-ui/react";
 import { BiUserPlus } from "react-icons/bi";
-import logoBlack from "../assets/me_logo_black.png";
 import logoWhite from "../assets/me_logo_white.png";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { requireSupabase } from "../api/client";
 
 export default function SignupPage() {
-  const { colorMode } = useColorMode();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const logoSource = colorMode === "dark" ? logoWhite : logoBlack;
+  const logoSource = logoWhite;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

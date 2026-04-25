@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Badge, Box, Button, HStack, Input, Text, VStack, useColorModeValue } from "@chakra-ui/react";
-import { BiSearch } from "react-icons/bi";
 
 import { listPipelines } from "../../api/processes";
 import { GlassPanel } from "../common/GlassPanel";
@@ -15,8 +14,8 @@ export function SavedPipelinesSidebar() {
   const [pipelineError, setPipelineError] = useState("");
   const [pipelineSearchValue, setPipelineSearchValue] = useState("");
 
-  const sidebarIconColor = useColorModeValue("gray.500", "whiteAlpha.600");
-  const sidebarMutedText = useColorModeValue("gray.600", "whiteAlpha.700");
+  const sidebarIconColor = useColorModeValue("rgba(245,241,235,0.6)", "whiteAlpha.600");
+  const sidebarMutedText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
 
   const sortedPipelines = useMemo(
     () => [...pipelines].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
@@ -112,17 +111,11 @@ export function SavedPipelinesSidebar() {
             <Badge variant="subtle">{filteredPipelines.length}</Badge>
           </HStack>
 
-          <Box position="relative">
-            <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color={sidebarIconColor}>
-              <BiSearch />
-            </Box>
-            <Input
-              value={pipelineSearchValue}
-              onChange={(event) => setPipelineSearchValue(event.target.value)}
-              placeholder="Find a pipeline..."
-              pl={3}
-            />
-          </Box>
+          <Input
+            value={pipelineSearchValue}
+            onChange={(event) => setPipelineSearchValue(event.target.value)}
+            placeholder="Find a pipeline..."
+          />
 
           {pipelineError ? <StatusNotice tone="error">{pipelineError}</StatusNotice> : null}
 
@@ -146,6 +139,11 @@ export function SavedPipelinesSidebar() {
                   py={3}
                   px={3}
                   borderRadius="8px"
+                  border="1px solid"
+                  borderColor="rgba(255,255,255,0.08)"
+                  bg="rgba(255,255,255,0.02)"
+                  _hover={{ bg: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.12)" }}
+                  _active={{ bg: "rgba(255,255,255,0.05)" }}
                   onClick={() => openPipeline(pipeline)}
                 >
                   <VStack align="start" spacing={1} w="full">

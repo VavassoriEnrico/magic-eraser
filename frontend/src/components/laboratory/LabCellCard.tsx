@@ -79,7 +79,7 @@ export function LabCellCard({
   onUpdateAdditionalSetting,
   onSaveOutput,
 }: LabCellCardProps) {
-  const cardBg = useColorModeValue("rgba(255,255,255,0.44)", "rgba(255,255,255,0.03)");
+  const cardBg = useColorModeValue("#222222", "rgba(255,255,255,0.03)");
   const selectedModel = getSelectedModelOption(cell);
   const segmentOutputMode = !cell.outputConvexHullEnabled
     ? "original"
@@ -148,7 +148,7 @@ export function LabCellCard({
             overflow="hidden"
             border="1px solid"
             borderColor={panelBorder}
-            bg="blackAlpha.500"
+            bg={outputBg}
             display="flex"
             alignItems="center"
             justifyContent="center"

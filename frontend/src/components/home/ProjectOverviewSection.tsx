@@ -3,6 +3,7 @@ import { useState, type ChangeEvent, type FormEvent, type MouseEvent as ReactMou
 import {
   Badge,
   Box,
+  Divider,
   Button,
   HStack,
   IconButton,
@@ -93,6 +94,7 @@ export function ProjectOverviewSection({
   onConfirmDeleteProject,
 }: ProjectOverviewSectionProps) {
   const [pendingDeleteProject, setPendingDeleteProject] = useState<Project | null>(null);
+  const mutedText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
 
   return (
     <>
@@ -115,7 +117,7 @@ export function ProjectOverviewSection({
         }}
       />
 
-      <GlassPanel p={{ base: 4, md: 5 }}>
+      <GlassPanel p={{ base: 4, md: 5 }} lightBg="transparent" darkBg="#151b23">
         <Text fontWeight="800" fontSize={{ base: "xl", md: "2xl" }} mb={5} letterSpacing="-0.04em">
           Projects
         </Text>
@@ -131,12 +133,12 @@ export function ProjectOverviewSection({
         {loadingProjects ? (
           <VStack py={10} spacing={3}>
             <Spinner />
-            <Text color="gray.500" _dark={{ color: "whiteAlpha.700" }}>
+            <Text color={mutedText}>
               Loading projects...
             </Text>
           </VStack>
         ) : projects.length === 0 ? (
-          <Text color="gray.500" _dark={{ color: "whiteAlpha.700" }}>
+          <Text color={mutedText}>
             No projects available.
           </Text>
         ) : (
@@ -204,6 +206,11 @@ function StackHeader({
   onProjectNameChange,
   onCreateProject,
 }: StackHeaderProps) {
+  const projectsBadgeColorScheme = useColorModeValue(undefined, "blue");
+  const projectsBadgeBg = useColorModeValue("#4a4a4a", undefined);
+  const projectsBadgeBorder = useColorModeValue("rgba(255,255,255,0.12)", undefined);
+  const projectsBadgeColor = useColorModeValue("#f5f1eb", undefined);
+
   return (
     <form onSubmit={onCreateProject}>
       <HStack
@@ -227,7 +234,14 @@ function StackHeader({
           </Button>
         </HStack>
 
-        <Badge variant="subtle" colorScheme="blue" whiteSpace="nowrap">
+        <Badge
+          variant="subtle"
+          colorScheme={projectsBadgeColorScheme}
+          whiteSpace="nowrap"
+          bg={projectsBadgeBg}
+          borderColor={projectsBadgeBorder}
+          color={projectsBadgeColor}
+        >
           {projectsCount} projects
         </Badge>
       </HStack>
@@ -280,20 +294,30 @@ function ProjectCard({
   onCancelInlineEdit,
   onRequestDeleteProject,
 }: ProjectCardProps) {
+  const imageCountBadgeColorScheme = useColorModeValue(undefined, "blue");
+  const mutedText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
+  const metaBadgeBg = useColorModeValue("#3f3f3f", undefined);
+  const metaBadgeBorder = useColorModeValue("rgba(255,255,255,0.12)", undefined);
+  const metaBadgeColor = useColorModeValue("#ece7df", undefined);
   const cardBorder = useColorModeValue(
-    isExpanded ? "rgba(148,163,184,0.42)" : "rgba(148,163,184,0.34)",
+    isExpanded ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.1)",
     isExpanded ? "rgba(240,246,252,0.16)" : "rgba(240,246,252,0.1)",
   );
   const cardBg = useColorModeValue(
-    isExpanded ? "#f8fafc" : "#f1f5f9",
+    isExpanded ? "#242424" : "#202020",
     isExpanded ? "#1b2430" : "#151b23",
   );
-  const menuBg = useColorModeValue("#f8fafc", "#1b2430");
-  const menuBorderColor = useColorModeValue("rgba(148,163,184,0.34)", "rgba(240,246,252,0.12)");
-  const menuItemHoverBg = useColorModeValue("#eef3f8", "#243041");
-  const menuDangerColor = useColorModeValue("#b42318", "#f87171");
-  const hoverCardBorder = useColorModeValue("rgba(100,116,139,0.42)", "rgba(240,246,252,0.18)");
-  const hoverCardBg = useColorModeValue("#f8fafc", "#1b2430");
+  const menuBg = useColorModeValue("#262626", "#1b2430");
+  const menuBorderColor = useColorModeValue("rgba(255,255,255,0.12)", "rgba(240,246,252,0.12)");
+  const menuItemBg = useColorModeValue("#2f2f2f", "transparent");
+  const menuItemHoverBg = useColorModeValue("#383838", "#243041");
+  const menuMutedText = useColorModeValue("#f1ece5", "rgba(240,246,252,0.94)");
+  const menuDangerHoverBg = useColorModeValue("#4a2a2a", "rgba(248, 113, 113, 0.12)");
+  const menuShadow = useColorModeValue("0 18px 42px rgba(0, 0, 0, 0.34)", "0 18px 42px rgba(0, 0, 0, 0.34)");
+  const menuDangerColor = useColorModeValue("#ff6b57", "#f87171");
+  const menuDivider = useColorModeValue("rgba(255,255,255,0.08)", "rgba(240,246,252,0.08)");
+  const hoverCardBorder = useColorModeValue("rgba(255,255,255,0.18)", "rgba(240,246,252,0.18)");
+  const hoverCardBg = useColorModeValue("#262626", "#1b2430");
 
   return (
     <Box
@@ -346,8 +370,17 @@ function ProjectCard({
                   {project.name}
                 </Text>
                 <HStack spacing={2} mt={2} flexWrap="wrap">
-                  <Badge colorScheme="blue">{projectImages.length} images</Badge>
-                  <Badge variant="subtle">{formatRelativeTime(getProjectLastActivity(project, projectImages))}</Badge>
+                  <Badge
+                    colorScheme={imageCountBadgeColorScheme}
+                    bg={metaBadgeBg}
+                    borderColor={metaBadgeBorder}
+                    color={metaBadgeColor}
+                  >
+                    {projectImages.length} images
+                  </Badge>
+                  <Badge variant="subtle" bg={metaBadgeBg} borderColor={metaBadgeBorder} color={metaBadgeColor}>
+                    {formatRelativeTime(getProjectLastActivity(project, projectImages))}
+                  </Badge>
                 </HStack>
               </>
             )}
@@ -372,16 +405,21 @@ function ProjectCard({
             <Portal>
               <MenuList
                 onClick={(event) => event.stopPropagation()}
-                p={2}
-                minW="220px"
+                p={1.5}
+                minW="176px"
                 bg={menuBg}
                 borderColor={menuBorderColor}
-                boxShadow="none"
+                borderRadius="10px"
+                boxShadow={menuShadow}
+                color={menuMutedText}
               >
                 <MenuItem
-                  icon={<BiEditAlt />}
-                  borderRadius="6px"
+                  borderRadius="8px"
+                  minH="40px"
+                  px={3}
                   fontWeight="600"
+                  color={menuMutedText}
+                  bg={menuItemBg}
                   _hover={{ bg: menuItemHoverBg }}
                   _focus={{ bg: menuItemHoverBg }}
                   onClick={(event) => {
@@ -392,13 +430,16 @@ function ProjectCard({
                 >
                   Rename
                 </MenuItem>
+                <Divider my={1} borderColor={menuDivider} />
                 <MenuItem
-                  icon={<BiTrash />}
-                  borderRadius="6px"
+                  borderRadius="8px"
+                  minH="40px"
+                  px={3}
                   fontWeight="600"
                   color={menuDangerColor}
-                  _hover={{ bg: menuItemHoverBg }}
-                  _focus={{ bg: menuItemHoverBg }}
+                  bg={menuItemBg}
+                  _hover={{ bg: menuDangerHoverBg }}
+                  _focus={{ bg: menuDangerHoverBg }}
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
@@ -415,12 +456,12 @@ function ProjectCard({
         {projectLoading ? (
           <HStack py={6} gap={3}>
             <Spinner size="sm" />
-            <Text color="gray.500" _dark={{ color: "whiteAlpha.700" }}>
+            <Text color={mutedText}>
               Loading images...
             </Text>
           </HStack>
         ) : projectImages.length === 0 ? (
-          <Text color="gray.500" _dark={{ color: "whiteAlpha.700" }}>
+          <Text color={mutedText}>
             No images in this project.
           </Text>
         ) : (
@@ -475,8 +516,8 @@ function ProjectImageStrip({
   onScrollPreview,
   onUpdatePreviewScrollState,
 }: ProjectImageStripProps) {
-  const imageBorder = useColorModeValue("rgba(148,163,184,0.18)", "rgba(255,255,255,0.08)");
-  const imageBg = useColorModeValue("#e2e8f0", "#1b2430");
+  const imageBorder = useColorModeValue("rgba(255,255,255,0.08)", "rgba(255,255,255,0.08)");
+  const imageBg = useColorModeValue("#242424", "#1b2430");
   const [pendingDeleteImage, setPendingDeleteImage] = useState<ImageAsset | null>(null);
 
   function onDeleteImageClick(

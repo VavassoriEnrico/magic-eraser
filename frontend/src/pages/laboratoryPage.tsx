@@ -72,18 +72,18 @@ function parseNotebookExplanationList(items: string[]) {
 }
 
 export default function LaboratoryPage() {
-  const pageText = useColorModeValue("gray.800", "white");
-  const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const panelBg = useColorModeValue("#eef3f8", "#151b23");
+  const pageText = useColorModeValue("white", "white");
+  const subtleText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
+  const panelBg = useColorModeValue("transparent", "#151b23");
   const panelBorder = useColorModeValue("rgba(148,163,184,0.2)", "rgba(255,255,255,0.09)");
-  const outputBg = useColorModeValue("#dfe6ef", "#1b2430");
-  const modalBg = useColorModeValue("#f8fafc", "#151b23");
-  const modalBorder = useColorModeValue("rgba(148,163,184,0.32)", "rgba(240,246,252,0.12)");
+  const outputBg = useColorModeValue("#242424", "#1b2430");
+  const modalBg = useColorModeValue("#222222", "#151b23");
+  const modalBorder = useColorModeValue("rgba(255,255,255,0.12)", "rgba(240,246,252,0.12)");
   const modalOverlay = useColorModeValue("rgba(226,232,240,0.62)", "rgba(4, 6, 12, 0.74)");
-  const modalMuted = useColorModeValue("rgba(15,23,42,0.64)", "rgba(226,232,240,0.7)");
-  const closeBg = useColorModeValue("#eef2f6", "#1b2430");
-  const closeBorder = useColorModeValue("rgba(148,163,184,0.28)", "rgba(240,246,252,0.12)");
-  const overwritePanelBg = useColorModeValue("#eef2f6", "#1b2430");
+  const modalMuted = useColorModeValue("rgba(245,241,235,0.7)", "rgba(226,232,240,0.7)");
+  const closeBg = useColorModeValue("#242424", "#1b2430");
+  const closeBorder = useColorModeValue("rgba(255,255,255,0.12)", "rgba(240,246,252,0.12)");
+  const overwritePanelBg = useColorModeValue("#242424", "#1b2430");
 
   const {
     queryProjectId,
@@ -192,13 +192,13 @@ export default function LaboratoryPage() {
         <Stack direction={{ base: "column", lg: "row" }} justify="space-between" align={{ base: "stretch", lg: "center" }} spacing={4}>
           <VStack align="start" spacing={2}>
             <HStack spacing={2} flexWrap="wrap">
-              <Badge width="fit-content" colorScheme="blue" variant="subtle">
+              <Badge width="fit-content" variant="subtle">
                 project #{queryProjectId ?? selectedImage?.project_id ?? "-"}
               </Badge>
-              <Badge width="fit-content" colorScheme="blue" variant="subtle">
+              <Badge width="fit-content" variant="subtle">
                 image #{queryImageId ?? selectedImage?.id ?? "-"}
               </Badge>
-              <Badge width="fit-content" colorScheme="blue" variant="subtle">
+              <Badge width="fit-content" variant="subtle">
                 pipeline #{activePipelineId ?? "-"}
               </Badge>
             </HStack>
