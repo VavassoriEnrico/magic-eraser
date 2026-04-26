@@ -1,5 +1,11 @@
 %% Esempio per lo stile supsi
-\documentclass[twoside]{supsistudent} 
+% \documentclass[twoside]{supsistudent} 
+% tolto sennò iniziava una pagina bianca dopo il frontespizio
+
+\documentclass[oneside]{supsistudent} 
+\let\cleardoublepage\clearpage
+
+
 
 % per settare noindent
 \setlength{\parindent}{0pt}
@@ -25,9 +31,9 @@
 \studente{Abate Luca \vspace{1em}\\ Vavassori Enrico}
 \relatore{Gremlich Giuliano}
 \correlatore{Quattrini Andrea}
-\committente{Tango}
-\corso{C1122 Sosia e Affini}
-\modulo{M1424 Similarit\`a}
+\committente{PLACEHOLDER}
+\corso{Ingegneria Informatica TP}
+\modulo{Progetto di Semestre}
 \anno{2026}
 
 
@@ -42,96 +48,476 @@
 
 \pagenumbering{roman}
 \tableofcontents
-\listoffigures					% Opzionale
-\listoftables					% Opzionale
+% \listoffigures					% Opzionale
+% \listoftables					% Opzionale
 
 \newpage
 \mainmatter
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-\chapter{Titolazione}
 
-\lipsum[13]
+%-----------------1-----------------
 
-\section{Sezione}
+\chapter{Introduzione}
 
-\lipsum[23]
-Esempio di citazione \cite{4538384}, \cite{5357331,4523385}, \cite{1705631}.
-\footnote{Questa \`e una nota a pi\'e di pagina.}
-\footnote{Questa \`e un'altra nota a pi\'e di pagina.}
-\lipsum[23]
+Magic Eraser is a web-based AI image 
+editing platform that allows users to manage projects, upload 
+images, and apply generative editing workflows through an 
+interactive laboratory interface. Instead of focusing only on 
+the removal of unwanted objects or people, the system 
+supports a broader pipeline based on AI models, 
+including prompt-based segmentation, mask-based removal, 
+and generative filling. Users can identify specific areas 
+of an image, remove selected content, and regenerate missing 
+regions in a visually coherent way, while preserving texture, 
+lighting, and overall context. The platform also stores editing 
+pipelines and results, enabling users to organize, revisit, and 
+continue their image editing work in a structured and reproducible 
+manner.
+\\The idea of Magic Eraser is to be a research platform to
+analyze in an easier way the behavior of generative models.
 
-\subsection{Sotto sezione}
 
-\texttt{Questo testo ha una spaziatura fissa}
 
-\textit{Questo testo \`e in italico}
 
-\textbf{Questo testo \`e in grassetto}
+%-----------------2-----------------
 
-\textsc{Questo testo \`e in maiuscoletto}
+\chapter{Obiettivi e Requisiti}
+RIASSUNTO bla bla bla
 
-\underline{Questo testo \`e sottolineato} \\
+\section{Obiettivo generale}
+\lipsum[11]
 
-Citazione:
-\begin{quote}
-\lipsum[23]
-\end{quote}
+\section{Obiettivi specifici}
+\lipsum[11]
 
-\chapter{Titolazione}
+\section{Requisiti funzionali}
+\lipsum[11]
 
-\lipsum[13]
+\section{Requisiti non funzionali}
+\lipsum[11]
 
-\begin{itemize}
-  \item Elemento A
-  \item Elemento B
-  \item Elemento C
-\end{itemize}
 
-%\begin{itemize}
-%  \item[-] Elemento A
-%  \item[-] Elemento B
-%  \item[-] Elemento C
-%\end{itemize}
-%
-%\begin{enumerate}
-%  \item Alpha
-%  \item Beta
-%  \item Gamma
-%\end{enumerate}
+%------------------3-----------------
 
-\lipsum[23]
-%\section{Sezione}
-%
-%\lipsum[23]
-%
-%\subsection{Sotto sezione}
-%
-%Un po' di matematica: \newline
-%
-%\begin{math}
-%\frac{n!}{k!(n-k)!} = {n \choose k}
-%\end{math} \newline
-%
-%Un po' di matematica centrata:
-%
-%\begin{center}
-%\begin{math}
-%\frac{n!}{k!(n-k)!} = {n \choose k}
-%\end{math}
-%\end{center}
-%
-%Oppure con \$\$
-%
-%$$
-%\frac{n!}{k!(n-k)!} = {n \choose k}
-%$$
-%
-%Oppure anche direttamente nel testo ${1}\over{n}$ \\
-%
-%\lipsum[23]
+\chapter{State of the Art e Analisi Bibliografica}
+RIASSUNTO bla bla bla
+
+\section{Image inpainting}
+\lipsum[11]
+
+\section{Segmentazione delle immagini}
+\lipsum[11]
+
+\subsection{Ruolo della mask}
+\lipsum[11]
+
+\subsection{ConvexHull}
+\lipsum[11]
+
+\section{Modelli generativi per l'editing}
+\lipsum[11]
+
+\section{Soluzioni esistenti}
+\lipsum[11]
+
+\section{Posizionamento del progetto}
+\lipsum[11]
+
+
+%------------------4-----------------
+
+\chapter{Analisi della Situazione As-Is}
+RIASSUNTO bla bla bla
+
+\section{Workflow manuale tradizionale}
+\lipsum[11]
+
+\section{Problemi e limiti}
+\lipsum[11]
+
+\section{Bisogni dell'utente target}
+\lipsum[11]
+
+
+%------------------5-----------------
+
+\chapter{Analisi e Progettazione della Soluzione To-Be}
+RIASSUNTO bla bla bla
+
+\section{Visione generale della soluzione}
+\lipsum[11]
+
+\section{Architettura software}
+\lipsum[11]
+
+\subsection{Frontend}
+\lipsum[11]
+
+\subsection{Backend}
+\lipsum[11]
+
+\subsection{Database}
+\lipsum[11]
+
+\subsection{Provider AI}
+\lipsum[11]
+
+\subsection{Storage immagini}
+\lipsum[11]
+
+\section{Modello dei dati}
+\lipsum[11]
+
+\subsection{Profile}
+\lipsum[11]
+
+\subsection{Project}
+\lipsum[11]
+
+\subsection{Image}
+\lipsum[11]
+
+\subsection{Process}
+\lipsum[11]
+
+\subsection{LaboratoryPipeline}
+\lipsum[11]
+
+\subsection{LaboratoryPipelineStep}
+\lipsum[11]
+
+\section{Flusso delle pipeline}
+\lipsum[11]
+
+\section{Gestione dei progetti}
+\lipsum[11]
+
+\section{Gestione dei processi}
+\lipsum[11]
+
+
+%------------------6-----------------
+
+\chapter{Metodologia e Scelte Tecnologiche}
+RIASSUNTO bla bla bla
+
+\section{Metodo di sviluppo}
+\lipsum[11]
+
+\section{Scelte frontend}
+\lipsum[11]
+
+\section{Scelte backend}
+\lipsum[11]
+
+\section{Scelte AI}
+\lipsum[11]
+
+\subsection{Segmentazione da prompt}
+\lipsum[11]
+
+\subsection{Rimozione con maschera}
+\lipsum[11]
+
+\subsection{Generazione da prompt}
+\lipsum[11]
+
+\section{Persistenza e deployment locale}
+\lipsum[11]
+
+
+%------------------7-----------------
+
+\chapter{Implementazione}
+RIASSUNTO bla bla bla
+
+\section{Struttura del progetto}
+\lipsum[11]
+
+\subsection{frontend/}
+\lipsum[11]
+
+\subsection{backend/}
+\lipsum[11]
+
+\subsection{backend/app/api/routers/}
+\lipsum[11]
+
+\subsection{backend/app/services/}
+\lipsum[11]
+
+\subsection{backend/app/repositories/}
+\lipsum[11]
+
+\subsection{backend/app/processes/}
+\lipsum[11]
+
+\subsection{backend/app/models\_registry/}
+\lipsum[11]
+
+\section{Frontend}
+\lipsum[11]
+
+\subsection{Login e signup}
+\lipsum[11]
+
+\subsection{Home}
+\lipsum[11]
+
+\subsection{Gallery}
+\lipsum[11]
+
+\subsection{Laboratory}
+\lipsum[11]
+
+\subsection{Pipelines}
+\lipsum[11]
+
+\subsection{Profile}
+\lipsum[11]
+
+\section{Backend e API}
+\lipsum[11]
+
+\subsection{Images}
+\lipsum[11]
+
+\subsection{Projects}
+\lipsum[11]
+
+\subsection{Profile}
+\lipsum[11]
+
+\subsection{Processes}
+\lipsum[11]
+
+\subsection{Laboratory pipelines}
+\lipsum[11]
+
+\section{Gestione immagini}
+\lipsum[11]
+
+\section{Sistema dei processi AI}
+\lipsum[11]
+
+\subsection{segment\_from\_prompt}
+\lipsum[11]
+
+\subsection{remove\_with\_mask}
+\lipsum[11]
+
+\subsection{generate\_from\_prompt}
+\lipsum[11]
+
+\subsection{Registry dei processi}
+\lipsum[11]
+
+\subsection{Validazione input}
+\lipsum[11]
+
+\subsection{Scelta modello}
+\lipsum[11]
+
+\subsection{Adapter verso provider AI}
+\lipsum[11]
+
+\section{Pipeline di laboratorio}
+\lipsum[11]
+
+
+%------------------8-----------------
+
+\chapter{Verifica, Test e Validazione}
+RIASSUNTO bla bla bla
+
+\section{Strategia di test}
+\lipsum[11]
+
+\section{Test automatici}
+\lipsum[11]
+
+\subsection{Test API progetti}
+\lipsum[11]
+
+\subsection{Test API profilo}
+\lipsum[11]
+
+\subsection{Test pipeline}
+\lipsum[11]
+
+\subsection{Test componenti frontend}
+\lipsum[11]
+
+\subsection{Test utility}
+\lipsum[11]
+
+\section{Validazione funzionale}
+\lipsum[11]
+
+\section{Valutazione qualitativa dei risultati AI}
+\lipsum[11]
+
+
+%------------------9-----------------
+
+\chapter{Analisi Critica dei Risultati}
+RIASSUNTO bla bla bla
+
+\section{Valutazione rispetto agli obiettivi}
+\lipsum[11]
+
+\section{Qualita dei risultati visivi}
+\lipsum[11]
+
+\subsection{Oggetti piccoli}
+\lipsum[11]
+
+\subsection{Sfondi uniformi}
+\lipsum[11]
+
+\subsection{Sfondi complessi}
+\lipsum[11]
+
+\subsection{Oggetti parzialmente occlusi}
+\lipsum[11]
+
+\subsection{Prompt ambigui}
+\lipsum[11]
+
+\section{Limiti tecnici}
+\lipsum[11]
+
+\subsection{Latenza}
+\lipsum[11]
+
+\subsection{Costi API}
+\lipsum[11]
+
+\subsection{Affidabilita del provider}
+\lipsum[11]
+
+\subsection{Assenza di elaborazione locale}
+\lipsum[11]
+
+\subsection{Gestione errori}
+\lipsum[11]
+
+\subsection{Scalabilita}
+\lipsum[11]
+
+\section{Benefici apportati}
+\lipsum[11]
+
+
+%------------------10-----------------
+
+\chapter{Conclusioni e Sviluppi Futuri}
+RIASSUNTO bla bla bla
+
+\section{Riassunto del lavoro svolto}
+\lipsum[11]
+
+\section{Valutazione finale}
+\lipsum[11]
+
+\section{Competenze acquisite}
+\lipsum[11]
+
+\section{Possibili generalizzazioni}
+\lipsum[11]
+
+\section{Sviluppi futuri}
+\lipsum[11]
+
+\subsection{Editor manuale delle maschere}
+\lipsum[11]
+
+\subsection{Confronto tra piu modelli}
+\lipsum[11]
+
+\subsection{Undo e redo}
+\lipsum[11]
+
+\subsection{Esportazione delle pipeline}
+\lipsum[11]
+
+\subsection{Metriche quantitative sulla qualita}
+\lipsum[11]
+
+\subsection{Elaborazione batch}
+\lipsum[11]
+
+\subsection{Utilizzo di modelli locali}
+\lipsum[11]
+
+\subsection{Collaborazione multiutente}
+\lipsum[11]
+
+\subsection{Versionamento dei risultati}
+\lipsum[11]
+
+\subsection{Dashboard per costi e tempi di elaborazione}
+\lipsum[11]
+
+
+%------------------Bibliografia-----------------
 
 \bibliographystyle{unsrt}
 \bibliography{bibliografia}
+
+
+%------------------Appendici-----------------
+
+\appendix
+
+\chapter{Manuale Utente}
+RIASSUNTO bla bla bla
+
+\section{Login}
+\lipsum[11]
+
+\section{Creare progetto}
+\lipsum[11]
+
+\section{Caricare immagine}
+\lipsum[11]
+
+\section{Usare laboratorio}
+\lipsum[11]
+
+\section{Salvare pipeline}
+\lipsum[11]
+
+\chapter{API principali}
+RIASSUNTO bla bla bla
+
+\section{Elenco endpoint}
+\lipsum[11]
+
+\chapter{Configurazione e Avvio}
+RIASSUNTO bla bla bla
+
+\section{Docker Compose}
+\lipsum[11]
+
+\section{Variabili ambiente}
+\lipsum[11]
+
+\section{Avvio frontend e backend}
+\lipsum[11]
+
+\chapter{Test}
+RIASSUNTO bla bla bla
+
+\section{Output test}
+\lipsum[11]
+
+\section{Copertura}
+\lipsum[11]
+
+\section{Elenco casi}
+\lipsum[11]
+
 \end{document}

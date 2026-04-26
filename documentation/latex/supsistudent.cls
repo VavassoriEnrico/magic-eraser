@@ -10,7 +10,10 @@ amos.brocco@supsi.ch]
 
 
 % Package di base
-\LoadClass[11pt]{book}
+%\LoadClass[11pt]{book}
+%togli commento da riga sopra e mettilo in quella sotto
+%per avere frontespizio
+\LoadClass[11pt, openany]{book}
 \usepackage[italian]{babel}
 %\usepackage[paper=a4paper,top=4.0cm,bottom=2cm,left=3cm,right=2cm]{geometry}
 \usepackage[paper=a4paper,top=4.0cm,bottom=3cm]{geometry}
