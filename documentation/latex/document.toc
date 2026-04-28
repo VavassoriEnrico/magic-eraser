@@ -1,137 +1,58 @@
 \babel@toc {italian}{}\relax 
 \babel@toc {italian}{}\relax 
-\contentsline {chapter}{\numberline {1}Introduzione}{1}{}%
-\contentsline {chapter}{\numberline {2}Obiettivi e Requisiti}{2}{}%
-\contentsline {section}{\numberline {2.1}Obiettivo generale}{2}{}%
-\contentsline {section}{\numberline {2.2}Obiettivi specifici}{2}{}%
-\contentsline {section}{\numberline {2.3}Requisiti funzionali}{2}{}%
-\contentsline {section}{\numberline {2.4}Requisiti non funzionali}{3}{}%
-\contentsline {chapter}{\numberline {3}State of the Art e Analisi Bibliografica}{4}{}%
-\contentsline {section}{\numberline {3.1}Image inpainting}{4}{}%
-\contentsline {section}{\numberline {3.2}Segmentazione delle immagini}{4}{}%
-\contentsline {subsection}{\numberline {3.2.1}Ruolo della mask}{4}{}%
-\contentsline {subsection}{\numberline {3.2.2}ConvexHull}{5}{}%
-\contentsline {section}{\numberline {3.3}Modelli generativi per l'editing}{5}{}%
-\contentsline {section}{\numberline {3.4}Soluzioni esistenti}{5}{}%
-\contentsline {section}{\numberline {3.5}Posizionamento del progetto}{5}{}%
-\contentsline {chapter}{\numberline {4}Analisi della Situazione As-Is}{6}{}%
-\contentsline {section}{\numberline {4.1}Workflow manuale tradizionale}{6}{}%
-\contentsline {section}{\numberline {4.2}Problemi e limiti}{6}{}%
-\contentsline {section}{\numberline {4.3}Bisogni dell'utente target}{6}{}%
-\contentsline {chapter}{\numberline {5}Analisi e Progettazione della Soluzione To-Be}{7}{}%
-\contentsline {section}{\numberline {5.1}Visione generale della soluzione}{7}{}%
-\contentsline {section}{\numberline {5.2}Architettura software}{7}{}%
-\contentsline {subsection}{\numberline {5.2.1}Frontend}{7}{}%
-\contentsline {subsection}{\numberline {5.2.2}Backend}{8}{}%
-\contentsline {subsection}{\numberline {5.2.3}Database}{8}{}%
-\contentsline {subsection}{\numberline {5.2.4}Provider AI}{8}{}%
-\contentsline {subsection}{\numberline {5.2.5}Storage immagini}{8}{}%
-\contentsline {section}{\numberline {5.3}Modello dei dati}{8}{}%
-\contentsline {subsection}{\numberline {5.3.1}Profile}{9}{}%
-\contentsline {subsection}{\numberline {5.3.2}Project}{9}{}%
-\contentsline {subsection}{\numberline {5.3.3}Image}{9}{}%
-\contentsline {subsection}{\numberline {5.3.4}Process}{9}{}%
-\contentsline {subsection}{\numberline {5.3.5}LaboratoryPipeline}{9}{}%
-\contentsline {subsection}{\numberline {5.3.6}LaboratoryPipelineStep}{10}{}%
-\contentsline {section}{\numberline {5.4}Flusso delle pipeline}{10}{}%
-\contentsline {section}{\numberline {5.5}Gestione dei progetti}{10}{}%
-\contentsline {section}{\numberline {5.6}Gestione dei processi}{10}{}%
-\contentsline {chapter}{\numberline {6}Metodologia e Scelte Tecnologiche}{11}{}%
-\contentsline {section}{\numberline {6.1}Metodo di sviluppo}{11}{}%
-\contentsline {section}{\numberline {6.2}Scelte frontend}{11}{}%
-\contentsline {section}{\numberline {6.3}Scelte backend}{11}{}%
-\contentsline {section}{\numberline {6.4}Scelte AI}{12}{}%
-\contentsline {subsection}{\numberline {6.4.1}Segmentazione da prompt}{12}{}%
-\contentsline {subsection}{\numberline {6.4.2}Rimozione con maschera}{12}{}%
-\contentsline {subsection}{\numberline {6.4.3}Generazione da prompt}{12}{}%
-\contentsline {section}{\numberline {6.5}Persistenza e deployment locale}{12}{}%
-\contentsline {chapter}{\numberline {7}Implementazione}{13}{}%
-\contentsline {section}{\numberline {7.1}Struttura del progetto}{13}{}%
-\contentsline {subsection}{\numberline {7.1.1}frontend/}{13}{}%
-\contentsline {subsection}{\numberline {7.1.2}backend/}{13}{}%
-\contentsline {subsection}{\numberline {7.1.3}backend/app/api/routers/}{14}{}%
-\contentsline {subsection}{\numberline {7.1.4}backend/app/services/}{14}{}%
-\contentsline {subsection}{\numberline {7.1.5}backend/app/repositories/}{14}{}%
-\contentsline {subsection}{\numberline {7.1.6}backend/app/processes/}{14}{}%
-\contentsline {subsection}{\numberline {7.1.7}backend/app/models\_registry/}{14}{}%
-\contentsline {section}{\numberline {7.2}Frontend}{15}{}%
-\contentsline {subsection}{\numberline {7.2.1}Login e signup}{15}{}%
-\contentsline {subsection}{\numberline {7.2.2}Home}{15}{}%
-\contentsline {subsection}{\numberline {7.2.3}Gallery}{15}{}%
-\contentsline {subsection}{\numberline {7.2.4}Laboratory}{15}{}%
-\contentsline {subsection}{\numberline {7.2.5}Pipelines}{16}{}%
-\contentsline {subsection}{\numberline {7.2.6}Profile}{16}{}%
-\contentsline {section}{\numberline {7.3}Backend e API}{16}{}%
-\contentsline {subsection}{\numberline {7.3.1}Images}{16}{}%
-\contentsline {subsection}{\numberline {7.3.2}Projects}{16}{}%
-\contentsline {subsection}{\numberline {7.3.3}Profile}{17}{}%
-\contentsline {subsection}{\numberline {7.3.4}Processes}{17}{}%
-\contentsline {subsection}{\numberline {7.3.5}Laboratory pipelines}{17}{}%
-\contentsline {section}{\numberline {7.4}Gestione immagini}{17}{}%
-\contentsline {section}{\numberline {7.5}Sistema dei processi AI}{17}{}%
-\contentsline {subsection}{\numberline {7.5.1}segment\_from\_prompt}{18}{}%
-\contentsline {subsection}{\numberline {7.5.2}remove\_with\_mask}{18}{}%
-\contentsline {subsection}{\numberline {7.5.3}generate\_from\_prompt}{18}{}%
-\contentsline {subsection}{\numberline {7.5.4}Registry dei processi}{18}{}%
-\contentsline {subsection}{\numberline {7.5.5}Validazione input}{18}{}%
-\contentsline {subsection}{\numberline {7.5.6}Scelta modello}{19}{}%
-\contentsline {subsection}{\numberline {7.5.7}Adapter verso provider AI}{19}{}%
-\contentsline {section}{\numberline {7.6}Pipeline di laboratorio}{19}{}%
-\contentsline {chapter}{\numberline {8}Verifica, Test e Validazione}{20}{}%
-\contentsline {section}{\numberline {8.1}Strategia di test}{20}{}%
-\contentsline {section}{\numberline {8.2}Test automatici}{20}{}%
-\contentsline {subsection}{\numberline {8.2.1}Test API progetti}{20}{}%
-\contentsline {subsection}{\numberline {8.2.2}Test API profilo}{21}{}%
-\contentsline {subsection}{\numberline {8.2.3}Test pipeline}{21}{}%
-\contentsline {subsection}{\numberline {8.2.4}Test componenti frontend}{21}{}%
-\contentsline {subsection}{\numberline {8.2.5}Test utility}{21}{}%
-\contentsline {section}{\numberline {8.3}Validazione funzionale}{21}{}%
-\contentsline {section}{\numberline {8.4}Valutazione qualitativa dei risultati AI}{22}{}%
-\contentsline {chapter}{\numberline {9}Analisi Critica dei Risultati}{23}{}%
-\contentsline {section}{\numberline {9.1}Valutazione rispetto agli obiettivi}{23}{}%
-\contentsline {section}{\numberline {9.2}Qualita dei risultati visivi}{23}{}%
-\contentsline {subsection}{\numberline {9.2.1}Oggetti piccoli}{23}{}%
-\contentsline {subsection}{\numberline {9.2.2}Sfondi uniformi}{24}{}%
-\contentsline {subsection}{\numberline {9.2.3}Sfondi complessi}{24}{}%
-\contentsline {subsection}{\numberline {9.2.4}Oggetti parzialmente occlusi}{24}{}%
-\contentsline {subsection}{\numberline {9.2.5}Prompt ambigui}{24}{}%
-\contentsline {section}{\numberline {9.3}Limiti tecnici}{24}{}%
-\contentsline {subsection}{\numberline {9.3.1}Latenza}{25}{}%
-\contentsline {subsection}{\numberline {9.3.2}Costi API}{25}{}%
-\contentsline {subsection}{\numberline {9.3.3}Affidabilita del provider}{25}{}%
-\contentsline {subsection}{\numberline {9.3.4}Assenza di elaborazione locale}{25}{}%
-\contentsline {subsection}{\numberline {9.3.5}Gestione errori}{25}{}%
-\contentsline {subsection}{\numberline {9.3.6}Scalabilita}{26}{}%
-\contentsline {section}{\numberline {9.4}Benefici apportati}{26}{}%
-\contentsline {chapter}{\numberline {10}Conclusioni e Sviluppi Futuri}{27}{}%
-\contentsline {section}{\numberline {10.1}Riassunto del lavoro svolto}{27}{}%
-\contentsline {section}{\numberline {10.2}Valutazione finale}{27}{}%
-\contentsline {section}{\numberline {10.3}Competenze acquisite}{27}{}%
-\contentsline {section}{\numberline {10.4}Possibili generalizzazioni}{28}{}%
-\contentsline {section}{\numberline {10.5}Sviluppi futuri}{28}{}%
-\contentsline {subsection}{\numberline {10.5.1}Editor manuale delle maschere}{28}{}%
-\contentsline {subsection}{\numberline {10.5.2}Confronto tra piu modelli}{28}{}%
-\contentsline {subsection}{\numberline {10.5.3}Undo e redo}{28}{}%
-\contentsline {subsection}{\numberline {10.5.4}Esportazione delle pipeline}{29}{}%
-\contentsline {subsection}{\numberline {10.5.5}Metriche quantitative sulla qualita}{29}{}%
-\contentsline {subsection}{\numberline {10.5.6}Elaborazione batch}{29}{}%
-\contentsline {subsection}{\numberline {10.5.7}Utilizzo di modelli locali}{29}{}%
-\contentsline {subsection}{\numberline {10.5.8}Collaborazione multiutente}{29}{}%
-\contentsline {subsection}{\numberline {10.5.9}Versionamento dei risultati}{30}{}%
-\contentsline {subsection}{\numberline {10.5.10}Dashboard per costi e tempi di elaborazione}{30}{}%
-\contentsline {chapter}{\numberline {A}Manuale Utente}{32}{}%
-\contentsline {section}{\numberline {A.1}Login}{32}{}%
-\contentsline {section}{\numberline {A.2}Creare progetto}{32}{}%
-\contentsline {section}{\numberline {A.3}Caricare immagine}{32}{}%
-\contentsline {section}{\numberline {A.4}Usare laboratorio}{33}{}%
-\contentsline {section}{\numberline {A.5}Salvare pipeline}{33}{}%
-\contentsline {chapter}{\numberline {B}API principali}{34}{}%
-\contentsline {section}{\numberline {B.1}Elenco endpoint}{34}{}%
-\contentsline {chapter}{\numberline {C}Configurazione e Avvio}{35}{}%
-\contentsline {section}{\numberline {C.1}Docker Compose}{35}{}%
-\contentsline {section}{\numberline {C.2}Variabili ambiente}{35}{}%
-\contentsline {section}{\numberline {C.3}Avvio frontend e backend}{35}{}%
-\contentsline {chapter}{\numberline {D}Test}{36}{}%
-\contentsline {section}{\numberline {D.1}Output test}{36}{}%
-\contentsline {section}{\numberline {D.2}Copertura}{36}{}%
-\contentsline {section}{\numberline {D.3}Elenco casi}{36}{}%
+\contentsline {chapter}{Abstract}{iii}{}%
+\contentsline {chapter}{Introduzione}{v}{}%
+\contentsline {chapter}{\numberline {1}Motivazione e Contesto}{1}{}%
+\contentsline {section}{\numberline {1.1}Rilevanza del problema}{1}{}%
+\contentsline {section}{\numberline {1.2}Contesto tecnologico}{1}{}%
+\contentsline {section}{\numberline {1.3}Obiettivo del progetto}{1}{}%
+\contentsline {chapter}{\numberline {2}Definizione del Problema}{3}{}%
+\contentsline {section}{\numberline {2.1}Problema pratico}{3}{}%
+\contentsline {section}{\numberline {2.2}Limiti delle soluzioni attuali}{3}{}%
+\contentsline {section}{\numberline {2.3}Bisogni dell'utente}{3}{}%
+\contentsline {chapter}{\numberline {3}Stato dell'Arte}{4}{}%
+\contentsline {section}{\numberline {3.1}Image Inpainting}{4}{}%
+\contentsline {section}{\numberline {3.2}Segmentazione e maschere}{4}{}%
+\contentsline {section}{\numberline {3.3}Modelli generativi}{4}{}%
+\contentsline {section}{\numberline {3.4}Confronto con strumenti esistenti}{5}{}%
+\contentsline {chapter}{\numberline {4}Approccio alla Soluzione}{6}{}%
+\contentsline {section}{\numberline {4.1}Descrizione generale}{6}{}%
+\contentsline {section}{\numberline {4.2}Architettura del sistema}{6}{}%
+\contentsline {subsection}{\numberline {4.2.1}Frontend}{6}{}%
+\contentsline {subsection}{\numberline {4.2.2}Backend}{6}{}%
+\contentsline {subsection}{\numberline {4.2.3}Database}{7}{}%
+\contentsline {subsection}{\numberline {4.2.4}AI provider}{7}{}%
+\contentsline {section}{\numberline {4.3}Pipeline di elaborazione}{7}{}%
+\contentsline {section}{\numberline {4.4}Scelte tecnologiche}{7}{}%
+\contentsline {chapter}{\numberline {5}Implementazione}{8}{}%
+\contentsline {section}{\numberline {5.1}Struttura del sistema}{8}{}%
+\contentsline {section}{\numberline {5.2}Frontend}{8}{}%
+\contentsline {section}{\numberline {5.3}Backend e API}{8}{}%
+\contentsline {section}{\numberline {5.4}Gestione immagini e progetti}{9}{}%
+\contentsline {section}{\numberline {5.5}Pipeline AI}{9}{}%
+\contentsline {subsection}{\numberline {5.5.1}Segmentazione}{9}{}%
+\contentsline {subsection}{\numberline {5.5.2}Rimozione}{9}{}%
+\contentsline {subsection}{\numberline {5.5.3}Generazione}{9}{}%
+\contentsline {section}{\numberline {5.6}Organizzazione del codice}{9}{}%
+\contentsline {chapter}{\numberline {6}Risultati e Validazione}{10}{}%
+\contentsline {section}{\numberline {6.1}Funzionalità implementate}{10}{}%
+\contentsline {section}{\numberline {6.2}Test}{10}{}%
+\contentsline {section}{\numberline {6.3}Validazione}{10}{}%
+\contentsline {section}{\numberline {6.4}Risultati}{11}{}%
+\contentsline {chapter}{\numberline {7}Conclusioni}{12}{}%
+\contentsline {section}{\numberline {7.1}Valutazione del lavoro}{12}{}%
+\contentsline {section}{\numberline {7.2}Limiti della soluzione}{12}{}%
+\contentsline {section}{\numberline {7.3}Contributo}{12}{}%
+\contentsline {section}{\numberline {7.4}Sviluppi futuri}{13}{}%
+\contentsline {chapter}{\numberline {A}Manuale Utente}{15}{}%
+\contentsline {section}{\numberline {A.1}Login}{15}{}%
+\contentsline {section}{\numberline {A.2}Creare un progetto}{15}{}%
+\contentsline {section}{\numberline {A.3}Caricare un'immagine}{15}{}%
+\contentsline {section}{\numberline {A.4}Usare il laboratorio}{15}{}%
+\contentsline {section}{\numberline {A.5}Salvare una pipeline}{15}{}%
+\contentsline {chapter}{\numberline {B}API principali}{16}{}%
+\contentsline {section}{\numberline {B.1}Elenco endpoint}{16}{}%
+\contentsline {chapter}{\numberline {C}Configurazione e Avvio}{17}{}%
+\contentsline {section}{\numberline {C.1}Docker Compose}{17}{}%
+\contentsline {section}{\numberline {C.2}Variabili ambiente}{17}{}%
+\contentsline {section}{\numberline {C.3}Avvio frontend e backend}{17}{}%

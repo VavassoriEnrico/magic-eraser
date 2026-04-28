@@ -1,4 +1,4 @@
-%% Esempio per lo stile supsi
+% Esempio per lo stile supsi
 % \documentclass[twoside]{supsistudent} 
 % tolto sennò iniziava una pagina bianca dopo il frontespizio
 
@@ -52,420 +52,240 @@
 % \listoftables					% Opzionale
 
 \newpage
+\problemchapter{Abstract}
+
+\section*{Italiano}
+Magic Eraser è una piattaforma web per l'editing di immagini assistito da intelligenza artificiale. Il progetto nasce nel contesto degli strumenti generativi applicati alla computer vision, con particolare attenzione alla rimozione automatica di oggetti e alla modifica di immagini tramite maschere. Il problema affrontato riguarda la difficoltà, per utenti non esperti, di rimuovere contenuti indesiderati senza ricorrere a software professionali complessi e senza dover costruire manualmente selezioni precise.
+
+La soluzione proposta combina gestione dei progetti, caricamento delle immagini, segmentazione da prompt, rimozione tramite maschera e generazione di nuove aree coerenti con il contesto visivo. Il sistema è organizzato come applicazione web con frontend React, backend FastAPI, persistenza su Supabase Postgres, storage delle immagini e integrazione con provider AI esterni. L'elaborazione è strutturata in pipeline, così da rendere tracciabili i passaggi applicati e consentire all'utente di salvare, consultare e riutilizzare i risultati.
+
+Il lavoro ha portato alla realizzazione di un prototipo funzionante che permette di creare progetti, caricare immagini, applicare processi AI e mantenere una cronologia ordinata delle elaborazioni. I risultati mostrano che l'approccio semplifica il flusso di editing e rende accessibili operazioni avanzate, pur rimanendo dipendente dalla qualità dei modelli esterni, dalla precisione delle maschere e dai tempi di risposta dei servizi AI. In conclusione, Magic Eraser rappresenta una base estendibile per sperimentare workflow di image editing generativo e per confrontare modelli differenti in scenari applicativi reali.
+
+\section*{English}
+Magic Eraser is a web platform for AI-assisted image editing. The project is situated in the field of generative tools applied to computer vision, with a focus on automatic object removal and mask-based image manipulation. The main problem addressed is the difficulty, especially for non-expert users, of removing unwanted visual content without using complex professional software or manually creating accurate selections.
+
+The proposed solution combines project management, image upload, prompt-based segmentation, mask-based removal, and generative filling of edited areas. The system is designed as a web application with a React frontend, a FastAPI backend, Supabase Postgres persistence, image storage, and integration with external AI providers. Processing is organized into pipelines, making each editing step traceable and allowing users to save, review, and reuse their results.
+
+The project produced a working prototype that supports project creation, image management, AI process execution, and organized storage of editing histories. The results indicate that the approach simplifies the editing workflow and makes advanced operations more accessible, while still depending on the quality of external models, the accuracy of generated masks, and the latency of AI services. In conclusion, Magic Eraser provides an extensible foundation for experimenting with generative image-editing workflows and comparing different models in practical scenarios.
+
+\problemchapter{Introduzione}
+
+Magic Eraser è una piattaforma web per l'editing di immagini assistito da AI. Il sistema consente di organizzare immagini in progetti, applicare processi di segmentazione, rimozione e generazione, e conservare le pipeline di elaborazione prodotte durante il lavoro. L'obiettivo non è soltanto rimuovere oggetti indesiderati, ma costruire un ambiente sperimentale in cui l'utente possa osservare, ripetere e confrontare il comportamento di modelli generativi applicati a immagini reali.
+
+\section*{Struttura del documento}
+
+Il documento segue il percorso logico del progetto: prima chiarisce il contesto e il problema, poi descrive le tecnologie e gli approcci esistenti, quindi presenta l'architettura, l'implementazione e i risultati ottenuti. Le appendici raccolgono informazioni operative utili per usare il sistema, consultare le API e configurare l'ambiente tecnico.
+
+\section*{Guida alla lettura}
+
+Il documento è organizzato in sette capitoli principali. Il Capitolo 1 introduce la motivazione del progetto, la rilevanza del problema e il contesto tecnologico. Il Capitolo 2 definisce il problema pratico, i limiti delle soluzioni attuali e i bisogni dell'utente. Il Capitolo 3 presenta lo stato dell'arte relativo a inpainting, segmentazione, maschere e modelli generativi. Il Capitolo 4 descrive la soluzione proposta, l'architettura del sistema, la pipeline di elaborazione e le scelte tecnologiche. Il Capitolo 5 approfondisce l'implementazione, includendo frontend, backend, gestione immagini e pipeline AI. Il Capitolo 6 riporta funzionalità implementate, test, validazione e risultati. Il Capitolo 7 conclude il lavoro con una valutazione critica, i limiti della soluzione, il contributo del progetto e gli sviluppi futuri.
+
+\newpage
 \mainmatter
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
 
-%-----------------1-----------------
+\chapter{Motivazione e Contesto}
 
-\chapter{Introduzione}
+La diffusione di strumenti di image editing basati su AI ha reso più accessibili operazioni che in passato richiedevano competenze grafiche avanzate. La rimozione di oggetti da immagini, spesso indicata come funzionalità di ``magic eraser'', è un caso particolarmente rilevante perché unisce comprensione semantica della scena, generazione di maschere e ricostruzione visiva delle aree modificate.
 
-Magic Eraser is a web-based AI image 
-editing platform that allows users to manage projects, upload 
-images, and apply generative editing workflows through an 
-interactive laboratory interface. Instead of focusing only on 
-the removal of unwanted objects or people, the system 
-supports a broader pipeline based on AI models, 
-including prompt-based segmentation, mask-based removal, 
-and generative filling. Users can identify specific areas 
-of an image, remove selected content, and regenerate missing 
-regions in a visually coherent way, while preserving texture, 
-lighting, and overall context. The platform also stores editing 
-pipelines and results, enabling users to organize, revisit, and 
-continue their image editing work in a structured and reproducible 
-manner.
-\\The idea of Magic Eraser is to be a research platform to
-analyze in an easier way the behavior of generative models.
+\section{Rilevanza del problema}
 
+L'editing tradizionale richiede selezioni manuali, conoscenza di strumenti professionali e tempo per rifinire il risultato. In molti scenari, come la preparazione di immagini per presentazioni, contenuti web, materiale didattico o prototipi visivi, l'utente ha invece bisogno di un flusso rapido e guidato. Un sistema automatico di rimozione oggetti può ridurre la complessità operativa, lasciando all'utente il controllo sull'intenzione e delegando ai modelli AI le operazioni più tecniche.
 
+\section{Contesto tecnologico}
 
+Il progetto si colloca all'intersezione tra AI generativa e computer vision. La computer vision permette di individuare aree rilevanti dell'immagine tramite segmentazione e maschere, mentre i modelli generativi consentono di ricostruire contenuti coerenti nelle zone rimosse. L'integrazione di questi elementi in una piattaforma web richiede anche aspetti applicativi: gestione degli utenti, persistenza dei dati, archiviazione delle immagini, tracciamento delle elaborazioni e interfacce semplici da usare.
 
-%-----------------2-----------------
+\section{Obiettivo del progetto}
 
-\chapter{Obiettivi e Requisiti}
-RIASSUNTO bla bla bla
+L'obiettivo generale è sviluppare un sistema web che permetta di caricare immagini, selezionare processi AI, generare maschere, rimuovere contenuti e salvare i risultati all'interno di progetti organizzati. Il sistema deve essere sufficientemente semplice per un utente non specialista, ma anche strutturato in modo da supportare analisi e sperimentazione sui modelli impiegati.
 
-\section{Obiettivo generale}
-\lipsum[11]
+\chapter{Definizione del Problema}
 
-\section{Obiettivi specifici}
-\lipsum[11]
+Il problema principale riguarda la trasformazione di un'attività grafica complessa in un workflow accessibile. La rimozione di un oggetto non consiste solo nel cancellare pixel: occorre identificare correttamente l'area interessata, produrre una maschera utilizzabile, inviare l'immagine a un modello adeguato e valutare se il risultato è coerente con il contesto.
 
-\section{Requisiti funzionali}
-\lipsum[11]
+\section{Problema pratico}
 
-\section{Requisiti non funzionali}
-\lipsum[11]
+L'utente vuole modificare un'immagine senza dover conoscere strumenti professionali. Nel caso di Magic Eraser, il flusso pratico comprende tre azioni principali: scegliere un'immagine, indicare cosa rimuovere o generare, e ottenere un output visualmente credibile. La generazione delle maschere è un passaggio centrale perché determina l'area su cui agisce il modello di rimozione o riempimento.
 
+\section{Limiti delle soluzioni attuali}
 
-%------------------3-----------------
+Le soluzioni tradizionali offrono controllo elevato, ma richiedono competenze specifiche. Alcuni strumenti automatici semplificano l'operazione, ma spesso nascondono completamente la pipeline, non permettono di salvare i passaggi intermedi o non consentono di confrontare modelli e impostazioni. Inoltre, l'utente può avere difficoltà a organizzare più immagini, versioni e risultati all'interno dello stesso lavoro.
 
-\chapter{State of the Art e Analisi Bibliografica}
-RIASSUNTO bla bla bla
+\section{Bisogni dell'utente}
 
-\section{Image inpainting}
-\lipsum[11]
+I bisogni individuati sono semplicità d'uso, automazione dei processi ripetitivi e gestione ordinata delle immagini. L'utente deve poter creare progetti, caricare più asset, avviare processi AI, visualizzare output intermedi e finali, e ritrovare le pipeline salvate. La piattaforma deve quindi comportarsi sia come editor assistito sia come ambiente di organizzazione del lavoro.
 
-\section{Segmentazione delle immagini}
-\lipsum[11]
+\chapter{Stato dell'Arte}
 
-\subsection{Ruolo della mask}
-\lipsum[11]
+Lo stato dell'arte considera le tecniche e gli strumenti che rendono possibile l'editing generativo: image inpainting, segmentazione, maschere e modelli prompt-based. Questi concetti costituiscono la base teorica e applicativa della soluzione sviluppata.
 
-\subsection{ConvexHull}
-\lipsum[11]
+\section{Image Inpainting}
 
-\section{Modelli generativi per l'editing}
-\lipsum[11]
+L'image inpainting è il processo di ricostruzione di aree mancanti, danneggiate o mascherate di un'immagine. Nei sistemi moderni, l'inpainting non si limita alla copia di texture circostanti, ma utilizza modelli generativi capaci di interpretare il contesto visivo. Nel progetto, questa tecnica è utilizzata per ottenere risultati coerenti dopo la rimozione di un oggetto o per riempire una regione secondo un prompt.
 
-\section{Soluzioni esistenti}
-\lipsum[11]
+\section{Segmentazione e maschere}
 
-\section{Posizionamento del progetto}
-\lipsum[11]
+La segmentazione consente di individuare regioni dell'immagine corrispondenti a oggetti o concetti indicati dall'utente. Il risultato viene rappresentato tramite maschere, immagini binarie o semi-binarie che separano le zone da modificare dal resto della scena. Nel workflow di Magic Eraser, la maschera è l'elemento di collegamento tra la selezione semantica e l'operazione generativa successiva.
 
+\section{Modelli generativi}
 
-%------------------4-----------------
+I modelli generativi prompt-based permettono di guidare il risultato tramite descrizioni testuali. Le tecniche text-to-image producono immagini partendo da testo, mentre le tecniche image-to-image trasformano un'immagine esistente mantenendo parte della sua struttura. Per l'editing con maschera, l'approccio più rilevante è quello che combina immagine sorgente, maschera e prompt opzionale, così da modificare solo una porzione controllata dell'immagine.
 
-\chapter{Analisi della Situazione As-Is}
-RIASSUNTO bla bla bla
+\section{Confronto con strumenti esistenti}
 
-\section{Workflow manuale tradizionale}
-\lipsum[11]
+\begin{center}
+\begin{tabular}{|p{3.5cm}|p{9cm}|}
+\hline
+\textbf{Strumento} & \textbf{Analisi sintetica} \\
+\hline
+Editor professionali & Offrono controllo preciso e strumenti avanzati, ma richiedono competenze specifiche. Magic Eraser privilegia automazione e semplicità d'uso. \\
+\hline
+Strumenti automatici & Consentono una rimozione rapida degli oggetti, ma spesso rendono poco visibile la pipeline. Magic Eraser conserva passaggi e risultati. \\
+\hline
+Demo di modelli AI & Permettono di provare singoli modelli, ma offrono poca gestione di progetti e immagini. Magic Eraser integra i modelli in un'applicazione completa. \\
+\hline
+\end{tabular}
+\end{center}
 
-\section{Problemi e limiti}
-\lipsum[11]
+\chapter{Approccio alla Soluzione}
 
-\section{Bisogni dell'utente target}
-\lipsum[11]
+La soluzione proposta è una piattaforma web composta da interfaccia utente, API backend, database, storage immagini e integrazione con provider AI. L'architettura separa le responsabilità principali, rendendo il sistema più manutenibile e predisposto all'estensione con nuovi modelli o nuovi processi.
 
+\section{Descrizione generale}
 
-%------------------5-----------------
+L'utente accede all'applicazione, crea o seleziona un progetto, carica immagini e apre il laboratorio di editing. Nel laboratorio può aggiungere processi alla pipeline, scegliere il modello, impostare prompt o parametri aggiuntivi e generare un risultato. Le pipeline vengono salvate con i relativi step, input, output, maschere e stato di elaborazione.
 
-\chapter{Analisi e Progettazione della Soluzione To-Be}
-RIASSUNTO bla bla bla
-
-\section{Visione generale della soluzione}
-\lipsum[11]
-
-\section{Architettura software}
-\lipsum[11]
+\section{Architettura del sistema}
 
 \subsection{Frontend}
-\lipsum[11]
+
+Il frontend è sviluppato con React e Vite. Le pagine principali includono login, signup, home, gallery, laboratory, pipelines e profile. I componenti gestiscono la navigazione, la visualizzazione dei progetti, l'upload delle immagini, la configurazione dei processi e la consultazione delle pipeline salvate.
 
 \subsection{Backend}
-\lipsum[11]
+
+Il backend è sviluppato con FastAPI e fornisce endpoint REST per progetti, immagini, profilo utente, processi AI e pipeline di laboratorio. La logica applicativa è organizzata in servizi, repository, schemi di validazione e router API.
 
 \subsection{Database}
-\lipsum[11]
 
-\subsection{Provider AI}
-\lipsum[11]
+La persistenza è basata su Supabase Postgres. Le entità principali sono \texttt{Profile}, \texttt{Project}, \texttt{Image}, \texttt{LaboratoryPipeline} e \texttt{LaboratoryPipelineStep}. Questa struttura consente di collegare utenti, progetti, immagini sorgente e cronologie di elaborazione.
 
-\subsection{Storage immagini}
-\lipsum[11]
+\subsection{AI provider}
 
-\section{Modello dei dati}
-\lipsum[11]
+L'integrazione con i modelli AI è gestita tramite registry e adapter. Il catalogo dei processi espone tre famiglie principali: segmentazione da prompt, rimozione con maschera e generazione da prompt. Gli adapter traducono le richieste interne nel formato richiesto dal provider esterno.
 
-\subsection{Profile}
-\lipsum[11]
+\section{Pipeline di elaborazione}
 
-\subsection{Project}
-\lipsum[11]
+La pipeline rappresenta la sequenza dei processi applicati a un'immagine. Uno step può generare una maschera, uno step successivo può usare quella maschera per rimuovere un oggetto, e un ulteriore step può generare contenuto tramite prompt. Ogni step mantiene input, output, tipo di processo, modello scelto, impostazioni aggiuntive e stato.
 
-\subsection{Image}
-\lipsum[11]
+\section{Scelte tecnologiche}
 
-\subsection{Process}
-\lipsum[11]
-
-\subsection{LaboratoryPipeline}
-\lipsum[11]
-
-\subsection{LaboratoryPipelineStep}
-\lipsum[11]
-
-\section{Flusso delle pipeline}
-\lipsum[11]
-
-\section{Gestione dei progetti}
-\lipsum[11]
-
-\section{Gestione dei processi}
-\lipsum[11]
-
-
-%------------------6-----------------
-
-\chapter{Metodologia e Scelte Tecnologiche}
-RIASSUNTO bla bla bla
-
-\section{Metodo di sviluppo}
-\lipsum[11]
-
-\section{Scelte frontend}
-\lipsum[11]
-
-\section{Scelte backend}
-\lipsum[11]
-
-\section{Scelte AI}
-\lipsum[11]
-
-\subsection{Segmentazione da prompt}
-\lipsum[11]
-
-\subsection{Rimozione con maschera}
-\lipsum[11]
-
-\subsection{Generazione da prompt}
-\lipsum[11]
-
-\section{Persistenza e deployment locale}
-\lipsum[11]
-
-
-%------------------7-----------------
+React e Vite sono stati scelti per costruire un'interfaccia reattiva e modulare. FastAPI è stato adottato per la chiarezza nella definizione delle API, la validazione tramite schemi e la facilità di integrazione con servizi Python. Supabase Postgres fornisce un database remoto adatto alla persistenza dei dati applicativi, mentre lo storage immagini permette di mantenere file sorgente e risultati accessibili dal frontend e dai provider AI.
 
 \chapter{Implementazione}
-RIASSUNTO bla bla bla
 
-\section{Struttura del progetto}
-\lipsum[11]
+L'implementazione segue una separazione netta tra frontend, backend, persistenza e integrazione AI. Questa organizzazione permette di modificare una parte del sistema senza compromettere le altre e rende più semplice aggiungere nuovi processi.
 
-\subsection{frontend/}
-\lipsum[11]
+\section{Struttura del sistema}
 
-\subsection{backend/}
-\lipsum[11]
-
-\subsection{backend/app/api/routers/}
-\lipsum[11]
-
-\subsection{backend/app/services/}
-\lipsum[11]
-
-\subsection{backend/app/repositories/}
-\lipsum[11]
-
-\subsection{backend/app/processes/}
-\lipsum[11]
-
-\subsection{backend/app/models\_registry/}
-\lipsum[11]
+Il progetto è diviso principalmente in \texttt{frontend/} e \texttt{backend/}. Il frontend contiene pagine, componenti, hook, tipi TypeScript e client API. Il backend contiene router, servizi, repository, modelli, schemi, processi, registry dei modelli e utility per la gestione delle maschere.
 
 \section{Frontend}
-\lipsum[11]
 
-\subsection{Login e signup}
-\lipsum[11]
-
-\subsection{Home}
-\lipsum[11]
-
-\subsection{Gallery}
-\lipsum[11]
-
-\subsection{Laboratory}
-\lipsum[11]
-
-\subsection{Pipelines}
-\lipsum[11]
-
-\subsection{Profile}
-\lipsum[11]
+Le pagine di login e signup gestiscono l'accesso dell'utente. La home permette di creare progetti, caricare immagini, visualizzare anteprime e aprire il laboratorio. La gallery offre una visione organizzata degli asset. La pagina laboratory consente di costruire e applicare pipeline di editing. La pagina pipelines permette di consultare elaborazioni salvate, mentre la pagina profile raccoglie le informazioni dell'utente.
 
 \section{Backend e API}
-\lipsum[11]
 
-\subsection{Images}
-\lipsum[11]
+Gli endpoint principali sono organizzati nei router \texttt{projects}, \texttt{images}, \texttt{profile}, \texttt{processes} e \texttt{laboratory\_pipelines}. Le richieste vengono validate tramite schemi, elaborate dai servizi applicativi e persistite tramite repository. Questa separazione riduce l'accoppiamento tra API, logica di business e accesso al database.
 
-\subsection{Projects}
-\lipsum[11]
+\section{Gestione immagini e progetti}
 
-\subsection{Profile}
-\lipsum[11]
+I progetti raggruppano le immagini caricate e le pipeline associate. L'upload salva il file nello storage e registra nel database le informazioni necessarie a recuperarlo. Le immagini possono essere usate come input per il laboratorio e gli output prodotti dai modelli possono essere salvati nello stesso contesto progettuale.
 
-\subsection{Processes}
-\lipsum[11]
+\section{Pipeline AI}
 
-\subsection{Laboratory pipelines}
-\lipsum[11]
+\subsection{Segmentazione}
 
-\section{Gestione immagini}
-\lipsum[11]
+Il processo \texttt{segment\_from\_prompt} riceve un'immagine e un prompt che descrive l'oggetto o l'area da individuare. Il risultato è una maschera utilizzabile negli step successivi.
 
-\section{Sistema dei processi AI}
-\lipsum[11]
+\subsection{Rimozione}
 
-\subsection{segment\_from\_prompt}
-\lipsum[11]
+Il processo \texttt{remove\_with\_mask} riceve immagine e maschera. Il modello elimina l'area selezionata e ricostruisce il contenuto circostante in modo coerente.
 
-\subsection{remove\_with\_mask}
-\lipsum[11]
+\subsection{Generazione}
 
-\subsection{generate\_from\_prompt}
-\lipsum[11]
+Il processo \texttt{generate\_from\_prompt} permette di riempire una regione mascherata seguendo un prompt testuale. Questo consente non solo di cancellare contenuti, ma anche di sostituirli con elementi generati.
 
-\subsection{Registry dei processi}
-\lipsum[11]
+\section{Organizzazione del codice}
 
-\subsection{Validazione input}
-\lipsum[11]
+Il backend separa router API, servizi, repository, processi e registry dei modelli. Il frontend separa pagine, componenti riutilizzabili, hook e client HTTP. Questa struttura rende esplicite le responsabilità: l'interfaccia gestisce l'interazione utente, il backend coordina il workflow, i repository gestiscono la persistenza e gli adapter comunicano con i provider AI.
 
-\subsection{Scelta modello}
-\lipsum[11]
+\chapter{Risultati e Validazione}
 
-\subsection{Adapter verso provider AI}
-\lipsum[11]
+La validazione considera sia le funzionalità implementate sia la capacità del sistema di rispondere ai requisiti individuati. L'obiettivo è verificare che il prototipo permetta effettivamente di svolgere il workflow previsto: organizzare immagini, applicare processi AI e salvare risultati.
 
-\section{Pipeline di laboratorio}
-\lipsum[11]
+\section{Funzionalità implementate}
 
+Il sistema implementa autenticazione, gestione del profilo, creazione e modifica di progetti, upload di immagini, consultazione della gallery, laboratorio di editing, catalogo dei processi AI, esecuzione di step, anteprima di maschere convex hull e salvataggio delle pipeline. Le funzionalità sono integrate in un flusso utente coerente, dalla selezione dell'immagine fino alla consultazione dei risultati.
 
-%------------------8-----------------
+\section{Test}
 
-\chapter{Verifica, Test e Validazione}
-RIASSUNTO bla bla bla
+Il backend include test unitari e di integrazione per servizi, dipendenze di autenticazione e API principali. Il frontend include test su client API, hook, pagine e componenti del laboratorio. I test verificano casi come gestione delle risposte HTTP, progetti, profilo, pipeline, selezione di immagini e rendering dei componenti principali.
 
-\section{Strategia di test}
-\lipsum[11]
+\section{Validazione}
 
-\section{Test automatici}
-\lipsum[11]
+Rispetto ai bisogni iniziali, la soluzione soddisfa i requisiti di semplicità, automazione e organizzazione. L'utente può eseguire operazioni complesse senza intervenire manualmente sui pixel, mentre il sistema conserva le informazioni necessarie a comprendere la sequenza di elaborazione applicata.
 
-\subsection{Test API progetti}
-\lipsum[11]
+\section{Risultati}
 
-\subsection{Test API profilo}
-\lipsum[11]
+I risultati attesi sono immagini prima/dopo in cui l'oggetto selezionato viene rimosso o sostituito. La qualità dipende da tre fattori principali: precisione della maschera, coerenza del modello generativo e complessità dello sfondo. Su sfondi uniformi il risultato tende a essere più stabile, mentre scene complesse, oggetti parzialmente occlusi o prompt ambigui possono produrre artefatti.
 
-\subsection{Test pipeline}
-\lipsum[11]
+\chapter{Conclusioni}
 
-\subsection{Test componenti frontend}
-\lipsum[11]
+Il progetto ha portato alla realizzazione di una piattaforma web capace di integrare gestione delle immagini e workflow AI per l'editing generativo. Magic Eraser dimostra come segmentazione, maschere e inpainting possano essere combinati in un ambiente accessibile e organizzato.
 
-\subsection{Test utility}
-\lipsum[11]
+\section{Valutazione del lavoro}
 
-\section{Validazione funzionale}
-\lipsum[11]
+Rispetto al problema iniziale, il sistema riduce la complessità dell'editing e rende disponibili operazioni avanzate attraverso un'interfaccia guidata. La scelta di salvare pipeline e step permette inoltre di analizzare il processo, non soltanto il risultato finale.
 
-\section{Valutazione qualitativa dei risultati AI}
-\lipsum[11]
+\section{Limiti della soluzione}
 
+I principali limiti riguardano la dipendenza da provider AI esterni, la latenza delle richieste, i costi potenziali delle API e la variabilità dei risultati generativi. La qualità finale non è sempre prevedibile e può richiedere più tentativi, soprattutto quando la maschera non delimita correttamente l'area da modificare.
 
-%------------------9-----------------
+\section{Contributo}
 
-\chapter{Analisi Critica dei Risultati}
-RIASSUNTO bla bla bla
-
-\section{Valutazione rispetto agli obiettivi}
-\lipsum[11]
-
-\section{Qualita dei risultati visivi}
-\lipsum[11]
-
-\subsection{Oggetti piccoli}
-\lipsum[11]
-
-\subsection{Sfondi uniformi}
-\lipsum[11]
-
-\subsection{Sfondi complessi}
-\lipsum[11]
-
-\subsection{Oggetti parzialmente occlusi}
-\lipsum[11]
-
-\subsection{Prompt ambigui}
-\lipsum[11]
-
-\section{Limiti tecnici}
-\lipsum[11]
-
-\subsection{Latenza}
-\lipsum[11]
-
-\subsection{Costi API}
-\lipsum[11]
-
-\subsection{Affidabilita del provider}
-\lipsum[11]
-
-\subsection{Assenza di elaborazione locale}
-\lipsum[11]
-
-\subsection{Gestione errori}
-\lipsum[11]
-
-\subsection{Scalabilita}
-\lipsum[11]
-
-\section{Benefici apportati}
-\lipsum[11]
-
-
-%------------------10-----------------
-
-\chapter{Conclusioni e Sviluppi Futuri}
-RIASSUNTO bla bla bla
-
-\section{Riassunto del lavoro svolto}
-\lipsum[11]
-
-\section{Valutazione finale}
-\lipsum[11]
-
-\section{Competenze acquisite}
-\lipsum[11]
-
-\section{Possibili generalizzazioni}
-\lipsum[11]
+Il contributo del progetto consiste nell'integrazione di funzionalità di editing AI in una piattaforma strutturata per progetti e pipeline. A differenza di strumenti più chiusi, Magic Eraser rende espliciti gli step e crea una base utile per sperimentare modelli, parametri e combinazioni di processi.
 
 \section{Sviluppi futuri}
-\lipsum[11]
 
-\subsection{Editor manuale delle maschere}
-\lipsum[11]
-
-\subsection{Confronto tra piu modelli}
-\lipsum[11]
-
-\subsection{Undo e redo}
-\lipsum[11]
-
-\subsection{Esportazione delle pipeline}
-\lipsum[11]
-
-\subsection{Metriche quantitative sulla qualita}
-\lipsum[11]
-
-\subsection{Elaborazione batch}
-\lipsum[11]
-
-\subsection{Utilizzo di modelli locali}
-\lipsum[11]
-
-\subsection{Collaborazione multiutente}
-\lipsum[11]
-
-\subsection{Versionamento dei risultati}
-\lipsum[11]
-
-\subsection{Dashboard per costi e tempi di elaborazione}
-\lipsum[11]
+Gli sviluppi futuri includono un editor manuale delle maschere, confronto tra più modelli, funzionalità di undo e redo, esportazione delle pipeline, metriche quantitative sulla qualità, elaborazione batch, supporto a modelli locali, collaborazione multiutente, versionamento dei risultati e dashboard per monitorare tempi e costi di elaborazione.
 
 
 %------------------Bibliografia-----------------
 
-\bibliographystyle{unsrt}
-\bibliography{bibliografia}
+\begin{thebibliography}{9}
+
+\bibitem{sam}
+Kirillov, A. et al. Segment Anything. IEEE/CVF International Conference on Computer Vision, 2023.
+
+\bibitem{latent-diffusion}
+Rombach, R. et al. High-Resolution Image Synthesis with Latent Diffusion Models. IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2022.
+
+\bibitem{lama}
+Suvorov, R. et al. Resolution-robust Large Mask Inpainting with Fourier Convolutions. IEEE/CVF Winter Conference on Applications of Computer Vision, 2022.
+
+\bibitem{fastapi}
+FastAPI Documentation. Framework Python per la costruzione di API web.
+
+\bibitem{react}
+React Documentation. Libreria JavaScript per la costruzione di interfacce utente.
+
+\bibitem{supabase}
+Supabase Documentation. Piattaforma backend basata su PostgreSQL, autenticazione e storage.
+
+\end{thebibliography}
 
 
 %------------------Appendici-----------------
@@ -473,51 +293,52 @@ RIASSUNTO bla bla bla
 \appendix
 
 \chapter{Manuale Utente}
-RIASSUNTO bla bla bla
 
 \section{Login}
-\lipsum[11]
+L'utente accede tramite la pagina di login. In assenza di un account può utilizzare la pagina di signup per creare un nuovo profilo.
 
-\section{Creare progetto}
-\lipsum[11]
+\section{Creare un progetto}
+Nella home l'utente inserisce il nome del progetto e lo crea. Il progetto diventa il contenitore delle immagini caricate e delle pipeline generate.
 
-\section{Caricare immagine}
-\lipsum[11]
+\section{Caricare un'immagine}
+L'utente seleziona uno o più file, sceglie il progetto di destinazione e avvia l'upload. Le immagini vengono mostrate come anteprime e possono essere aperte nel laboratorio.
 
-\section{Usare laboratorio}
-\lipsum[11]
+\section{Usare il laboratorio}
+Nel laboratorio l'utente sceglie il processo da applicare, seleziona il modello, imposta eventuali prompt o parametri e avvia l'elaborazione. Gli output intermedi possono diventare input degli step successivi.
 
-\section{Salvare pipeline}
-\lipsum[11]
+\section{Salvare una pipeline}
+Una pipeline può essere salvata con nome, immagine iniziale, immagine finale e lista degli step eseguiti. In questo modo il lavoro rimane consultabile nella sezione pipelines.
 
 \chapter{API principali}
-RIASSUNTO bla bla bla
 
 \section{Elenco endpoint}
-\lipsum[11]
+\begin{itemize}
+    \item \texttt{/projects}: creazione, lettura, aggiornamento ed eliminazione dei progetti.
+    \item \texttt{/images}: gestione delle immagini caricate.
+    \item \texttt{/profile}: lettura e aggiornamento del profilo utente.
+    \item \texttt{/processes/catalog}: catalogo dei processi AI disponibili.
+    \item \texttt{/processes/run}: esecuzione di un processo AI.
+    \item \texttt{/processes/convex-hull-preview}: generazione di una maschera convex hull a partire da una maschera esistente.
+    \item \texttt{/laboratory-pipelines}: gestione delle pipeline salvate.
+    \item \texttt{/laboratory-pipelines/\{id\}/steps}: gestione degli step associati a una pipeline.
+\end{itemize}
 
 \chapter{Configurazione e Avvio}
-RIASSUNTO bla bla bla
 
 \section{Docker Compose}
-\lipsum[11]
+Il file \texttt{docker-compose.dev.yml} permette di avviare l'ambiente di sviluppo quando si desidera eseguire i servizi in container.
 
 \section{Variabili ambiente}
-\lipsum[11]
+Il backend richiede le variabili ambiente principali elencate di seguito:
+\begin{itemize}
+    \item \texttt{DATABASE\_URL}
+    \item \texttt{SUPABASE\_URL}
+    \item \texttt{SUPABASE\_SERVICE\_ROLE\_KEY}
+    \item \texttt{SUPABASE\_STORAGE\_BUCKET}
+\end{itemize}
+La configurazione verifica che il database punti a Supabase Postgres durante l'esecuzione ordinaria.
 
 \section{Avvio frontend e backend}
-\lipsum[11]
-
-\chapter{Test}
-RIASSUNTO bla bla bla
-
-\section{Output test}
-\lipsum[11]
-
-\section{Copertura}
-\lipsum[11]
-
-\section{Elenco casi}
-\lipsum[11]
+Il frontend si avvia dalla cartella \texttt{frontend/} con i comandi del progetto Vite. Il backend si avvia dalla cartella \texttt{backend/} tramite il server FastAPI/Uvicorn, dopo aver installato le dipendenze e configurato il file ambiente.
 
 \end{document}
