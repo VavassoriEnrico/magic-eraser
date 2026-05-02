@@ -151,7 +151,6 @@ export function SavedPipelinesSidebar() {
                       {pipeline.name?.trim() || `Pipeline #${pipeline.id}`}
                     </Text>
                     <HStack spacing={2} color={sidebarIconColor} fontSize="xs" flexWrap="wrap">
-                      <Text>#{pipeline.id}</Text>
                       <Text>{pipeline.status}</Text>
                       <Text>{formatRelativeTime(pipeline.updated_at)}</Text>
                     </HStack>

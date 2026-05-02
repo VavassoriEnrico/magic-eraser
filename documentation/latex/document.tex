@@ -26,6 +26,10 @@
 \setcounter{secnumdepth}{5} 	%per avere più livelli nei titoli
 \setcounter{tocdepth}{5}		%per avere più livelli nell'indice
 
+% Pacchetti per immagini e figure
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
 
 \titolo{Magic Eraser}
 \studente{Abate Luca \vspace{1em}\\ Vavassori Enrico}
@@ -210,169 +214,228 @@ modelli in un'applicazione completa. \\
 \end{tabular}
 \end{center}
 
-\chapter{Approccio alla Soluzione}
+\chapter{Approccio al problema}
 
-La soluzione proposta è una piattaforma web composta da interfaccia utente, API backend, database, storage immagini e integrazione con 
-provider AI. L'architettura separa le responsabilità principali, rendendo il sistema più manutenibile e predisposto all'estensione 
-con nuovi modelli o nuovi processi.
+\section{Impostazione generale}
+Per affrontare il problema della rimozione e sostituzione di oggetti nelle immagini, è stato adottato un approccio
+in stile pipeline. \newline
+L'idea centrale è stata quella di scomporre il lavoro di editing in step distinti, ciascuno con suoi input, output e parametri, 
+in modo da rendere il processo comprensibile, ripetibile e migliorabile nel tempo.
+Il vero vantaggio di questo approccio è quello di non considerare un processo come una \emph{black box}, ma come
+una \emph{scatola aperta} dove l'utente ha la possibilità di visualizzare i passaggi intermedi e conservarne lo storico
+per una revisione successiva o un'eventuale integrazione. \newline \newline
+L'approccio ha seguito 3 obiettivi principali:
+\begin{itemize}
+  \item Ridurre la complessità d'uso per utenti non esperti di modelli di editing.
+  \item Mantenere una struttura tecnica che renda il sistema facilmente estendibile a nuovi modelli AI.
+  \item Garantire una tracciabilità delle operazioni svolte su ciascun immagine.
+\end{itemize}
 
-\section{Descrizione generale}
+\section{Strategia architetturale}
+La piattaforma è stata progettata come un'applicazione web con una netta separazione delle responsabilità:
+\begin{itemize}
+  \item \emph{Frontend} per interazione utente, configurazione dei processi e visualizzazione dei risultati. 
+  \item \emph{Backend API} per la logica applicativa.
+  \item \emph{Persistenza} su database per utenti, progetti, immagini e pipeline. 
+  \item \emph{Integrazione} con provider AI esterno per l'esecuzione dei modelli.
+\end{itemize}
+Questa scelta consente di evolvere i singoli moduli senza dover ritoccare completamente il sistema. In particolare,
+la separazione tra logica di business e integrazione ai permette la sostituzione o l'aggiunta di modelli mantenendo 
+stabile la relazione delle API con il frontend.
 
-L'utente accede all'applicazione, crea o seleziona un progetto, carica immagini e apre il laboratorio di editing. Nel laboratorio 
-può aggiungere processi alla pipeline, scegliere il modello, impostare prompt o parametri aggiuntivi e generare un risultato. Le 
-pipeline vengono salvate con i relativi step, input, output, maschere e stato di elaborazione.
+\section{Pattern e scelte progetturali}
+Nel backend sono state adottate scelte strutturali fondamentali data la necessità di un sistema modulare:
 
-\section{Architettura del sistema}
+\subsection{Separation of Concerns}
+La separazione in \emph{router, service e repository} è la prima scelta effettuata per una modularizzazione del sistema. 
+\begin{itemize}
+  \item I router gestiscono gli endpoint e la validazione iniziale;
+  \item I service coordinano il flusso di lavoro;
+  \item I repository si occupano dell'accesso ai dati;
+\end{itemize}
 
-\subsection{Frontend}
+\subsection{Strategy pattern}
+I diversi tipi di processo (segmentazione da prompt, rimozione con maschera, generazione da prompt)
+sono gestiti come \emph{strategie operative differenti}. Il vantaggio principale è il fatto che ogni processo evolve in modo
+indipendente, senza andare ad intaccare le funzionalità degli altri.
 
-Il frontend è sviluppato con React e Vite. Le pagine principali includono login, signup, home, gallery, laboratory, pipelines e 
-profile. I componenti gestiscono la navigazione, la visualizzazione dei progetti, l'upload delle immagini, la configurazione dei 
-processi e la consultazione delle pipeline salvate.
+\subsection{Registry Pattern}
+I diversi modelli disponibili sono descritti in un catalogo centralizzato con metadati e parametri supportati. Il valore aggiunto
+dall'utilizzo di questa tecnica è quella di permettere un'aggiunta di ulteriori modelli tramite modifiche localizzate e non diffuse.
 
-\subsection{Backend}
+\subsection{Adapter pattern}
+L'interfaccia interna del sistema viene tradotta nel formato richiesto dal provider AI esterno.
 
-Il backend è sviluppato con FastAPI e fornisce endpoint REST per progetti, immagini, profilo utente, processi AI e pipeline di 
-laboratorio. La logica applicativa è organizzata in servizi, repository, schemi di validazione e router API.
-
-\subsection{Database}
-
-La persistenza è basata su Supabase Postgres. Le entità principali sono \texttt{Profile}, \texttt{Project}, \texttt{Image}, 
-\texttt{LaboratoryPipeline} e \texttt{LaboratoryPipelineStep}. Questa struttura consente di collegare utenti, progetti, immagini 
-sorgente e cronologie di elaborazione.
-
-\subsection{AI provider}
-
-L'integrazione con i modelli AI è gestita tramite registry e adapter. Il catalogo dei processi espone tre famiglie principali: 
-segmentazione da prompt, rimozione con maschera e generazione da prompt. Gli adapter traducono le richieste interne nel formato 
-richiesto dal provider esterno.
+\subsection{Vantaggi principali}
+Rispetto a una struttura unica con logica mista all'interno degli endpoint, questa impostazione, attraverso questi pattern di programmazione il sistema risulta più leggibile, 
+testabile e soprattutto più estendibile. 
 
 \section{Pipeline di elaborazione}
+Il flusso operativo è stato modellato come una sequenza di step (visualizzabili in figura 4.1), in cui l'utente ha sempre la situazione sotto controllo:
+\begin{enumerate}
+  \item L'utente crea o seleziona un progetto;
+  \item carica un'immagine sorgente;
+  \item seleziona un progesso e un modello dal catalogo;
+  \item inserisce il prompt (se richiesto) e i parametri aggiuntivi;
+  \item avvia l'elaborazione;
+  \item visualizza ed eventualmente salva il risultato.
+\end{enumerate}
+Nel caso della rimozione oggetti, la pipeline prevede:
+\begin{itemize}
+  \item uno step di segmentazione per ottenere la maschera dell'area target;
+  \item uno di rimozione guidata dalla maschera;
+  \item un eventuale step di generazione per sostituire la zona modificata con un nuovo contenuto coerente con il resto dell'immagine.
+\end{itemize}
+% Immagine singola
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{pipeline.png}
+    \caption{Pipeline di esecuzione}
+    \label{fig:architettura}
+\end{figure}
 
-La pipeline rappresenta la sequenza dei processi applicati a un'immagine. Uno step può generare una maschera, uno step successivo 
-può usare quella maschera per rimuovere un oggetto, e un ulteriore step può generare contenuto tramite prompt. Ogni step mantiene 
-input, output, tipo di processo, modello scelto, impostazioni aggiuntive e stato.
 
 \section{Scelte tecnologiche}
+Le tecnologie utilizzate sono state scelte al fine di ottenere il massimo possibile in termini di probabilità, affidabilità ed aderenza al problema. 
+\begin{itemize}
+  \item \emph{React e Vite (frontend):} consentono un rapido sviluppo di interfacce interattive e una buona organizzazione della UI.
+  \item \emph{FastAPI (backend):} da una chiara definizione di endpoint, validazione dei dati tramite schemi e una tipizzazione e integrazione naturale con il linguaggio Python.
+  \item \emph{PostgreSQL/Supabase (persistenza):} adatto alla gestione e al salvataggio di utenti, progetti, immagini e pipeline.
+  \item \emph{Fal.ai (Provider AI esterno):} evita costi infrastrutturali elevati per hosting dei modelli e ne consente l'accesso continuo.
+  \item \emph{Vercel:} per il deploy automatico della web app ad ogni push su un branch git di release.
+\end{itemize}
 
-React e Vite sono stati scelti per costruire un'interfaccia reattiva e modulare. FastAPI è stato adottato per la chiarezza nella 
-definizione delle API, la validazione tramite schemi e la facilità di integrazione con servizi Python. Supabase Postgres fornisce 
-un database remoto adatto alla persistenza dei dati applicativi, mentre lo storage immagini permette di mantenere file sorgente e 
-risultati accessibili dal frontend e dai provider AI.
+\section{Trade-off dell'approccio}
+L'approccio utilizzato presenta sia vantaggi che svantaggi.
 
-\chapter{Implementazione}
+\subsubsection{Vantaggi}
+\begin{itemize}
+  \item Elevata modularità;
+  \item Facilità di estensione con nuovi modelli e processi;
+  \item Flusso di lavoro molto chiaro grazie a una pipeline esplicita;
+\end{itemize}
 
-L'implementazione segue una separazione netta tra frontend, backend, persistenza e integrazione AI. Questa organizzazione 
-permette di modificare una parte del sistema senza compromettere le altre e rende più semplice aggiungere nuovi processi.
+\subsubsection{Limiti}
+\begin{itemize}
+  \item Dipendenza da un provider AI esterno;
+  \item latenza variabile delle richieste;
+  \item qualità del risultato non sempre perfetta, sopratutto su scene complesse.
+\end{itemize}
+L'ultimo di questi limiti è in forte dipendenza dalla prima, in quanto la qualità della generazione delle immagini
+è dovuta proprio alle performance servite dal provider esterno. 
 
-\section{Struttura del sistema}
 
-Il progetto è diviso principalmente in \texttt{frontend/} e \texttt{backend/}. Il frontend contiene pagine, componenti, hook, 
-tipi TypeScript e client API. Il backend contiene router, servizi, repository, modelli, schemi, processi, registry dei modelli e 
-utility per la gestione delle maschere.
 
-\section{Frontend}
 
-Le pagine di login e signup gestiscono l'accesso dell'utente. La home permette di creare progetti, caricare immagini, 
-visualizzare anteprime e aprire il laboratorio. La gallery offre una visione organizzata degli asset. La pagina laboratory 
-consente di costruire e applicare pipeline di editing. La pagina pipelines permette di consultare elaborazioni salvate, mentre 
-la pagina profile raccoglie le informazioni dell'utente.
 
-\section{Backend e API}
 
-Gli endpoint principali sono organizzati nei router \texttt{projects}, \texttt{images}, \texttt{profile}, \texttt{processes} e 
-\texttt{laboratory\_pipelines}. Le richieste vengono validate tramite schemi, elaborate dai servizi applicativi e persistite 
-tramite repository. Questa separazione riduce l'accoppiamento tra API, logica di business e accesso al database.
+\chapter{Risultati}
 
-\section{Gestione immagini e progetti}
+\section{Risultati funzionali}
+Il sistema realizzato compre l'intero flusso esecutivo previsto: 
+\begin{itemize}
+  \item autenticazione utente e profilo;
+  \item creazione e gestione di progetti;
+  \item upload e rimozione di immagini;
+  \item apertura del laboratorio di editing;
+  \item esecuzione di progetti AI con parametri configurabili;
+  \item salvataggio, consultazione e modifica di pipeline;
+\end{itemize}
+La soluzione non è stata pensata per limitarsi esclusivamente all'elaborazione di un'immagine, ma 
+integra una gestione dell'intero contesto del progetto e una storicizzazione delle operazioni. Queste 
+due parti fondamentali hanno lo scopo di trasformare l'intero progetto da un semplice tool di modifica
+a un vero e proprio strumento di ricerca, integrabile ed utilizzabile in moltissimi ambiti lavorativi.
 
-I progetti raggruppano le immagini caricate e le pipeline associate. L'upload salva il file nello storage e registra nel database 
-le informazioni necessarie a recuperarlo. Le immagini possono essere usate come input per il laboratorio e gli output prodotti dai 
-modelli possono essere salvati nello stesso contesto progettuale.
+\section{Risultati tecnici}
+Dal punto di vista ingegnerisrico, il progetto ha raggiunto i seguenti risultati: 
+\begin{itemize}
+  \item backend organizzato per livelli con responsabilità distinte;
+  \item frontend suddiviso in pagine, componenti e hook riutilizzabili;
+  \item catalogo di processi e modelli centralizzato;
+  \item integrazione AI incapsulata tramite adapter;
+  \item presenza di test unitari e di integrazione su parti critiche;
+\end{itemize}
+Questa struttura rende il codice leggibile e riduce il rischio di peggioramenti durante l'evoluzione
+del sistema. 
 
-\section{Pipeline AI}
+\section{Validazione qualitativa}
+La validazione è stata effettuata osservando casi d'uso con diversa complessità visiva:
+\begin{itemize}
+  \item \emph{scene semplici} (sfondi uniformi e oggetto isolato): risultato convinvente con ricostruzione coerente con lo sfondo (come da esempio sottostante a figura 5.1).
+  \item \emph{scene intermedie} (texture ripetute, bordi marcati): risultato sempre convincente ma con una qualità leggermente minore, a volte intaccata da piccoli artefatti.
+  \item \emph{scene complesse} (occlusioni, dettagli molto fini e geometrie non regolari): qualità variabile, dovuta spesso alla precisione della maschera e del prompt utilizzati.
+\end{itemize}
 
-\subsection{Segmentazione}
 
-Il processo \texttt{segment\_from\_prompt} riceve un'immagine e un prompt che descrive l'oggetto o l'area da individuare. Il risultato 
-è una maschera utilizzabile negli step successivi.
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{person_removed_before.png}
+        \caption{Immagine originale}
+        \label{fig:before}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{person_removed_after.png}
+        \caption{Risultato dopo la pipeline}
+        \label{fig:after}
+    \end{subfigure}
+    \caption{Confronto prima/dopo per un immagine ritenuta semplice.}
+    \label{fig:before_after}
+\end{figure}
 
-\subsection{Rimozione}
+In generale possiamo dire che la qualità finale dell'immagine è decisa da:
+\begin{itemize}
+  \item accuratezza della segmentazione;
+  \item coerenza del prompt;
+  \item capacità del modello di ricostruire contesto e texture locali;
+\end{itemize}
 
-Il processo \texttt{remove\_with\_mask} riceve immagine e maschera. Il modello elimina l'area selezionata e ricostruisce il contenuto 
-circostante in modo coerente.
+\section{Discussione critica}
+I risultati finali ottenuti tramite l'architettura e le dipendenza utilizzate offrono in conclusione un buon servizio. \newline
+Il prototipo svolge un buon lavoro nel rendere operazioni complesse facilmente accessibili e interpretabili. Tuttavia, la dipendenza
+da un servizio esterno sempre in via di sviluppo come \emph{fal}, non da garanzie assolute in termini di tempistiche e qualità, 
+rendendo necessario un ulteriore lavoro su controlli, valutazioni e robustezza. 
 
-\subsection{Generazione}
-
-Il processo \texttt{generate\_from\_prompt} permette di riempire una regione mascherata seguendo un prompt testuale. Questo consente 
-non solo di cancellare contenuti, ma anche di sostituirli con elementi generati.
-
-\section{Organizzazione del codice}
-
-Il backend separa router API, servizi, repository, processi e registry dei modelli. Il frontend separa pagine, componenti 
-riutilizzabili, hook e client HTTP. Questa struttura rende esplicite le responsabilità: l'interfaccia gestisce l'interazione utente, 
-il backend coordina il workflow, i repository gestiscono la persistenza e gli adapter comunicano con i provider AI.
-
-\chapter{Risultati e Validazione}
-
-La validazione considera sia le funzionalità implementate sia la capacità del sistema di rispondere ai requisiti individuati. 
-L'obiettivo è verificare che il prototipo permetta effettivamente di svolgere il workflow previsto: organizzare immagini, 
-applicare processi AI e salvare risultati.
-
-\section{Funzionalità implementate}
-
-Il sistema implementa autenticazione, gestione del profilo, creazione e modifica di progetti, upload di immagini, consultazione 
-della gallery, laboratorio di editing, catalogo dei processi AI, esecuzione di step, anteprima di maschere convex hull e salvataggio 
-delle pipeline. Le funzionalità sono integrate in un flusso utente coerente, dalla selezione dell'immagine fino alla consultazione dei 
-risultati.
-
-\section{Test}
-
-Il backend include test unitari e di integrazione per servizi, dipendenze di autenticazione e API principali. Il frontend include 
-test su client API, hook, pagine e componenti del laboratorio. I test verificano casi come gestione delle risposte HTTP, progetti, 
-profilo, pipeline, selezione di immagini e rendering dei componenti principali.
-
-\section{Validazione}
-
-Rispetto ai bisogni iniziali, la soluzione soddisfa i requisiti di semplicità, automazione e organizzazione. L'utente può eseguire 
-operazioni complesse senza intervenire manualmente sui pixel, mentre il sistema conserva le informazioni necessarie a comprendere 
-la sequenza di elaborazione applicata.
-
-\section{Risultati}
-
-I risultati attesi sono immagini prima/dopo in cui l'oggetto selezionato viene rimosso o sostituito. La qualità dipende da tre 
-fattori principali: precisione della maschera, coerenza del modello generativo e complessità dello sfondo. Su sfondi uniformi il 
-risultato tende a essere più stabile, mentre scene complesse, oggetti parzialmente occlusi o prompt ambigui possono produrre artefatti.
 
 \chapter{Conclusioni}
 
-Il progetto ha portato alla realizzazione di una piattaforma web capace di integrare gestione delle immagini e workflow AI per 
-l'editing generativo. Magic Eraser dimostra come segmentazione, maschere e inpainting possano essere combinati in un ambiente 
-accessibile e organizzato.
+\section{Sintesi}
+Il progetto risponde al problema iniziale attraverso una piattaforma che ha lo scopo di unire semplicità d'uso e struttura tecnica, utile soprattutto
+in fase di ricerca. L'utente può gestire immagini e processi AI in modo guidato senza dover interagire direttamente
+a livello pixel e senza necessità di conoscenze specifiche, il tutto mantenendo sempre un'ampio controllo sulle esecuzioni. 
 
-\section{Valutazione del lavoro}
+\section{Lavoro effettuato}
+Il principale lavoro effettuato è consistito nell'integrare segmentazione, rimozione e generazione in un unico ambiente orientato alla ricerca,
+con pipeline esplicite e salvabili. \newline
+Questo approccio ha aumentato la riproducibilità e l'utilità rispetto a strumenti che mostrano solo l'output finale. Poter rivedere, modificare e ampliare sessioni 
+di lavoro su immagini aumenta notevolmente le possibilità di analisi e integrazione con progetti esterni.
 
-Rispetto al problema iniziale, il sistema riduce la complessità dell'editing e rende disponibili operazioni avanzate attraverso 
-un'interfaccia guidata. La scelta di salvare pipeline e step permette inoltre di analizzare il processo, non soltanto il risultato finale.
-
-\section{Limiti della soluzione}
-
-I principali limiti riguardano la dipendenza da provider AI esterni, la latenza delle richieste, i costi potenziali delle API e 
-la variabilità dei risultati generativi. La qualità finale non è sempre prevedibile e può richiedere più tentativi, soprattutto 
-quando la maschera non delimita correttamente l'area da modificare.
-
-\section{Contributo}
-
-Il contributo del progetto consiste nell'integrazione di funzionalità di editing AI in una piattaforma strutturata per progetti e 
-pipeline. A differenza di strumenti più chiusi, Magic Eraser rende espliciti gli step e crea una base utile per sperimentare modelli, 
-parametri e combinazioni di processi.
+\section{Utilità e limiti}
+La soluzione è particolarmente adatta per ambienti di lavoro dove l'analisi di immagini e le relative modifiche 
+consistono in una parte importante delle task quotidiane. I limiti invece riguardano:
+\begin{itemize}
+  \item dipendenza da API esterne;
+  \item latenza e costi variabili;
+  \item qualità non sempre prevedibile in scene complesse;
+\end{itemize}
+Questi ultimi 2 limiti in particolare riguardano principalmente le API fornite dal provider \emph{fal}, il quale offre i suoi  modelli con una
+discreta qualità (non sempre ottimale) ad un costo di pochi centesimi a chiamata.
 
 \section{Sviluppi futuri}
+Nonostante l'applicazione sia già di notevole utilità, ulteriori evoluzioni sono previste, come:
+\begin{itemize}
+  \item integrazione di un sistema di riconoscimento entità;
+  \item confronto automatico multi-modello sullo stesso input;
+  \item riconoscimento automatico di entità ed oggetti non rilevanti all'interno dell'immagine;
+\end{itemize}
 
-Gli sviluppi futuri includono un editor manuale delle maschere, confronto tra più modelli, funzionalità di undo e redo, esportazione 
-delle pipeline, metriche quantitative sulla qualità, elaborazione batch, supporto a modelli locali, collaborazione multiutente, 
-versionamento dei risultati e dashboard per monitorare tempi e costi di elaborazione.
-
+\section{Conclusione}
+Il lavoro in conclusione dimostra che una piattaforma web modulare può rendere l'editing AI di immagini più
+accessibile, semplice e tracciabile, mantenendo comunque un'architettura estendibile. \newline
+I risultati raggiunti danno credito all'impostzione del progetto e permettono ulteriori integrazioni e robustezza.
 
 %------------------Bibliografia-----------------
 
@@ -456,5 +519,16 @@ La configurazione verifica che il database punti a Supabase Postgres durante l'e
 \section{Avvio frontend e backend}
 Il frontend si avvia dalla cartella \texttt{frontend/} con i comandi del progetto Vite. Il backend si avvia dalla cartella 
 \texttt{backend/} tramite il server FastAPI/Uvicorn, dopo aver installato le dipendenze e configurato il file ambiente.
+
+\section{Deployement}
+
+\subsection{Deployement su vercel}
+Il deploy non riguarda solo il frontend: pubblichiamo tutta la soluzione in modo coordinato.
+
+Usiamo un unico progetto su Vercel condiviso dal gruppo.  
+Le chiavi e le variabili ambiente sono salvate su Vercel, così non vengono messe nel codice.
+
+Quando uno dei membri del gruppo fa push sul branch di release, il deploy parte in automatico.  
+In questo modo tutti usiamo lo stesso processo e la versione online resta aggiornata.
 
 \end{document}

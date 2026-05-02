@@ -188,20 +188,8 @@ export default function LaboratoryPage() {
         ) : null}
       </PageHeader>
 
-      <GlassPanel p={{ base: 4, md: 5 }} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
-        <Stack direction={{ base: "column", lg: "row" }} justify="space-between" align={{ base: "stretch", lg: "center" }} spacing={4}>
+      <Stack direction={{ base: "column", lg: "row" }} justify="space-between" align={{ base: "stretch", lg: "center" }} spacing={4}>
           <VStack align="start" spacing={2}>
-            <HStack spacing={2} flexWrap="wrap">
-              <Badge width="fit-content" variant="subtle">
-                project #{queryProjectId ?? selectedImage?.project_id ?? "-"}
-              </Badge>
-              <Badge width="fit-content" variant="subtle">
-                image #{queryImageId ?? selectedImage?.id ?? "-"}
-              </Badge>
-              <Badge width="fit-content" variant="subtle">
-                pipeline #{activePipelineId ?? "-"}
-              </Badge>
-            </HStack>
           </VStack>
           <HStack spacing={3} flexWrap="wrap">
             <Button variant="outline" leftIcon={<BiSave />} onClick={() => setIsSaveModalOpen(true)} isDisabled={runningAll}>
@@ -212,7 +200,6 @@ export default function LaboratoryPage() {
             </Button>
           </HStack>
         </Stack>
-      </GlassPanel>
 
       {saveMessage ? <StatusNotice tone="success" variant="text">{saveMessage}</StatusNotice> : null}
       {saveError ? <StatusNotice tone="error" variant="text">{saveError}</StatusNotice> : null}

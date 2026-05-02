@@ -162,9 +162,6 @@ function ProjectRow({
           <Text fontSize="xl" fontWeight="800" lineHeight="1.1" letterSpacing="-0.04em">
             {project.name}
           </Text>
-          <Text color={subtleText} fontSize="sm">
-            {projectLabel} #{project.id}
-          </Text>
         </VStack>
 
         <Badge variant="outline" borderColor="whiteAlpha.300" color="rgba(245,241,235,0.9)">
