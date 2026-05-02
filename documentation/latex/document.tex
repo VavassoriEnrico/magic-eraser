@@ -4,6 +4,9 @@
 
 \documentclass[oneside]{supsistudent} 
 \let\cleardoublepage\clearpage
+\raggedbottom
+\usepackage{placeins}
+\usepackage{float}
 
 
 
@@ -186,9 +189,9 @@ Senza una struttura pensata, il flusso può diventare difficile da controllare,
 soprattutto quando l'utente lavora su più immagini e/o prova più modelli.
 
 \section{Aspetti del problema}
-RICORDATI DI FARE LA LISTA PUNTATA BENE IN LATEX
 
-1. Selezione dell'area da modificare.\\
+\begin{itemize}
+\item \textbf{Selezione dell'area da modificare.}
 Per rimuovere o generare contenuto in una porzione specifica dell'immagine
 serve una maschera coerente. Una maschera 
 imprecisa può includere parti che si desidera invece conservare, oppure escludere parti
@@ -198,14 +201,14 @@ Allo stesso tempo, una maschera troppo specifica e dettagliata può portare a ri
 questo è spiegato dal fatto che i modelli di rimozione e filling vanno a modificare
 unicamente i pixel presenti nella maschera.
 
-2. Dipendenza da modelli esterni.\\
+\item \textbf{Dipendenza da modelli esterni.}
 I provider AI, e gli stessi modelli, possono richiedere formati di input 
 differenti, tempi di elaborazione variabili, costi elevati e parametri specifici. 
 Il sistema deve quindi tradurre le operazioni richieste dall'utente in chiamate tecniche
 compatibili con il modello scelto, gestendo allo stesso tempo stati di avanzamento e 
 output prodotti.
 
-3. Tracciabilità.\\
+\item \textbf{Tracciabilità.}
 In un contesto di sperimentazione non è sufficiente 
 ottenere un'immagine finale per trarre conclusioni sulla qualità di un processo.
 Bisogna infatti sapere quale immagine sorgente è stata usata, quale processo è stato 
@@ -213,6 +216,7 @@ applicato, quale modello ha prodotto il risultato e quali dati
 intermedi sono stati generati. Senza queste informazioni diventa 
 difficile confrontare risultati, ripetere un'elaborazione o capire da
 dove derivi un certo output.
+\end{itemize}
 
 \section{Conseguenze operative}
 
@@ -230,30 +234,312 @@ struttura applicativa in cui immagini, maschere, processi AI e output
 restano collegati tra loro e possono essere consultati anche dopo l'esecuzione
 e nel corso di sessioni differenti.
 
-\chapter{Stato dell'Arte} CONTINUA DA QUIIII
+\chapter{Stato dell'Arte}
 
-Lo stato dell'arte considera le tecniche e gli strumenti che rendono possibile l'editing generativo: image inpainting, segmentazione, 
-maschere e modelli prompt-based. Questi concetti costituiscono la base teorica e applicativa della soluzione sviluppata.
+Lo stato dell'arte considera le tecniche e gli strumenti che vengono utilizzati 
+nell'ambito dell'editing generativo: image inpainting, segmentazione, 
+maschere e modelli prompt-based. Questi concetti costituiscono la base teorica e 
+applicativa della soluzione sviluppata.
+Viene inoltre fatta un'analisi comparativa con strumenti simili a Magic Eraser già
+presenti sul mercato, evidenziando punti di forza e limiti di ciascuno.
 
-\section{Image Inpainting}
 
-L'image inpainting è il processo di ricostruzione di aree mancanti, danneggiate o mascherate di un'immagine. Nei sistemi moderni, 
-l'inpainting non si limita alla copia di texture circostanti, ma utilizza modelli generativi capaci di interpretare il contesto visivo. 
-Nel progetto, questa tecnica è utilizzata per ottenere risultati coerenti dopo la rimozione di un oggetto o per riempire una regione 
-secondo un prompt.
 
 \section{Segmentazione e maschere}
 
-La segmentazione consente di individuare regioni dell'immagine corrispondenti a oggetti o concetti indicati dall'utente. Il risultato viene 
-rappresentato tramite maschere, immagini binarie o semi-binarie che separano le zone da modificare dal resto della scena. Nel workflow di 
-Magic Eraser, la maschera è l'elemento di collegamento tra la selezione semantica e l'operazione generativa successiva.
+La segmentazione consente di individuare regioni dell'immagine corrispondenti a 
+oggetti o concetti indicati dall'utente. Il risultato viene 
+rappresentato tramite maschere, immagini binarie o semi-binarie che separano le zone 
+da modificare dal resto della scena. Nel workflow di 
+Magic Eraser, la maschera è l'elemento di collegamento tra la selezione semantica e 
+l'operazione di rimozione o generativa successiva.
+
+Nel paper dove viene introdotto SAM \textit{(Segment Anything Model)} - Meta AI (2023), 
+il progetto Segment Anything viene descritto come composto da task, 
+modello edataset per la segmentazione di immagini \cite{sam}. 
+L'idea centrale è la segmentazione guidata da prompt: il task è definito
+come la capacità di ``ottenere una maschera di segmentazione valida dato qualsiasi prompt'' 
+\cite{sam}. In questa prospettiva, il prompt non ssi limita a una
+descrizione testuale, ma può contenere informazioni spaziali o semantiche, 
+come punti, box, maschere o testo libero. Per Magic Eraser questo
+aspetto viene sfruttato perché l'utente non deve disegnare 
+manualmente la regione da modificare ma deve descrivere tramite testo l'oggetto o l'area
+su cui desidera appportare modifiche, lasciando al modello il compito di 
+tradurre questa descrizione in una maschera coerente con l'immagine.
+
+Il Segment Anything Model (SAM) è progettato per separare l'analisi 
+dell'immagine dalla generazione della maschera. Il modello usa un
+\textit{image encoder}, un \textit{prompt encoder} e un \textit{mask decoder}, 
+come mostrato in Figura~\ref{fig:sam-structure}; questa struttura permette di 
+calcolare una rappresentazione
+dell'immagine e poi riutilizzarla con prompt diversi. Gli autori indicano 
+esplicitamente l'uso di ``point, box, and mask prompts''
+\cite{sam}, cioè input compatibili con un'interazione visuale rapida. Dal punto 
+di vista applicativo, questa scelta rende la segmentazione
+adatta a strumenti in cui l'utente deve provare selezioni diverse sulla stessa 
+mmagine senza ripetere ogni volta l'intero processo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{assets/segmentation-example-horse.png}
+\caption{Esempio di segmentazione tramite prompt. L'immagine è tratta direttamente dal paper \textit{Segment Anything} (SAM) \cite{sam}.}
+\label{fig:segmentation-example-horse}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{assets/sam-structure.png}
+\caption{Architettura generale del Segment Anything Model: image encoder, 
+prompt encoder e mask decoder. L'immagine è tratta direttamente dal paper 
+\textit{Segment Anything} (SAM) \cite{sam}.}
+\label{fig:sam-structure}
+\end{figure}
+
+Un punto importante per l'editing generativo è la gestione dell'ambiguità. Un 
+prompt può riferirsi a oggetti diversi o a parti diverse della
+stessa scena: ad esempio un punto sopra una maglietta può indicare la maglietta, 
+la persona o una regione più ampia. Per questo motivo SAM
+può produrre più maschere valide per un singolo prompt, associando anche un 
+punteggio di confidenza. Nel contesto di Magic Eraser, questa
+caratteristica è utile perché la qualità dell'inpainting dipende direttamente 
+dalla precisione della maschera: una maschera troppo ampia può
+rimuovere elementi da conservare, mentre una maschera troppo stretta può lasciare 
+residui visivi dell'oggetto.
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{assets/normal-image.jpg}\\
+\textbf{Immagine originale}
+\end{minipage}
+\hfill
+\begin{minipage}{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{assets/normal-mask.png}\\
+\textbf{Maschera segmentata}
+\end{minipage}
+\hfill
+\begin{minipage}{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{assets/convex-hull-mask.png}\\
+\textbf{Convex hull}
+\end{minipage}
+\caption{Confronto tra immagine originale, maschera segmentata e convex hull della maschera.}
+\label{fig:mask-convex-hull}
+\end{figure}
+
+\subsection{Convex hull delle maschere}
+
+La convex hull di una maschera è la più piccola area convessa che contiene tutti
+i punti della maschera originale. In pratica, partendo da una selezione anche
+molto irregolare, la convex hull produce un contorno più ampio e continuo, come
+mostrato in Figura~\ref{fig:mask-convex-hull}. Questo non sostituisce la
+maschera generata dal modello, ma può essere utile quando si vuole ottenere
+un'area di intervento più stabile e meno frammentata.
+
+Nel contesto di Magic Eraser, la convex hull viene usata come supporto operativo
+per trasformare maschere molto dettagliate in regioni più semplici da usare nei
+processi successivi. 
+Una maschera segmentata con bordi dettagliati e specifici rischia di fornire
+un'area di modifica troppo precisa per il modello e, specialmente nel caso
+in cui da segmentazione si passi direttamente a inpainting filling (senza passare
+prima dal proesso di rimozione oggetto), il risultato è spesso
+poco soddisfacente. Una
+convex hull, invece, generalizza la forma della maschera, creando un'area più 
+ampia e continua che può essere più adatta a processi di rimozione o generazione, 
+soprattutto quando si vuole evitare imprecisioni dovuti a bordi troppo irregolari.
+
+
+\FloatBarrier
+
+\section{Image Inpainting}
+
+L'image inpainting è il processo di ricostruzione di aree mancanti, 
+danneggiate o mascherate di un'immagine. Nel paper
+\textit{Image Inpainting}, viene definito l'inpainting come la 
+tecnica per ``modificare un'immagine in una forma non
+rilevabile'' \cite{bertalmio-inpainting}. Spesso l'operazione di inpainting
+viene associata al restauro artistico e fotografico, spiegando che l'obiettivo 
+è ricostruire parti mancanti o rovinate dell'immagine in modo 
+da renderla nuovamente coerente.
+
+L'interazione richiesta all'utente è limitata alla selezione 
+della regione da correggere e come si desidera riempire. ''Dopo che 
+l'utente seleziona le regioni da restaurare, 
+l'algoritmo riempie automaticamente tali regioni usando
+l'informazione circostante'' \cite{bertalmio-inpainting}.
+In questo senso, l'inpainting è un processo che parte da un'immagine 
+e una maschera, e produce un risultato in cui la regione coperta 
+dalla maschera è stata sostituita con un contenuto coerente con 
+il contesto visivo. 
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{assets/liam-gallagher.png}\\
+\textbf{Immagine originale}
+\end{minipage}
+\hfill
+\begin{minipage}{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{assets/tambourine-segmented.png}\\
+\textbf{Maschera}
+\end{minipage}
+\hfill
+\begin{minipage}{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{assets/liam-gallagher-without-tambourine.jpg}\\
+\textbf{Risultato}
+\end{minipage}
+\caption{Esempio di image inpainting: immagine originale, maschera del tamburello e risultato dopo la rimozione.}
+\label{fig:image-inpainting-liam}
+\end{figure}
+
+
+Importante è anche distinguere l'inpainting dalla denoising classica. 
+Nel denoising i pixel degradati contengono ancora informazione utile,
+mentre nell'inpainting la regione da ricostruire può non contenere 
+informazione significativa. Per questo motivo il contenuto va dedotto
+dalle zone circostanti. L'area coperta dalla
+maschera non deve essere migliorata, ma sostituita con un contenuto coerente 
+con il contesto.
+
+Tuttavia, uno dei problemi principali, come anche menzionato nel paper,
+ è la ``riproduzione di grandi 
+regioni testurizzate'' \cite{bertalmio-inpainting}. Questo
+limite resta rilevante anche nei sistemi moderni: le aree con pattern complessi, 
+sfondi molto ricchi o dettagli ripetitivi possono produrre
+imprecisioni, soprattutto quando la maschera è grande o poco precisa.
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.44\textwidth}
+\centering
+\includegraphics[height=0.34\textheight]{assets/romeo-mattonelle.jpg}\\
+\textbf{Immagine originale}
+\end{minipage}
+\hfill
+\begin{minipage}{0.44\textwidth}
+\centering
+\includegraphics[height=0.34\textheight]{assets/mattonelle-wrong.jpg}\\
+\textbf{Risultato con imprecisioni}
+\end{minipage}
+\caption{Esempio di limite dell'image inpainting su una regione 
+testurizzata: la ripetizione delle mattonelle rende più difficile produrre 
+un risultato coerente.}
+\label{fig:image-inpainting-texture-limit}
+\end{figure}
+
+Nei sistemi moderni, l'inpainting non si limita più a modelli basati su 
+diffusione anisotropa o propagazione geometrica, ma utilizza anche
+modelli generativi capaci di interpretare il contesto visivo. Tuttavia, il 
+principio operativo rimane lo stesso: data un'immagine e una
+maschera, il sistema deve produrre una regione plausibile, coerente con il resto 
+della scena e utile all'obiettivo dell'utente.
+
 
 \section{Modelli generativi}
 
-I modelli generativi prompt-based permettono di guidare il risultato tramite descrizioni testuali. Le tecniche text-to-image producono 
-immagini partendo da testo, mentre le tecniche image-to-image trasformano un'immagine esistente mantenendo parte della sua struttura. 
-Per l'editing con maschera, l'approccio più rilevante è quello che combina immagine sorgente, maschera e prompt opzionale, così da 
-modificare solo una porzione controllata dell'immagine.
+I modelli generativi image-to-image permettono di produrre o modificare 
+contenuti visivi a partire da istruzioni testuali, immagini di
+riferimento e maschere. Questo rende il problema diverso dalla 
+generazione di un'immagine da zero, perché il risultato deve
+rispettare la prospettiva, la luce, la texture e la composizione dell'immagine 
+di partenza.
+
+\vspace{\baselineskip}
+
+La famiglia di modelli che ha reso possibile questo tipo di workflow è 
+quella dei modelli a diffusione. In generale, un modello
+di diffusione impara a ricostruire un'immagine partendo da rumore, procedendo 
+per passi successivi fino a ottenere una scena coerente.
+Stable Diffusion ha reso questo approccio molto diffuso perché sposta una 
+parte importante del processo nello spazio latente: invece di
+lavorare direttamente su tutti i pixel dell'immagine, il modello opera su una 
+rappresentazione più compatta, riducendo il costo
+computazionale e rendendo più accessibili operazioni come
+image-to-image e inpainting \cite{latent-diffusion}. 
+L'articolo che abbiamo deciso di utilizzare per questa sezione 
+descrive proprio ''Stable Diffusion 
+non è solo un modello, ma un ecosistema di varianti,
+interfacce e tecniche di controllo che hanno reso l'image generation utilizzabile 
+anche in contesti applicativi'' \cite{bentoml-generative-models}.
+
+\vspace{\baselineskip}
+
+Per quanto riguarda Magic Eraser, l'aspetto più importante non è la generazione 
+libera, ma l'editing controllato. Il modello riceve tre informazioni principali:
+l'immagine originale, la maschera e, quando necessario, un prompt. 
+La maschera limita l'area di modifica, mentre il prompt orienta
+il tipo di contenuto da generare. Se l'obiettivo è rimuovere un oggetto, 
+il modello deve riempire l'area con uno sfondo coerente e credibile; se
+l'obiettivo è sostituire o aggiungere contenuto, deve invece generare un 
+elemento nuovo senza "rompere" la coerenza della scena. Questa
+distinzione è importante perché spiega la presenza di due processi separati
+presenti: \texttt{remove\_with\_mask} e
+\texttt{generate\_from\_prompt}.
+
+\vspace{\baselineskip}
+Tra i modelli usati nell'ambito dell'AI image generation, FLUX (di Black Forest Labs),
+è considerato, anche da Black Forest Labs stessa, lo stato dell'arte. 
+Sempre nell'articolo citato, vengono descritte
+le versioni più recenti della famiglia FLUX come modelli orientati alla 
+qualità visiva e alla fedeltà al prompt. \cite{bentoml-generative-models}. 
+Magic Eraser integra 
+\textit{FLUX.1 [pro] Fill} tramite Fal.ai per il processo
+\texttt{generate\_from\_prompt}. Questo modello viene usato quando 
+l'utente vuole riempire una regione mascherata seguendo una
+descrizione testuale. Non genera quindi un'intera immagine indipendente, ma 
+lavora dentro un'area precisa, come detto prima, usando il contesto visivo
+attorno alla maschera come vincolo.
+
+\vspace{\baselineskip}
+
+Accanto a FLUX, l'applicazione, al momento attuale, implementa anche \textit{Bria GenFill} come 
+modello alternativo per la generazione con maschera. La sua
+presenza è utile perché permette di confrontare risultati diversi sullo stesso 
+input (stessa immagine, stessa maschera, stesso prompt, ma
+modello differente). Questo è uno degli obiettivi pratici di Magic Eraser: 
+rendere esplicito quali componenti hanno prodotto un certo risultato. 
+In questo modo l'utente può capire se un risultato poco convincente dipende
+dalla maschera, dal prompt o dal comportamento del modello scelto.
+
+\vspace{\baselineskip}
+
+Il processo di rimozione usa invece \textit{Finegrain Eraser}, sempre tramite Fal.ai. 
+Anche se dal punto di vista dell'utente appare come
+una semplice cancellazione, il modello effettivamente genera contenuto nuovo 
+nella zona indicata con maschera. La differenza rispetto al filling
+guidato da prompt è che qui l'intenzione principale è far sparire l'oggetto, 
+non sostituirlo con un elemento specifico. Per questo il
+prompt non è necessario: la maschera indica cosa rimuovere e il modello 
+usa lo sfondo circostante per produrre una continuazione
+coerente.
+
+\vspace{\baselineskip}
+
+
+La qualità del risultato dipende da più fattori. Anche nell'articolo viene infatti 
+evidenziato che i modelli di generazione immagini sono particolarmente sensibili 
+alla formulazione del prompt, ai parametri di inferenza e alla complessità 
+del contenuto da produrre \cite{bentoml-generative-models}.
+Una maschera troppo stretta può lasciare bordi o residui
+dell'oggetto; una maschera troppo ampia può costringere il modello a inventare 
+una porzione eccessiva dell'immagine. Per questo la
+pipeline combina segmentazione, (convex hull), rimozione e generazione: ogni 
+passaggio prepara meglio il successivo.
+
+Un limite da considerare è che questi modelli non garantiscono sempre un 
+risultato deterministico e perfetto. Sfondi ripetitivi, superfici
+con pattern regolari, mani, testi e dettagli geometrici possono ancora 
+produrre imperfezioni. Inoltre, l'uso di provider esterni introduce
+aspetti pratici come totale dipendenza dalle API disponibili, latenza e costo 
+delle richieste. Magic Eraser non elimina questi limiti, ma li rende
+osservabili: salvando input, maschere, modello scelto, impostazioni e output, 
+permette di confrontare tentativi diversi e di ragionare sul
+workflow invece che solo sull'immagine finale.
 
 \section{Confronto con strumenti esistenti}
 
@@ -262,14 +548,18 @@ modificare solo una porzione controllata dell'immagine.
 \hline
 \textbf{Strumento} & \textbf{Analisi sintetica} \\
 \hline
-Editor professionali & Offrono controllo preciso e strumenti avanzati, ma richiedono competenze specifiche. Magic Eraser privilegia 
-automazione e semplicità d'uso. \\
+Editor professionali (Photoshop, Krita, Photopea)& 
+Offrono controllo preciso e manuale tramite strumenti avanzati, 
+ma richiedono competenze specifiche e spesso licenze costose.\\
 \hline
-Strumenti automatici & Consentono una rimozione rapida degli oggetti, ma spesso rendono poco visibile la pipeline. Magic Eraser conserva 
-passaggi e risultati. \\
+Strumenti automatici (Canva PRO, CapCut) & 
+Consentono una rimozione rapida degli oggetti, 
+ma nascondono completamente la pipeline e i modelli usati. Spesso le versioni gratuite 
+presentano limitazioni. \\
 \hline
-Demo di modelli AI & Permettono di provare singoli modelli, ma offrono poca gestione di progetti e immagini. Magic Eraser integra i 
-modelli in un'applicazione completa. \\
+Demo di modelli AI (Fal.ai, Replicate) & 
+Permettono di provare singoli modelli individualmente, 
+senza offrire gestione di progetti e immagini al di fuori del singolo test. \\
 \hline
 \end{tabular}
 \end{center}
@@ -406,7 +696,7 @@ la sequenza di elaborazione applicata.
 
 I risultati attesi sono immagini prima/dopo in cui l'oggetto selezionato viene rimosso o sostituito. La qualità dipende da tre 
 fattori principali: precisione della maschera, coerenza del modello generativo e complessità dello sfondo. Su sfondi uniformi il 
-risultato tende a essere più stabile, mentre scene complesse, oggetti parzialmente occlusi o prompt ambigui possono produrre artefatti.
+risultato tende a essere più stabile, mentre scene complesse, oggetti parzialmente occlusi o prompt ambigui possono produrre imprecisioni.
 
 \chapter{Conclusioni}
 
@@ -443,13 +733,19 @@ versionamento dei risultati e dashboard per monitorare tempi e costi di elaboraz
 \begin{thebibliography}{9}
 
 \bibitem{sam}
-Kirillov, A. et al. Segment Anything. IEEE/CVF International Conference on Computer Vision, 2023.
+Kirillov, A. et al. Segment Anything. arXiv:2304.02643, 2023. Disponibile su: \texttt{https://segment-anything.com}.
 
 \bibitem{latent-diffusion}
 Rombach, R. et al. High-Resolution Image Synthesis with Latent Diffusion Models. IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2022.
 
+\bibitem{bertalmio-inpainting}
+Bertalmio, M., Sapiro, G., Caselles, V. e Ballester, C. Image Inpainting. SIGGRAPH 2000, New Orleans, 2000.
+
 \bibitem{lama}
 Suvorov, R. et al. Resolution-robust Large Mask Inpainting with Fourier Convolutions. IEEE/CVF Winter Conference on Applications of Computer Vision, 2022.
+
+\bibitem{bentoml-generative-models}
+Xu, S. The Best Open-Source Image Generation Models in 2026. BentoML Blog, 2026. Disponibile online sul sito BentoML.
 
 \bibitem{fastapi}
 FastAPI Documentation. Framework Python per la costruzione di API web.
