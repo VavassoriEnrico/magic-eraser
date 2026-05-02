@@ -4,13 +4,17 @@ import {
   Box,
   Button,
   HStack,
+  Input,
+  SimpleGrid,
   Stack,
   Text,
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { BiFolderOpen, BiTrash } from "react-icons/bi";
 
 import { deletePipeline, listPipelines } from "../api/processes";
+import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import { GlassPanel } from "../components/common/GlassPanel";
 import { LoadingState, MessagePanel } from "../components/common/PageState";
 import { PageHeader } from "../components/common/PageHeader";
@@ -23,14 +27,17 @@ export default function PipelinesPage() {
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deletingPipelineId, setDeletingPipelineId] = useState<number | null>(null);
+  const [deletingPipelineId, setDeletingPipelineId] = useState<string | null>(null);
+  const [pendingDeletePipeline, setPendingDeletePipeline] = useState<Pipeline | null>(null);
+  const [searchValue, setSearchValue] = useState("");
 
-  const pageText = useColorModeValue("gray.800", "white");
-  const sectionLabel = useColorModeValue("gray.500", "whiteAlpha.600");
-  const subtleText = useColorModeValue("gray.600", "whiteAlpha.700");
-  const panelBg = useColorModeValue("white", "whiteAlpha.50");
-  const panelBorder = useColorModeValue("gray.200", "whiteAlpha.200");
-  const previewBg = useColorModeValue("gray.50", "whiteAlpha.100");
+  const pageText = useColorModeValue("white", "white");
+  const subtleText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
+  const panelBg = useColorModeValue("transparent", "#151b23");
+  const panelBorder = useColorModeValue("rgba(148,163,184,0.22)", "rgba(255,255,255,0.09)");
+  const previewBg = useColorModeValue("#242424", "#1b2430");
+  const compactPanelBg = useColorModeValue("#222222", "rgba(255,255,255,0.03)");
+  const inputBg = useColorModeValue("#242424", "#1b2430");
 
   useEffect(() => {
     let cancelled = false;
@@ -62,13 +69,24 @@ export default function PipelinesPage() {
   }, []);
 
   const sortedPipelines = useMemo(
-    () =>
-      [...pipelines].sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-      ),
+    () => [...pipelines].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
     [pipelines],
   );
+  const filteredPipelines = useMemo(() => {
+    const query = searchValue.trim().toLowerCase();
+    if (!query) {
+      return sortedPipelines;
+    }
+
+    return sortedPipelines.filter((pipeline) => {
+      const name = pipeline.name?.trim() || `Pipeline #${pipeline.id}`;
+      return (
+        name.toLowerCase().includes(query) ||
+        pipeline.status.toLowerCase().includes(query) ||
+        String(pipeline.id).includes(query)
+      );
+    });
+  }, [searchValue, sortedPipelines]);
 
   function openPipeline(pipeline: Pipeline) {
     const params = new URLSearchParams({
@@ -80,12 +98,7 @@ export default function PipelinesPage() {
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
-  async function onDeletePipeline(pipelineId: number) {
-    const shouldDelete = window.confirm("Delete this pipeline?");
-    if (!shouldDelete) {
-      return;
-    }
-
+  async function onDeletePipeline(pipelineId: string) {
     setDeletingPipelineId(pipelineId);
     setError("");
     try {
@@ -107,118 +120,181 @@ export default function PipelinesPage() {
   }
 
   return (
-    <Stack spacing={6} color={pageText}>
-      <PageHeader
-        title="Pipelines"
-        description="Open a previous pipeline and continue from the saved steps."
-        eyebrowColor={sectionLabel}
-        descriptionColor={subtleText}
+    <Stack spacing={6} color={pageText} px={{ base: 4, md: 6, xl: 8 }}>
+      <ConfirmDialog
+        isOpen={Boolean(pendingDeletePipeline)}
+        title="Delete pipeline"
+        description={`This will permanently remove ${
+          pendingDeletePipeline?.name?.trim() || "this pipeline"
+        }.`}
+        confirmLabel="Delete pipeline"
+        isLoading={deletingPipelineId === pendingDeletePipeline?.id}
+        onClose={() => setPendingDeletePipeline(null)}
+        onConfirm={() => {
+          if (pendingDeletePipeline) {
+            void onDeletePipeline(pendingDeletePipeline.id).then(() => setPendingDeletePipeline(null));
+          }
+        }}
       />
 
-      <Badge width="fit-content" colorScheme="blue" variant="subtle">
-        {sortedPipelines.length} pipeline{sortedPipelines.length === 1 ? "" : "s"}
-      </Badge>
+      <PageHeader
+        eyebrow=""
+        title="Pipelines"
+        descriptionColor={subtleText}
+        titleProps={{
+          fontSize: { base: "3xl", md: "4xl" },
+          textAlign: "left",
+          fontWeight: "800",
+          letterSpacing: "-0.05em",
+        }}
+      />
 
-      {sortedPipelines.length === 0 ? (
+      <GlassPanel p={{ base: 4, md: 5 }} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
+        <Stack direction={{ base: "column", lg: "row" }} align={{ base: "stretch", lg: "center" }} spacing={4}>
+          <HStack spacing={3} flexWrap="wrap">
+            <Badge width="fit-content" variant="subtle">
+              {filteredPipelines.length} pipeline{filteredPipelines.length === 1 ? "" : "s"}
+            </Badge>
+            {sortedPipelines[0] ? (
+              <Text color={subtleText} fontSize="sm">
+                Latest update {formatRelativeTime(sortedPipelines[0].updated_at)}
+              </Text>
+            ) : null}
+          </HStack>
+
+          <Box flex="1" maxW={{ lg: "360px" }} ml={{ lg: "auto" }}>
+            <Input
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+              placeholder="Find a pipeline..."
+              bg={inputBg}
+              borderColor={panelBorder}
+            />
+          </Box>
+        </Stack>
+      </GlassPanel>
+
+      {filteredPipelines.length === 0 ? (
         <GlassPanel p={5} lightBg={panelBg} darkBg={panelBg} lightBorder={panelBorder} darkBorder={panelBorder}>
-          <Text color={subtleText}>No pipelines available yet.</Text>
+          <Text color={subtleText}>{searchValue ? "No pipelines match your search." : "No pipelines available."}</Text>
         </GlassPanel>
       ) : (
-        <VStack align="stretch" spacing={4}>
-          {sortedPipelines.map((pipeline) => (
+        <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={4}>
+          {filteredPipelines.map((pipeline) => (
             <GlassPanel
               key={pipeline.id}
-              p={4}
-              lightBg={panelBg}
-              darkBg={panelBg}
+              p={{ base: 4, md: 4 }}
+              lightBg={compactPanelBg}
+              darkBg={compactPanelBg}
               lightBorder={panelBorder}
               darkBorder={panelBorder}
             >
-              <HStack justify="space-between" align="center" mb={3} flexWrap="wrap" gap={2}>
-                <VStack align="start" spacing={0}>
-                  <Text fontWeight="semibold" fontSize="lg">
-                    {pipeline.name?.trim() || `Pipeline #${pipeline.id}`}
-                  </Text>
-                  <Text color={subtleText} fontSize="sm">
-                    Updated {formatRelativeTime(pipeline.updated_at)}
-                  </Text>
-                </VStack>
-                <HStack>
-                  <Badge variant="subtle">status: {pipeline.status}</Badge>
-                  <Button size="sm" onClick={() => openPipeline(pipeline)}>
-                    Open
-                  </Button>
-                  <Button
-                    size="sm"
-                    colorScheme="red"
-                    variant="ghost"
-                    onClick={() => void onDeletePipeline(pipeline.id)}
-                    isLoading={deletingPipelineId === pipeline.id}
-                  >
-                    Delete
-                  </Button>
-                </HStack>
-              </HStack>
-
-              <HStack align="start" spacing={4} flexWrap="wrap">
-                <Box flex="1" minW={{ base: "100%", md: "240px" }}>
-                  <Text color={subtleText} fontSize="xs" textTransform="uppercase" mb={1}>
-                    Start image
-                  </Text>
-                  <Box borderRadius="md" overflow="hidden" border="1px solid" borderColor={panelBorder}>
-                    <img
-                      src={toImageUrl(pipeline.start_image_url)}
-                      alt="Pipeline start"
-                      style={{
-                        width: "100%",
-                        height: "260px",
-                        objectFit: "contain",
-                        display: "block",
-                        backgroundColor: "rgba(0, 0, 0, 0.12)",
-                      }}
-                    />
-                  </Box>
-                </Box>
-
-                <Box flex="1" minW={{ base: "100%", md: "240px" }}>
-                  <Text color={subtleText} fontSize="xs" textTransform="uppercase" mb={1}>
-                    Final image
-                  </Text>
-                  <Box
-                    borderRadius="md"
-                    overflow="hidden"
-                    border="1px solid"
-                    borderColor={panelBorder}
-                    minH="180px"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    bg={previewBg}
-                  >
-                    {pipeline.final_image_url ? (
-                      <img
-                        src={toImageUrl(pipeline.final_image_url)}
-                        alt="Pipeline final"
-                        style={{
-                          width: "100%",
-                          height: "260px",
-                          objectFit: "contain",
-                          display: "block",
-                          backgroundColor: "rgba(0, 0, 0, 0.12)",
-                        }}
-                      />
-                    ) : (
+              <VStack align="stretch" spacing={4}>
+                <HStack justify="space-between" align="start" gap={3}>
+                  <VStack align="start" spacing={1} minW={0}>
+                    <Text fontWeight="800" fontSize="lg" letterSpacing="-0.04em" noOfLines={1}>
+                      {pipeline.name?.trim() || `Pipeline #${pipeline.id}`}
+                    </Text>
+                    <HStack spacing={2} flexWrap="wrap">
+                      <Badge variant="subtle">{pipeline.status}</Badge>
                       <Text color={subtleText} fontSize="sm">
-                        Not completed yet
+                        {formatRelativeTime(pipeline.updated_at)}
                       </Text>
-                    )}
-                  </Box>
-                </Box>
-              </HStack>
+                    </HStack>
+                  </VStack>
+                  <HStack spacing={2} flexShrink={0}>
+                    <Button size="sm" leftIcon={<BiFolderOpen />} onClick={() => openPipeline(pipeline)}>
+                      Open
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      leftIcon={<BiTrash />}
+                      onClick={() => setPendingDeletePipeline(pipeline)}
+                      isLoading={deletingPipelineId === pipeline.id}
+                    >
+                      Delete
+                    </Button>
+                  </HStack>
+                </HStack>
+
+                <SimpleGrid columns={2} spacing={3}>
+                  <ImagePanel
+                    label="Start"
+                    src={toImageUrl(pipeline.start_image_url)}
+                    alt="Pipeline start"
+                    panelBorder={panelBorder}
+                    previewBg={previewBg}
+                  />
+                  <ImagePanel
+                    label="Final"
+                    src={pipeline.final_image_url ? toImageUrl(pipeline.final_image_url) : ""}
+                    alt="Pipeline final"
+                    panelBorder={panelBorder}
+                    previewBg={previewBg}
+                    emptyLabel="Not completed yet"
+                  />
+                </SimpleGrid>
+              </VStack>
             </GlassPanel>
           ))}
-        </VStack>
+        </SimpleGrid>
       )}
     </Stack>
+  );
+}
+
+function ImagePanel({
+  label,
+  src,
+  alt,
+  panelBorder,
+  previewBg,
+  emptyLabel,
+}: {
+  label: string;
+  src: string;
+  alt: string;
+  panelBorder: string;
+  previewBg: string;
+  emptyLabel?: string;
+}) {
+  const mutedText = useColorModeValue("rgba(245,241,235,0.72)", "whiteAlpha.700");
+
+  return (
+    <Box minW={0}>
+      <Text
+        color={mutedText}
+        fontSize="xs"
+        textTransform="uppercase"
+        mb={2}
+        letterSpacing="0.14em"
+      >
+        {label}
+      </Text>
+      <Box
+        borderRadius="8px"
+        overflow="hidden"
+        border="1px solid"
+        borderColor={panelBorder}
+        h={{ base: "120px", md: "136px" }}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        bg={previewBg}
+      >
+        {src ? (
+          <img
+            src={src}
+            alt={alt}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        ) : (
+          <Text color={mutedText} fontSize="sm">
+            {emptyLabel}
+          </Text>
+        )}
+      </Box>
+    </Box>
   );
 }

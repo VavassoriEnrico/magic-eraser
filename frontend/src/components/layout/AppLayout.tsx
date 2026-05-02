@@ -1,7 +1,6 @@
 import { useColorModeValue } from "@chakra-ui/react";
 
 import defaultBackgroundDarkImage from "../../assets/background2.jpg";
-import defaultBackgroundLightImage from "../../assets/background2_light.jpg";
 import Navbar from "./Navbar";
 import Footbar from "./Footbar";
 import type { AppLayoutProps } from "../../types/ui";
@@ -13,21 +12,21 @@ export default function AppLayout({
   backgroundImageUrl,
 }: AppLayoutProps) {
   const defaultResolvedBackgroundImageUrl = useColorModeValue(
-    defaultBackgroundLightImage,
+    undefined,
     defaultBackgroundDarkImage
   );
   const themedBackgroundSource =
     typeof backgroundImageUrl === "string"
       ? {
-          light: defaultBackgroundLightImage,
+          light: "",
           dark: defaultBackgroundDarkImage,
         }
       : backgroundImageUrl ?? {
-          light: defaultBackgroundLightImage,
+          light: "",
           dark: defaultBackgroundDarkImage,
         };
   const themedBackgroundImageUrl = useColorModeValue(
-    themedBackgroundSource.light,
+    undefined,
     themedBackgroundSource.dark
   );
 
@@ -39,8 +38,8 @@ export default function AppLayout({
         : defaultResolvedBackgroundImageUrl;
 
   const overlayGradient = useColorModeValue(
-    "linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 247, 250, 0.7) 100%)",
-    "linear-gradient(180deg, rgba(7, 11, 18, 0.58) 0%, rgba(7, 11, 18, 0.8) 100%)"
+    undefined,
+    "linear-gradient(180deg, rgba(4, 8, 15, 0.9) 0%, rgba(4, 8, 15, 0.96) 100%)"
   );
 
   return (
@@ -58,9 +57,13 @@ export default function AppLayout({
           : undefined
       }
     >
-      <Navbar currentPath={currentPath} onNavigate={onNavigate} />
-      <main className="app-shell__content">{children}</main>
-      <Footbar />
+      <div className="app-shell__workspace">
+        <Navbar currentPath={currentPath} onNavigate={onNavigate} />
+        <main className={`app-shell__content${currentPath === "/" ? " app-shell__content--home" : ""}`}>
+          {children}
+        </main>
+        <Footbar />
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import theme from "../../theme";
 function renderSection(overrideProps?: Partial<React.ComponentProps<typeof ProjectOverviewSection>>) {
   const projects: Project[] = [
     {
-      id: 1,
+      id: "1",
       name: "Project One",
       created_at: "2026-04-19T08:00:00Z",
       updated_at: "2026-04-20T10:00:00Z",
@@ -19,8 +19,8 @@ function renderSection(overrideProps?: Partial<React.ComponentProps<typeof Proje
 
   const projectImages: ImageAsset[] = [
     {
-      id: 7,
-      project_id: 1,
+      id: "7",
+      project_id: "1",
       fileName: "sample.png",
       filePath: "/uploads/sample.png",
       created_at: "2026-04-20T09:00:00Z",
@@ -31,22 +31,21 @@ function renderSection(overrideProps?: Partial<React.ComponentProps<typeof Proje
     projects,
     orderedProjects: projects,
     expandedProjectId: "1",
-    projectImagesMap: { 1: projectImages },
+    projectImagesMap: { "1": projectImages },
     projectName: "Draft project",
     loadingProjects: false,
     loadingImagesByProject: {},
     submitting: false,
     editingProjectId: "",
     editingProjectName: "",
-    deleteConfirmProjectId: "",
     previewScrollStateByProject: {
-      1: {
+      "1": {
         hasOverflow: true,
         canScrollLeft: true,
         canScrollRight: true,
       },
     },
-    imageStripRefs: { current: { 1: null } },
+    imageStripRefs: { current: { "1": null } },
     onProjectNameChange: vi.fn(),
     onCreateProject: vi.fn(),
     onToggleProject: vi.fn(),
@@ -59,7 +58,6 @@ function renderSection(overrideProps?: Partial<React.ComponentProps<typeof Proje
     onEditingProjectNameChange: vi.fn(),
     onSaveInlineEdit: vi.fn(),
     onCancelInlineEdit: vi.fn(),
-    onRequestDeleteProject: vi.fn(),
     onConfirmDeleteProject: vi.fn(),
     ...overrideProps,
   };
@@ -114,17 +112,14 @@ describe("ProjectOverviewSection", () => {
 
   test("opens the project menu and confirms deletion", async () => {
     const user = userEvent.setup();
-    const { props, project } = renderSection({
-      deleteConfirmProjectId: "1",
-    });
+    const { props, project } = renderSection();
 
-    fireEvent.click(screen.getByRole("button", { name: "Project menu" }));
+    await user.click(screen.getByRole("button", { name: "Project menu" }));
     await waitFor(() => {
-      expect(screen.getByText("Are you sure?")).toBeInTheDocument();
+      expect(screen.getByText("Delete project")).toBeInTheDocument();
     });
 
-    const yesButtons = screen.getAllByText("Yes");
-    fireEvent.click(yesButtons[yesButtons.length - 1]);
+    await user.click(screen.getByRole("button", { name: "Delete project" }));
     expect(props.onConfirmDeleteProject).toHaveBeenCalledWith(project.id);
   });
 
@@ -141,15 +136,29 @@ describe("ProjectOverviewSection", () => {
     expect(props.onScrollPreview).toHaveBeenCalledWith(project.id, -1);
     expect(props.onScrollPreview).toHaveBeenCalledWith(project.id, 1);
 
-    fireEvent.click(screen.getByRole("button", { name: "Image menu" }));
-    const editButtons = await screen.findAllByText("Edit");
-    fireEvent.click(editButtons[editButtons.length - 1]);
-    fireEvent.click(screen.getByRole("button", { name: "Image menu" }));
-    const deleteButtons = await screen.findAllByText("Delete");
-    fireEvent.click(deleteButtons[deleteButtons.length - 1]);
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    await waitFor(() => {
+      expect(screen.getByText("Delete image")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Delete image" }));
 
     expect(props.onOpenLaboratory).toHaveBeenCalledWith(image, project.id);
     expect(props.onDeleteImage).toHaveBeenCalledWith(image.id, project.id);
+  });
+
+  test("does not open the image preview when deleting and aborts on cancelled confirm", async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await waitFor(() => {
+      expect(screen.getByText("Delete image")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(props.onDeleteImage).not.toHaveBeenCalled();
+    expect(props.onOpenImagePopup).not.toHaveBeenCalled();
   });
 
   test("toggles the project when the card is clicked", async () => {
@@ -158,6 +167,6 @@ describe("ProjectOverviewSection", () => {
 
     await user.click(screen.getByText("Project One"));
 
-    expect(props.onToggleProject).toHaveBeenCalledWith(1);
+    expect(props.onToggleProject).toHaveBeenCalledWith("1");
   });
 });

@@ -2,7 +2,14 @@ import type { ReactNode, FormEvent } from "react";
 
 import type { ImageAsset, Project } from "./api";
 
-export type AppPath = "/" | "/gallery" | "/pipelines" | "/profile" | "/laboratory";
+export type AppPath =
+  | "/"
+  | "/gallery"
+  | "/pipelines"
+  | "/profile"
+  | "/laboratory"
+  | "/login"
+  | "/signup";
 
 export interface AppLayoutProps {
   children: ReactNode;
@@ -24,7 +31,7 @@ export interface OpenedImage {
 
 export interface MoveDialogState {
   image: ImageAsset;
-  sourceProjectId: number;
+  sourceProjectId: string;
 }
 
 export interface FooterColumnProps {
@@ -46,10 +53,10 @@ export interface HomeData {
   selectedProjectId: string;
   uploadProjectId: string;
   expandedProjectId: string;
-  projectImagesMap: Record<number, ImageAsset[]>;
+  projectImagesMap: Record<string, ImageAsset[]>;
   projectName: string;
   loadingProjects: boolean;
-  loadingImagesByProject: Record<number, boolean>;
+  loadingImagesByProject: Record<string, boolean>;
   submitting: boolean;
   error: string;
   message: string;
@@ -59,19 +66,19 @@ export interface HomeData {
   setProjectName: (name: string) => void;
   loadProjects: () => Promise<void>;
   onCreateProject: (event: FormEvent<HTMLFormElement>) => Promise<void>;
-  onDeleteProject: (projectId: number) => Promise<void>;
-  onRenameProject: (projectId: number, nextName: string) => Promise<boolean>;
+  onDeleteProject: (projectId: string) => Promise<void>;
+  onRenameProject: (projectId: string, nextName: string) => Promise<boolean>;
   onCreateImage: (
     event: FormEvent<HTMLFormElement>,
     uploadFiles: File[],
     clearUploadFiles: () => void
   ) => Promise<void>;
-  onDeleteImage: (imageId: number, projectId: number) => Promise<void>;
-  onEditImage: (imageId: number, projectId: number) => void;
-  onDuplicateImage: (image: ImageAsset, projectId: number) => Promise<void>;
+  onDeleteImage: (imageId: string, projectId: string) => Promise<void>;
+  onEditImage: (imageId: string, projectId: string) => void;
+  onDuplicateImage: (image: ImageAsset, projectId: string) => Promise<void>;
   onMoveImage: (
     image: ImageAsset,
-    sourceProjectId: number,
-    targetProjectId: number
+    sourceProjectId: string,
+    targetProjectId: string
   ) => Promise<void>;
 }

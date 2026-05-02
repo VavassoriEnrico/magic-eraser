@@ -33,6 +33,12 @@ If you already built it before:
 docker compose -f docker-compose.dev.yml up -d
 ```
 
+If the frontend starts failing to resolve a newly added npm package inside Docker, recreate the dev containers and volumes once:
+```bash
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up --build
+```
+
 
 Services:
 - Frontend: `http://localhost:5173`
@@ -71,6 +77,8 @@ docker compose down -v
 cd frontend
 npm run test
 ```
+
+Create `frontend/.env` from `frontend/.env.example` if you want authentication and profile features enabled in the UI.
 
 ### backend (to implement)
 ```bash

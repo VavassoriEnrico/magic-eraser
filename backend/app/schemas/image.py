@@ -7,8 +7,8 @@ from pydantic import BaseModel, ConfigDict
 #it is used to validate the data and to serialize it to json when sending it to the client
 
 class ImageRead(BaseModel):
-    id: int
-    project_id: int
+    id: str
+    project_id: str
     fileName: str
     filePath: str
     created_at: datetime

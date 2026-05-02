@@ -2,29 +2,41 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { uploadImageFromUrl } from "../api/images";
 import {
+  buildConvexHullPreview,
   createPipelineStep,
   finishPipeline,
   getPipeline,
   getPipelineSteps,
   getProcessCatalog,
-  renamePipeline,
+  replacePipeline,
   runProcess,
   startPipeline,
 } from "../api/processes";
 import type {
   AdditionalSettingDefinition,
   ImageAsset,
+  PipelineReplaceStepPayload,
   PipelineStep,
   ProcessCatalogItem,
   ProcessRunPayload,
   SegmentModel,
 } from "../types/api";
-import type { LabCell } from "../types/laboratory";
+import type { ConvexHullPreviewMode, LabCell } from "../types/laboratory";
 import { getErrorMessage } from "../utils/errors";
+import { getLaboratorySelectedImage } from "../utils/laboratorySelection";
 import { toImageUrl } from "../utils/images";
 
-const STORAGE_KEY = "laboratory:selected-image";
 const DEFAULT_FILL_PROMPT = "Fill the missing area naturally using the surrounding background.";
+const DEFAULT_OUTPUT_CONVEX_HULL_MODE: ConvexHullPreviewMode = "medium";
+export type PipelineSaveMode = "overwrite" | "save_as_new";
+const NOTEBOOK_EXPLANATION_LIST = [
+  "Standard pipeline:",
+  "- Segmentation: write as prompt what you want to edit, ex. 'cat' 'bottle'",
+  "- - you obtain the mask of that object. The mask will then be used in the future steps.",
+  "- Remove: the mask is applied to the image and used to remove the object.",
+  "- Fill: write as prompt what you want to add in the outlined area",
+  "You can experiment quite freely with the workflow, but the first step should always be a segmentation!",
+];
 
 const FALLBACK_CATALOG: ProcessCatalogItem[] = [
   {
@@ -32,21 +44,45 @@ const FALLBACK_CATALOG: ProcessCatalogItem[] = [
     title: "Segment",
     priority: 1,
     prompt_required: true,
-    model_options: [{ key: "sam3", label: "SAM 3.1", default: true }],
+    model_options: [{
+      key: "sam3",
+      label: "SAM 3.1",
+      default: true,
+      additional_settings: [
+      ],
+    }],
   },
   {
     process_type: "remove_with_mask",
     title: "Remove",
     priority: 2,
     prompt_required: false,
+    model_options: [{
+      key: "finegrain-eraser",
+      label: "Finegrain Eraser",
+      default: true,
+      additional_settings: [
+        {
+          key: "mode",
+          label: "Mode",
+          type: "select",
+          description: "Choose the removal quality mode used by Finegrain Eraser.",
+          default_value: "standard",
+          options: [
+            { value: "express", label: "Express" },
+            { value: "standard", label: "Standard" },
+            { value: "premium", label: "Premium" },
+          ],
+        },
+      ],
+    }],
   },
   {
     process_type: "generate_from_prompt",
     title: "Fill",
     priority: 3,
     prompt_required: true,
-    model_options: [{ key: "flux-fill-pro", label: "FLUX.1 [pro] Fill", default: true },
-    { key: "flux-lora-fill", label: "FLUX.1 [dev] Fill with LoRAs", default: false }],
+    model_options: [{ key: "flux-fill-pro", label: "FLUX.1 [pro] Fill", default: true }],
   },
 ];
 
@@ -73,13 +109,7 @@ function sanitizeAdditionalSettings(
 }
 
 function getSelectedImageFromSession(): ImageAsset | null {
-  try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as ImageAsset;
-  } catch {
-    return null;
-  }
+  return getLaboratorySelectedImage();
 }
 
 function createCell(def: ProcessCatalogItem): LabCell {
@@ -98,10 +128,41 @@ function createCell(def: ProcessCatalogItem): LabCell {
     prompt: defaultPrompt,
     modelKey: defaultModel?.key ?? "",
     additionalSettings: getDefaultAdditionalSettings(defaultModel),
+    originalOutputUrl: "",
+    outputConvexHullEnabled: false,
+    outputConvexHullMode: DEFAULT_OUTPUT_CONVEX_HULL_MODE,
+    outputPreviewLoading: false,
     status: "idle",
     outputUrl: "",
     error: "",
   };
+}
+
+function getEditableImageUrlBeforeCell(
+  cellIndex: number,
+  sourceCells: LabCell[],
+  selectedImage: ImageAsset | null,
+) {
+  if (!selectedImage) {
+    return "";
+  }
+
+  const cell = sourceCells[cellIndex];
+  if (!cell) {
+    return "";
+  }
+
+  for (let i = cellIndex - 1; i >= 0; i -= 1) {
+    const candidate = sourceCells[i];
+    if (candidate.processType === "segment_from_prompt") {
+      continue;
+    }
+
+    const candidateOutputUrl = candidate.outputUrl.trim();
+    return candidateOutputUrl ? toImageUrl(candidateOutputUrl) : "";
+  }
+
+  return toImageUrl(selectedImage.filePath);
 }
 
 function getSegmentationContext(cellIndex: number, sourceCells: LabCell[], selectedImage: ImageAsset | null) {
@@ -116,13 +177,7 @@ function getSegmentationContext(cellIndex: number, sourceCells: LabCell[], selec
       return null;
     }
 
-    const inputImageUrl =
-      i === 0
-        ? selectedImage
-          ? toImageUrl(selectedImage.filePath)
-          : ""
-        : toImageUrl(sourceCells[i - 1].outputUrl);
-
+    const inputImageUrl = getEditableImageUrlBeforeCell(i, sourceCells, selectedImage);
     if (!inputImageUrl) {
       return null;
     }
@@ -141,25 +196,7 @@ function getEffectiveInputForCell(
   sourceCells: LabCell[],
   selectedImage: ImageAsset | null,
 ) {
-  if (!selectedImage) {
-    return "";
-  }
-
-  const cell = sourceCells[cellIndex];
-  if (!cell) {
-    return "";
-  }
-
-  if (cell.processType === "generate_from_prompt") {
-    const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
-    return segmentationContext?.inputImageUrl ?? "";
-  }
-
-  if (cellIndex === 0) {
-    return toImageUrl(selectedImage.filePath);
-  }
-
-  return toImageUrl(sourceCells[cellIndex - 1].outputUrl);
+  return getEditableImageUrlBeforeCell(cellIndex, sourceCells, selectedImage);
 }
 
 function createCellFromStep(def: ProcessCatalogItem, step: PipelineStep): LabCell {
@@ -178,10 +215,22 @@ function createCellFromStep(def: ProcessCatalogItem, step: PipelineStep): LabCel
       ...baseCell.additionalSettings,
       ...additionalSettings,
     },
+    originalOutputUrl: step.output_image_url ?? "",
+    outputConvexHullEnabled: false,
+    outputConvexHullMode: DEFAULT_OUTPUT_CONVEX_HULL_MODE,
+    outputPreviewLoading: false,
     status: step.status === "done" ? "done" : "failed",
     outputUrl: step.output_image_url ?? "",
     error: step.error_message ?? "",
   };
+}
+
+function getPipelineNameFromImage(selectedImage: ImageAsset | null) {
+  if (!selectedImage) {
+    return "";
+  }
+
+  return selectedImage.fileName?.startsWith("Pipeline #") ? "" : selectedImage.fileName ?? "";
 }
 
 function syncCellWithDefinition(cell: LabCell, def: ProcessCatalogItem): LabCell {
@@ -218,7 +267,7 @@ export function getMaskOverlayForCell(
   selectedImage: ImageAsset | null,
 ) {
   const cell = sourceCells[cellIndex];
-  if (!cell || cell.processType !== "generate_from_prompt") {
+  if (!cell || (cell.processType !== "generate_from_prompt" && cell.processType !== "remove_with_mask")) {
     return "";
   }
 
@@ -245,13 +294,14 @@ export function useLaboratoryNotebook() {
   const queryImageId = urlParams.get("imageId");
   const queryPipelineId = urlParams.get("pipelineId");
   const [selectedImage, setSelectedImage] = useState<ImageAsset | null>(() => getSelectedImageFromSession());
-  const [activePipelineId, setActivePipelineId] = useState<number | null>(() =>
-    queryPipelineId ? Number(queryPipelineId) : null,
+  const [activePipelineId, setActivePipelineId] = useState<string | null>(() =>
+    queryPipelineId ? queryPipelineId : null,
   );
   const [catalog, setCatalog] = useState<ProcessCatalogItem[]>(FALLBACK_CATALOG);
   const [cells, setCells] = useState<LabCell[]>([]);
   const [addProcessTypeByAnchor, setAddProcessTypeByAnchor] = useState<Record<string, string>>({});
   const [runningAll, setRunningAll] = useState(false);
+  const [savingPipeline, setSavingPipeline] = useState(false);
   const [savingCellId, setSavingCellId] = useState("");
   const [saveMessageByCell, setSaveMessageByCell] = useState<Record<string, string>>({});
   const [saveErrorByCell, setSaveErrorByCell] = useState<Record<string, string>>({});
@@ -281,12 +331,12 @@ export function useLaboratoryNotebook() {
   }, []);
 
   useEffect(() => {
-    if (!queryPipelineId || Number.isNaN(Number(queryPipelineId)) || catalog.length === 0) {
+    if (!queryPipelineId || catalog.length === 0) {
       return;
     }
 
     let cancelled = false;
-    const pipelineId = Number(queryPipelineId);
+    const pipelineId = queryPipelineId;
 
     async function loadPipelineData() {
       setLoadingPipeline(true);
@@ -306,7 +356,7 @@ export function useLaboratoryNotebook() {
         });
 
         const loadedCells = [...steps]
-          .sort((a, b) => a.step_index - b.step_index || a.id - b.id)
+          .sort((a, b) => a.step_index - b.step_index || a.id.localeCompare(b.id))
           .map((step) => {
             const definition = catalog.find((item) => item.process_type === step.process_type);
             if (!definition) return null;
@@ -402,22 +452,7 @@ export function useLaboratoryNotebook() {
     });
   }, [catalog]);
 
-  const notebookExplanationList = useMemo(() => {
-    const seen = new Set<string>();
-    const items: string[] = [];
-
-    for (const item of catalog) {
-      const explanations = [item.explanation, item.priority_explanation];
-      for (const text of explanations) {
-        const clean = (text ?? "").trim();
-        if (!clean || seen.has(clean)) continue;
-        seen.add(clean);
-        items.push(clean);
-      }
-    }
-
-    return items;
-  }, [catalog]);
+  const notebookExplanationList = NOTEBOOK_EXPLANATION_LIST;
 
   function getAddAnchorKey(afterIndex: number) {
     if (afterIndex < 0) return "start";
@@ -425,7 +460,11 @@ export function useLaboratoryNotebook() {
   }
 
   function getAvailableProcessesAfter(afterIndex: number, sourceCells: LabCell[] = cells) {
-    const previousPriority = afterIndex >= 0 ? sourceCells[afterIndex]?.priority ?? 0 : 0;
+    const previousCell = afterIndex >= 0 ? sourceCells[afterIndex] : undefined;
+    const previousPriority =
+      previousCell?.processType === "remove_with_mask" || previousCell?.processType === "generate_from_prompt"
+        ? 0
+        : previousCell?.priority ?? 0;
     const nextPriority =
       afterIndex + 1 < sourceCells.length
         ? sourceCells[afterIndex + 1]?.priority ?? Number.MAX_SAFE_INTEGER
@@ -447,10 +486,19 @@ export function useLaboratoryNotebook() {
     }
 
     const previousProcessType = afterIndex >= 0 ? cells[afterIndex]?.processType : undefined;
-    if (previousProcessType === "segment_from_prompt") {
-      const preferredFill = available.find((processItem) => processItem.process_type === "generate_from_prompt");
-      if (preferredFill) {
-        return preferredFill.process_type;
+    const preferredNextProcessType =
+      previousProcessType === "segment_from_prompt"
+        ? "remove_with_mask"
+        : previousProcessType === "remove_with_mask"
+          ? "generate_from_prompt"
+          : previousProcessType === "generate_from_prompt"
+            ? "segment_from_prompt"
+            : undefined;
+
+    if (preferredNextProcessType) {
+      const preferredProcess = available.find((processItem) => processItem.process_type === preferredNextProcessType);
+      if (preferredProcess) {
+        return preferredProcess.process_type;
       }
     }
 
@@ -483,7 +531,15 @@ export function useLaboratoryNotebook() {
 
       for (let i = insertAt; i < next.length; i += 1) {
         if (i === insertAt) continue;
-        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
+        next[i] = {
+          ...next[i],
+          status: "idle",
+          outputUrl: "",
+          originalOutputUrl: "",
+          outputConvexHullEnabled: false,
+          outputPreviewLoading: false,
+          error: "",
+        };
       }
 
       return next;
@@ -555,7 +611,15 @@ export function useLaboratoryNotebook() {
     setCells((prev) => {
       const next = prev.filter((_, index) => index !== cellIndex);
       for (let i = cellIndex; i < next.length; i += 1) {
-        next[i] = { ...next[i], status: "idle", outputUrl: "", error: "" };
+        next[i] = {
+          ...next[i],
+          status: "idle",
+          outputUrl: "",
+          originalOutputUrl: "",
+          outputConvexHullEnabled: false,
+          outputPreviewLoading: false,
+          error: "",
+        };
       }
       return next;
     });
@@ -563,20 +627,95 @@ export function useLaboratoryNotebook() {
     setSaveError("");
   }
 
+  async function setSegmentOutputConvexHull(
+    cellIndex: number,
+    enabled: boolean,
+    mode?: ConvexHullPreviewMode,
+  ) {
+    const currentCells = [...cells];
+    const cell = currentCells[cellIndex];
+    if (!cell || cell.processType !== "segment_from_prompt") {
+      return;
+    }
+
+    const baseOutputUrl = cell.originalOutputUrl || cell.outputUrl;
+    if (!baseOutputUrl) {
+      return;
+    }
+
+    const nextMode = mode ?? cell.outputConvexHullMode ?? DEFAULT_OUTPUT_CONVEX_HULL_MODE;
+
+    if (!enabled) {
+      updateCell(cellIndex, {
+        outputConvexHullEnabled: false,
+        outputPreviewLoading: false,
+        outputUrl: baseOutputUrl,
+        error: "",
+      });
+      return;
+    }
+
+    updateCell(cellIndex, {
+      outputPreviewLoading: true,
+      error: "",
+      outputConvexHullMode: nextMode,
+    });
+
+    try {
+      const response = await buildConvexHullPreview({
+        mask_image_url: toImageUrl(baseOutputUrl),
+        mode: nextMode,
+      });
+      updateCell(cellIndex, {
+        outputConvexHullEnabled: true,
+        outputConvexHullMode: nextMode,
+        outputPreviewLoading: false,
+        outputUrl: response.output_image_url,
+        error: "",
+      });
+    } catch {
+      updateCell(cellIndex, {
+        outputConvexHullEnabled: false,
+        outputPreviewLoading: false,
+        outputUrl: baseOutputUrl,
+        error: "Unable to build convex hull preview from the current mask",
+      });
+    }
+  }
+
+  async function setSegmentOutputConvexHullMode(cellIndex: number, mode: ConvexHullPreviewMode) {
+    setCells((prev) => {
+      const next = [...prev];
+      const cell = next[cellIndex];
+      if (!cell) return prev;
+      next[cellIndex] = {
+        ...cell,
+        outputConvexHullMode: mode,
+      };
+      return next;
+    });
+
+    const currentCell = cells[cellIndex];
+    if (!currentCell) {
+      return;
+    }
+
+    await setSegmentOutputConvexHull(cellIndex, true, mode);
+  }
+
   function buildPayload(
     cellIndex: number,
     cell: LabCell,
     sourceCells: LabCell[],
     inputImageUrl: string,
-    previousOutputUrl: string,
   ): ProcessRunPayload {
     const basePayload: ProcessRunPayload = {
       process_type: cell.processType,
       priority: cell.priority,
       pipeline_id: activePipelineId ?? undefined,
       step_index: cellIndex + 1,
-      project_id: queryProjectId ? Number(queryProjectId) : selectedImage?.project_id,
-      image_id: queryImageId ? Number(queryImageId) : selectedImage?.id,
+      project_id: queryProjectId ?? selectedImage?.project_id,
+      image_id: queryImageId ?? selectedImage?.id,
     };
 
     if (cell.processType === "segment_from_prompt") {
@@ -592,10 +731,15 @@ export function useLaboratoryNotebook() {
     }
 
     if (cell.processType === "remove_with_mask") {
+      const additionalSettings = sanitizeAdditionalSettings(cell.additionalSettings);
+      const segmentationContext = getSegmentationContext(cellIndex, sourceCells, selectedImage);
+
       return {
         ...basePayload,
-        input_image_url: selectedImage ? toImageUrl(selectedImage.filePath) : inputImageUrl,
-        mask_image_url: toImageUrl(previousOutputUrl),
+        input_image_url: inputImageUrl,
+        mask_image_url: segmentationContext?.maskImageUrl,
+        model_key: cell.modelKey || undefined,
+        additional_settings: Object.keys(additionalSettings).length > 0 ? additionalSettings : undefined,
       };
     }
 
@@ -608,7 +752,7 @@ export function useLaboratoryNotebook() {
         prompt: cell.prompt,
         model_key: cell.modelKey || undefined,
         additional_settings: Object.keys(additionalSettings).length > 0 ? additionalSettings : undefined,
-        input_image_url: segmentationContext?.inputImageUrl || inputImageUrl,
+        input_image_url: inputImageUrl,
         mask_image_url: segmentationContext?.maskImageUrl,
       };
     }
@@ -628,16 +772,21 @@ export function useLaboratoryNotebook() {
     if (!cell) return null;
 
     const inputImageUrl = getInputForCell(cellIndex, currentCells);
-    const previousOutputUrl = cellIndex > 0 ? currentCells[cellIndex - 1].outputUrl : "";
 
     if (!inputImageUrl) {
       updateCell(cellIndex, { status: "failed", error: "Previous cell output missing" });
       return null;
     }
 
-    if (cell.processType === "remove_with_mask" && !previousOutputUrl) {
-      updateCell(cellIndex, { status: "failed", error: "Mask image missing from previous cell" });
-      return null;
+    if (cell.processType === "remove_with_mask") {
+      const segmentationContext = getSegmentationContext(cellIndex, currentCells, selectedImage);
+      if (!segmentationContext?.maskImageUrl) {
+        updateCell(cellIndex, {
+          status: "failed",
+          error: "Removal requires a mask from a previous segmentation cell",
+        });
+        return null;
+      }
     }
 
     if (cell.processType === "generate_from_prompt") {
@@ -663,9 +812,17 @@ export function useLaboratoryNotebook() {
     setSaveError("");
 
     try {
-      const payload = buildPayload(cellIndex, cell, currentCells, inputImageUrl, previousOutputUrl);
+      const payload = buildPayload(cellIndex, cell, currentCells, inputImageUrl);
       const response = await runProcess(payload);
-      updateCell(cellIndex, { status: "done", outputUrl: response.output_image_url, error: "" });
+      updateCell(cellIndex, {
+        status: "done",
+        outputUrl: response.output_image_url,
+        originalOutputUrl: response.output_image_url,
+        outputConvexHullEnabled: false,
+        outputConvexHullMode: DEFAULT_OUTPUT_CONVEX_HULL_MODE,
+        outputPreviewLoading: false,
+        error: "",
+      });
       return response.output_image_url;
     } catch (error) {
       updateCell(cellIndex, {
@@ -709,82 +866,104 @@ export function useLaboratoryNotebook() {
     setRunningAll(false);
   }
 
-  async function savePipelineName() {
+  function buildPipelineStepsSnapshot(): PipelineReplaceStepPayload[] {
+    if (!selectedImage) {
+      return [];
+    }
+
+    return cells.flatMap((cell, index) => {
+      if (cell.status !== "done" && cell.status !== "failed") {
+        return [];
+      }
+
+      const inputImageUrl = getInputForCell(index, cells);
+      const segmentationContext = getSegmentationContext(index, cells, selectedImage);
+
+      return [{
+        step_index: index + 1,
+        process_type: cell.processType,
+        priority: cell.priority,
+        model_key: cell.modelKey || undefined,
+        prompt: cell.prompt || undefined,
+        additional_settings_json: sanitizeAdditionalSettings(cell.additionalSettings),
+        input_image_url: inputImageUrl,
+        mask_image_url:
+          cell.processType === "remove_with_mask" || cell.processType === "generate_from_prompt"
+            ? segmentationContext?.maskImageUrl
+            : undefined,
+        output_image_url: cell.outputUrl || undefined,
+        status: cell.status === "done" ? "done" : "failed",
+        error_message: cell.error || undefined,
+      }];
+    });
+  }
+
+  async function savePipeline(mode: PipelineSaveMode, name: string) {
     if (!selectedImage) {
       setSaveError("Select an image first");
-      return;
+      return false;
     }
 
     const latestOutputUrl = [...cells].reverse().find((cell) => cell.outputUrl && cell.status === "done")?.outputUrl;
 
     if (!latestOutputUrl) {
       setSaveError("Run at least one cell before saving");
-      return;
+      return false;
     }
 
-    const currentName = selectedImage.fileName?.startsWith("Pipeline #") ? "" : selectedImage.fileName ?? "";
-    const nextName = window.prompt("Choose a name for this pipeline", currentName);
-    if (nextName === null) {
-      return;
-    }
+    const nextName = name.trim() || undefined;
+    const steps = buildPipelineStepsSnapshot();
 
     try {
+      setSavingPipeline(true);
+
+      if (mode === "overwrite" && activePipelineId) {
+        const updated = await replacePipeline(activePipelineId, {
+          name: nextName,
+          status: "done",
+          final_image_url: latestOutputUrl,
+          steps,
+        });
+
+        setSelectedImage((prev) =>
+          prev
+            ? {
+              ...prev,
+              fileName: updated.name?.trim() || prev.fileName,
+            }
+            : prev,
+        );
+        setSaveError("");
+        setSaveMessage("Pipeline saved");
+        return true;
+      }
+
       let pipelineId = activePipelineId;
-      let isNewPipeline = false;
-      if (!pipelineId) {
-        const projectId = queryProjectId ? Number(queryProjectId) : selectedImage.project_id;
-        const imageId = queryImageId ? Number(queryImageId) : selectedImage.id;
+      if (!pipelineId || mode === "save_as_new") {
+        const projectId = queryProjectId ?? selectedImage.project_id;
+        const imageId = queryImageId ?? selectedImage.id;
         if (!projectId || !imageId) {
           setSaveError("Project or image id missing");
-          return;
+          return false;
         }
 
         const created = await startPipeline({
           project_id: projectId,
           source_image_id: imageId,
           start_image_url: toImageUrl(selectedImage.filePath),
-          name: nextName.trim() || undefined,
+          name: nextName,
         });
         pipelineId = created.id;
-        isNewPipeline = true;
         setActivePipelineId(created.id);
-      } else {
-        await renamePipeline(pipelineId, nextName.trim());
       }
 
-      if (isNewPipeline) {
-        for (let i = 0; i < cells.length; i += 1) {
-          const cell = cells[i];
-          if (cell.status !== "done" && cell.status !== "failed") {
-            continue;
-          }
+      if (!pipelineId) {
+        setSaveError("Could not create the pipeline");
+        return false;
+      }
 
-          const inputImageUrl = getInputForCell(i, cells);
-          const previousOutputUrl = i > 0 ? cells[i - 1].outputUrl : "";
-          const segmentationContext = getSegmentationContext(i, cells, selectedImage);
-
-          await createPipelineStep(pipelineId, {
-            step_index: i + 1,
-            process_type: cell.processType,
-            priority: cell.priority,
-            model_key: cell.modelKey || undefined,
-            prompt: cell.prompt || undefined,
-            additional_settings_json: sanitizeAdditionalSettings(cell.additionalSettings),
-            input_image_url:
-              cell.processType === "generate_from_prompt"
-                ? segmentationContext?.inputImageUrl || inputImageUrl
-                : inputImageUrl,
-            mask_image_url:
-              cell.processType === "remove_with_mask"
-                ? previousOutputUrl || undefined
-                : cell.processType === "generate_from_prompt"
-                  ? segmentationContext?.maskImageUrl
-                  : undefined,
-            output_image_url: cell.outputUrl || undefined,
-            status: cell.status === "done" ? "done" : "failed",
-            error_message: cell.error || undefined,
-          });
-        }
+      for (const step of steps) {
+        await createPipelineStep(pipelineId, step);
       }
 
       const updated = await finishPipeline(pipelineId, {
@@ -802,16 +981,20 @@ export function useLaboratoryNotebook() {
       );
       setSaveError("");
       setSaveMessage("Pipeline saved");
+      return true;
     } catch (error) {
       setSaveMessage("");
       setSaveError(getErrorMessage(error));
+      return false;
+    } finally {
+      setSavingPipeline(false);
     }
   }
 
   async function saveCellOutputToProject(cell: LabCell) {
     if (!cell.outputUrl || !selectedImage) return;
 
-    const targetProjectId = queryProjectId ? Number(queryProjectId) : selectedImage.project_id;
+    const targetProjectId = queryProjectId ?? selectedImage.project_id;
     if (!targetProjectId) {
       setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "Project id missing" }));
       return;
@@ -835,7 +1018,7 @@ export function useLaboratoryNotebook() {
         }
       }
 
-      const successMessage = `Saved to project #${targetProjectId}`;
+      const successMessage = `Saved to project`;
       setSaveMessageByCell((prev) => ({ ...prev, [cell.id]: successMessage }));
       setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "" }));
     } catch (error) {
@@ -854,12 +1037,14 @@ export function useLaboratoryNotebook() {
     catalog,
     cells,
     runningAll,
+    savingPipeline,
     savingCellId,
     saveMessageByCell,
     saveErrorByCell,
     saveMessage,
     saveError,
     loadingPipeline,
+    currentPipelineName: getPipelineNameFromImage(selectedImage),
     notebookExplanationList,
     getAvailableProcessesAfter,
     getSelectedProcessTypeFor,
@@ -875,7 +1060,9 @@ export function useLaboratoryNotebook() {
     removeCell,
     runCell,
     runAllCells,
-    savePipelineName,
+    savePipeline,
     saveCellOutputToProject,
+    setSegmentOutputConvexHull,
+    setSegmentOutputConvexHullMode,
   };
 }

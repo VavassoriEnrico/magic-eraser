@@ -1,7 +1,10 @@
 import { request } from "./client";
 import type {
+  ConvexHullPreviewPayload,
+  ConvexHullPreviewResponse,
   Pipeline,
   PipelineFinishPayload,
+  PipelineReplacePayload,
   PipelineStartPayload,
   PipelineStep,
   ProcessRunPayload,
@@ -17,8 +20,19 @@ export function runProcess(payload: ProcessRunPayload) {
   });
 }
 
+export function buildConvexHullPreview(payload: ConvexHullPreviewPayload) {
+  return request<ConvexHullPreviewResponse>("/processes/convex-hull-preview", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getSegmentModels() {
   return request<SegmentModel[]>("/processes/segment-models");
+}
+
+export function getRemovalModels() {
+  return request<SegmentModel[]>("/processes/remove-models");
 }
 
 export function getProcessCatalog() {
@@ -29,7 +43,7 @@ export function listPipelines() {
   return request<Pipeline[]>("/laboratory-pipelines");
 }
 
-export function getPipeline(pipelineId: number) {
+export function getPipeline(pipelineId: string) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}`);
 }
 
@@ -40,19 +54,19 @@ export function startPipeline(payload: PipelineStartPayload) {
   });
 }
 
-export function finishPipeline(pipelineId: number, payload: PipelineFinishPayload) {
+export function finishPipeline(pipelineId: string, payload: PipelineFinishPayload) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}/finish`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export function getPipelineSteps(pipelineId: number) {
+export function getPipelineSteps(pipelineId: string) {
   return request<PipelineStep[]>(`/laboratory-pipelines/${pipelineId}/steps`);
 }
 
 export function createPipelineStep(
-  pipelineId: number,
+  pipelineId: string,
   payload: {
     step_index: number;
     process_type: string;
@@ -73,14 +87,21 @@ export function createPipelineStep(
   });
 }
 
-export function renamePipeline(pipelineId: number, name: string) {
+export function renamePipeline(pipelineId: string, name: string) {
   return request<Pipeline>(`/laboratory-pipelines/${pipelineId}/name`, {
     method: "PATCH",
     body: JSON.stringify({ name }),
   });
 }
 
-export function deletePipeline(pipelineId: number) {
+export function replacePipeline(pipelineId: string | number, payload: PipelineReplacePayload) {
+  return request<Pipeline>(`/laboratory-pipelines/${pipelineId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deletePipeline(pipelineId: string | number) {
   return request<void>(`/laboratory-pipelines/${pipelineId}`, {
     method: "DELETE",
   });

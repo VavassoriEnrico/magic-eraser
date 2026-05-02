@@ -1,13 +1,13 @@
 export interface Project {
-  id: number;
+  id: string;
   name: string;
   created_at: string;
   updated_at: string | null;
 }
 
 export interface ImageAsset {
-  id: number;
-  project_id: number;
+  id: string;
+  project_id: string;
   fileName: string;
   filePath: string;
   created_at: string;
@@ -16,19 +16,28 @@ export interface ImageAsset {
 export interface ProcessRunPayload {
   process_type: string;
   priority: number;
-  pipeline_id?: number;
+  pipeline_id?: string;
   step_index?: number;
   prompt?: string;
   input_image_url?: string;
   mask_image_url?: string;
-  project_id?: number;
-  image_id?: number;
+  project_id?: string;
+  image_id?: string;
   model_key?: string;
   additional_settings?: Record<string, string | number | boolean>;
 }
 
 export interface ProcessRunResponse {
   process_type: string;
+  output_image_url: string;
+}
+
+export interface ConvexHullPreviewPayload {
+  mask_image_url: string;
+  mode: "simple" | "medium" | "rectangle";
+}
+
+export interface ConvexHullPreviewResponse {
   output_image_url: string;
 }
 
@@ -63,15 +72,13 @@ export interface ProcessCatalogItem {
   title: string;
   priority: number;
   prompt_required: boolean;
-  explanation?: string;
-  priority_explanation?: string;
   model_options?: SegmentModel[];
 }
 
 export interface Pipeline {
-  id: number;
-  project_id: number;
-  source_image_id: number;
+  id: string;
+  project_id: string;
+  source_image_id: string;
   name?: string;
   start_image_url: string;
   final_image_url?: string;
@@ -81,8 +88,8 @@ export interface Pipeline {
 }
 
 export interface PipelineStep {
-  id: number;
-  pipeline_id: number;
+  id: string;
+  pipeline_id: string;
   step_index: number;
   process_type: string;
   priority: number;
@@ -99,8 +106,8 @@ export interface PipelineStep {
 }
 
 export interface PipelineStartPayload {
-  project_id: number;
-  source_image_id: number;
+  project_id: string;
+  source_image_id: string;
   start_image_url: string;
   name?: string;
 }
@@ -108,4 +115,40 @@ export interface PipelineStartPayload {
 export interface PipelineFinishPayload {
   status: string;
   final_image_url?: string;
+}
+
+export interface PipelineReplaceStepPayload {
+  step_index: number;
+  process_type: string;
+  priority: number;
+  model_key?: string;
+  prompt?: string;
+  additional_settings_json?: Record<string, string | number | boolean>;
+  input_image_url: string;
+  mask_image_url?: string;
+  output_image_url?: string;
+  status: string;
+  error_message?: string;
+}
+
+export interface PipelineReplacePayload {
+  name?: string;
+  status: string;
+  final_image_url?: string;
+  steps: PipelineReplaceStepPayload[];
+}
+
+export interface Profile {
+  id: string;
+  created_at: string;
+  name?: string;
+  surname?: string;
+  username?: string;
+  email?: string;
+}
+
+export interface ProfileUpdatePayload {
+  name?: string;
+  surname?: string;
+  username?: string;
 }

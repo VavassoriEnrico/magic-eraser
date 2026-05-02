@@ -4,10 +4,19 @@ import AppLayout from "./components/layout/AppLayout";
 import GalleryPage from "./pages/galleryPage";
 import HomePage from "./pages/homePage";
 import LaboratoryPage from "./pages/laboratoryPage";
+import LoginPage from "./pages/loginPage";
 import PipelinesPage from "./pages/pipelinesPage";
 import ProfilePage from "./pages/profilePage";
+import SignupPage from "./pages/signupPage";
 
-type AppPath = "/" | "/gallery" | "/pipelines" | "/profile" | "/laboratory";
+type AppPath =
+  | "/"
+  | "/gallery"
+  | "/pipelines"
+  | "/profile"
+  | "/laboratory"
+  | "/login"
+  | "/signup";
 
 function normalizePath(pathname: string): AppPath {
   if (!pathname || pathname === "/") {
@@ -26,6 +35,10 @@ function normalizePath(pathname: string): AppPath {
       return "/profile";
     case "/laboratory":
       return "/laboratory";
+    case "/login":
+      return "/login";
+    case "/signup":
+      return "/signup";
     default:
       return "/";
   }
@@ -67,11 +80,19 @@ export default function App() {
         return <ProfilePage />;
       case "/laboratory":
         return <LaboratoryPage />;
+      case "/login":
+        return <LoginPage />;
+      case "/signup":
+        return <SignupPage />;
       case "/":
       default:
         return <HomePage />;
     }
   }, [currentPath]);
+
+  if (currentPath === "/login" || currentPath === "/signup") {
+    return <>{page}</>;
+  }
 
   return (
     <AppLayout currentPath={currentPath} onNavigate={navigate}>

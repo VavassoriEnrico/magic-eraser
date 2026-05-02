@@ -9,6 +9,7 @@ from app.schemas.laboratory_pipeline import (
     PipelineStepRead,
 )
 from app.schemas.process import ProcessRunRequest, ProcessRunResponse
+from app.schemas.profile import ProfileRead, ProfileUpdate
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
 
 __all__ = [
@@ -26,4 +27,6 @@ __all__ = [
     "PipelineStepRead",
     "ProcessRunRequest",
     "ProcessRunResponse",
+    "ProfileRead",
+    "ProfileUpdate",
 ]

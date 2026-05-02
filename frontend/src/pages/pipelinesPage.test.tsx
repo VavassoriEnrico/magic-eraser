@@ -23,9 +23,9 @@ function renderPage() {
 
 const pipelines: Pipeline[] = [
   {
-    id: 1,
-    project_id: 10,
-    source_image_id: 100,
+    id: "1",
+    project_id: "10",
+    source_image_id: "100",
     name: "Older pipeline",
     start_image_url: "/uploads/start-1.png",
     final_image_url: "/uploads/final-1.png",
@@ -34,9 +34,9 @@ const pipelines: Pipeline[] = [
     updated_at: "2026-04-18T10:00:00Z",
   },
   {
-    id: 2,
-    project_id: 11,
-    source_image_id: 101,
+    id: "2",
+    project_id: "11",
+    source_image_id: "101",
     name: "Newest pipeline",
     start_image_url: "/uploads/start-2.png",
     final_image_url: undefined,
@@ -50,7 +50,6 @@ describe("PipelinesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.history.replaceState({}, "", "/pipelines");
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     vi.mocked(listPipelines).mockResolvedValue(pipelines);
     vi.mocked(deletePipeline).mockResolvedValue(undefined as never);
   });
@@ -104,8 +103,11 @@ describe("PipelinesPage", () => {
     });
 
     await user.click(screen.getAllByRole("button", { name: "Delete" })[0]);
+    await waitFor(() => {
+      expect(screen.getByText("Delete pipeline")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Delete pipeline" }));
 
-    expect(window.confirm).toHaveBeenCalledWith("Delete this pipeline?");
     expect(deletePipeline).toHaveBeenCalledWith(2);
 
     await waitFor(() => {
@@ -115,7 +117,6 @@ describe("PipelinesPage", () => {
   });
 
   test("does not delete when the user cancels the confirmation", async () => {
-    vi.mocked(window.confirm).mockReturnValue(false);
     const user = userEvent.setup();
 
     renderPage();
@@ -125,6 +126,10 @@ describe("PipelinesPage", () => {
     });
 
     await user.click(screen.getAllByRole("button", { name: "Delete" })[0]);
+    await waitFor(() => {
+      expect(screen.getByText("Delete pipeline")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(deletePipeline).not.toHaveBeenCalled();
     expect(screen.getByText("Newest pipeline")).toBeInTheDocument();

@@ -2,21 +2,21 @@ from __future__ import annotations
 
 from app.models_registry.base import (
     AdditionalSettingDefinitionData,
+    AdditionalSettingOptionDefinition,
     ProcessModelDefinition,
 )
 from app.models_registry.fal_adapters import (
+    FalBriaGenFillAdapter,
+    FalFinegrainEraserMaskAdapter,
     FalFluxFillAdapter,
     FalMoondreamSegmentationAdapter,
     FalSamSegmentationAdapter,
-    FalFluxLoraFillAdapter,
-    FalBriaGenFillAdapter,
 )
 from app.models_registry.fal_gateway import FalModelGateway
 
 fal_gateway = FalModelGateway()
 
 SEGMENTATION_MODELS: dict[str, ProcessModelDefinition] = {
-
     "sam3": ProcessModelDefinition(
         key="sam3",
         label="SAM 3.1",
@@ -68,7 +68,6 @@ SEGMENTATION_MODELS: dict[str, ProcessModelDefinition] = {
             ),
         ),
     ),
-
     "moondream3": ProcessModelDefinition(
         key="moondream3",
         label="Moondream 3 Preview",
@@ -118,11 +117,33 @@ SEGMENTATION_MODELS: dict[str, ProcessModelDefinition] = {
     ),
 }
 
-
+REMOVAL_MODELS: dict[str, ProcessModelDefinition] = {
+    "finegrain-eraser": ProcessModelDefinition(
+        key="finegrain-eraser",
+        label="Finegrain Eraser",
+        process_type="remove_with_mask",
+        provider="fal",
+        provider_model_id="fal-ai/finegrain-eraser/mask",
+        adapter=FalFinegrainEraserMaskAdapter(fal_gateway, "fal-ai/finegrain-eraser/mask"),
+        default=True,
+        additional_settings=(
+            AdditionalSettingDefinitionData(
+                key="mode",
+                label="Mode",
+                type="select",
+                description="Choose the removal quality mode used by Finegrain Eraser.",
+                default_value="standard",
+                options=(
+                    AdditionalSettingOptionDefinition(value="express", label="Express"),
+                    AdditionalSettingOptionDefinition(value="standard", label="Standard"),
+                    AdditionalSettingOptionDefinition(value="premium", label="Premium"),
+                ),
+            ),
+        ),
+    ),
+}
 
 GENERATION_MODELS: dict[str, ProcessModelDefinition] = {
-
-
     "flux-fill-pro": ProcessModelDefinition(
         key="flux-fill-pro",
         label="FLUX.1 [pro] Fill",
@@ -132,43 +153,30 @@ GENERATION_MODELS: dict[str, ProcessModelDefinition] = {
         adapter=FalFluxFillAdapter(fal_gateway, "fal-ai/flux-pro/v1/fill"),
         default=True,
     ),
-
-
-    "flux-lora-fill": ProcessModelDefinition(
-    key="flux-lora-fill",
-    label="FLUX.1 [dev] Fill with LoRAs",
-    process_type="generate_from_prompt",
-    provider="fal",
-    provider_model_id="fal-ai/flux-lora-fill",
-    adapter=FalFluxLoraFillAdapter(fal_gateway, "fal-ai/flux-lora-fill"),
-),
-
-
-
-"bria-genfill": ProcessModelDefinition(
-    key="bria-genfill",
-    label="Bria GenFill",
-    process_type="generate_from_prompt",
-    provider="fal",
-    provider_model_id="fal-ai/bria/genfill",
-    adapter=FalBriaGenFillAdapter(fal_gateway, "fal-ai/bria/genfill"),
-    additional_settings=(
-        AdditionalSettingDefinitionData(
-            key="negative_prompt",
-            label="Negative prompt",
-            type="text",
-            description="Optional negative prompt forwarded to the Bria fill model.",
+    "bria-genfill": ProcessModelDefinition(
+        key="bria-genfill",
+        label="Bria GenFill",
+        process_type="generate_from_prompt",
+        provider="fal",
+        provider_model_id="fal-ai/bria/genfill",
+        adapter=FalBriaGenFillAdapter(fal_gateway, "fal-ai/bria/genfill"),
+        additional_settings=(
+            AdditionalSettingDefinitionData(
+                key="negative_prompt",
+                label="Negative prompt",
+                type="text",
+                description="Optional negative prompt forwarded to the Bria fill model.",
+            ),
         ),
     ),
-),
-
-
 }
 
 
 def get_process_model_registry(process_type: str) -> dict[str, ProcessModelDefinition]:
     if process_type == "segment_from_prompt":
         return SEGMENTATION_MODELS
+    if process_type == "remove_with_mask":
+        return REMOVAL_MODELS
     if process_type == "generate_from_prompt":
         return GENERATION_MODELS
     return {}

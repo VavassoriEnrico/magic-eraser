@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import HTTPException
 
-from app.models_registry.base import GenerationModelRequest, SegmentModelRequest
+from app.models_registry.base import GenerationModelRequest, RemovalModelRequest, SegmentModelRequest
 from app.models_registry.fal_gateway import FalModelGateway
 
 
@@ -92,22 +92,39 @@ class FalMoondreamSegmentationAdapter:
         )
 
 
-class FalFluxFillAdapter:
+class _FalMaskImageAdapter:
     def __init__(self, gateway: FalModelGateway, provider_model_id: str) -> None:
         self.gateway = gateway
         self.provider_model_id = provider_model_id
 
-    def run(self, request: GenerationModelRequest) -> str:
-        request_payload: dict[str, object] = {
+    def _build_payload(
+        self,
+        request: GenerationModelRequest | RemovalModelRequest,
+        *,
+        include_output_format: bool = False,
+    ) -> dict[str, object]:
+        payload: dict[str, object] = {
             "image_url": self.gateway.resolve_image(request.input_image_url),
             "mask_url": self.gateway.resolve_image(request.mask_image_url),
-            "output_format": "png",
             **request.additional_settings,
         }
+        if include_output_format:
+            payload["output_format"] = "png"
         if request.prompt:
-            request_payload["prompt"] = request.prompt
+            payload["prompt"] = request.prompt
+        return payload
 
-        response = self.gateway.run(self.provider_model_id, request_payload)
+    def _run(
+        self,
+        request: GenerationModelRequest | RemovalModelRequest,
+        *,
+        error_label: str,
+        include_output_format: bool = False,
+    ) -> str:
+        response = self.gateway.run(
+            self.provider_model_id,
+            self._build_payload(request, include_output_format=include_output_format),
+        )
         output_url = self.gateway.extract_first_image_url(response)
         if output_url:
             return output_url
@@ -115,55 +132,20 @@ class FalFluxFillAdapter:
         response_keys = ", ".join(response.keys()) if isinstance(response, dict) else "not-a-dict"
         raise HTTPException(
             status_code=502,
-            detail=f"fal generation response does not contain an output url (keys: {response_keys})",
+            detail=f"fal {error_label} response does not contain an output url (keys: {response_keys})",
         )
 
 
-
-
-class FalFluxLoraFillAdapter:
-    def __init__(self, gateway: FalModelGateway, provider_model_id: str) -> None:
-        self.gateway = gateway
-        self.provider_model_id = provider_model_id
-
+class FalFluxFillAdapter(_FalMaskImageAdapter):
     def run(self, request: GenerationModelRequest) -> str:
-        request_payload: dict[str, object] = {
-            "image_url": self.gateway.resolve_image(request.input_image_url),
-            "mask_url": self.gateway.resolve_image(request.mask_image_url),
-            "output_format": "png",
-            **request.additional_settings,
-        }
-        if request.prompt:
-            request_payload["prompt"] = request.prompt
-
-        response = self.gateway.run(self.provider_model_id, request_payload)
-        output_url = self.gateway.extract_first_image_url(response)
-        if output_url:
-            return output_url
-
-        raise HTTPException(status_code=502, detail="...")
-    
+        return self._run(request, error_label="generation", include_output_format=True)
 
 
-    
-class FalBriaGenFillAdapter:
-    def __init__(self, gateway: FalModelGateway, provider_model_id: str) -> None:
-        self.gateway = gateway
-        self.provider_model_id = provider_model_id
-
+class FalBriaGenFillAdapter(_FalMaskImageAdapter):
     def run(self, request: GenerationModelRequest) -> str:
-        request_payload: dict[str, object] = {
-            "image_url": self.gateway.resolve_image(request.input_image_url),
-            "mask_url": self.gateway.resolve_image(request.mask_image_url),
-            **request.additional_settings,
-        }
-        if request.prompt:
-            request_payload["prompt"] = request.prompt
+        return self._run(request, error_label="generation")
 
-        response = self.gateway.run(self.provider_model_id, request_payload)
-        output_url = self.gateway.extract_first_image_url(response)
-        if output_url:
-            return output_url
 
-        raise HTTPException(status_code=502, detail="...")
-
+class FalFinegrainEraserMaskAdapter(_FalMaskImageAdapter):
+    def run(self, request: RemovalModelRequest) -> str:
+        return self._run(request, error_label="removal")

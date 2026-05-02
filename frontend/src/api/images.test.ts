@@ -18,7 +18,7 @@ describe("images api", () => {
     test("calls request with the correct path for getProjectImages", async () => {
         vi.mocked(request).mockResolvedValueOnce([]);
 
-        await getProjectImages(42);
+        await getProjectImages("42");
 
         expect(request).toHaveBeenCalledWith("/projects/42/images");
     });
@@ -31,7 +31,7 @@ describe("images api", () => {
 
         const file = new File(["hello"], "beautiful_image.png", { type: "image/png" });
 
-        await uploadImage(5, file);
+        await uploadImage("5", file);
 
         expect(request).toHaveBeenCalledTimes(1);
 
@@ -51,7 +51,7 @@ describe("images api", () => {
     test("calls request with POST and JSON body for uploadImageFromUrl", async () => {
         vi.mocked(request).mockResolvedValueOnce({ id: 1 });
 
-        await uploadImageFromUrl(3, "https://sandro.com/summer.png", "summer.png");
+        await uploadImageFromUrl("3", "https://sandro.com/summer.png", "summer.png");
 
         expect(request).toHaveBeenCalledWith("/projects/3/images/from-url", {
             method: "POST",
@@ -67,7 +67,7 @@ describe("images api", () => {
     test("calls request with DELETE for deleteImage", async () => {
         vi.mocked(request).mockResolvedValueOnce({ message: "Image deleted" });
 
-        await deleteImage(7);
+        await deleteImage("7");
 
         expect(request).toHaveBeenCalledWith("/images/7", {
             method: "DELETE",

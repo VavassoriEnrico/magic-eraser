@@ -8,7 +8,7 @@ from fastapi import HTTPException
 PrimitiveSettingValue = bool | int | float | str
 PrimitiveSettingMap = dict[str, PrimitiveSettingValue]
 SettingType = Literal["boolean", "select", "integer", "number", "text"]
-ProcessType = Literal["segment_from_prompt", "generate_from_prompt"]
+ProcessType = Literal["segment_from_prompt", "remove_with_mask", "generate_from_prompt"]
 
 
 @dataclass(frozen=True)
@@ -49,6 +49,9 @@ class GenerationModelRequest:
     additional_settings: PrimitiveSettingMap = field(default_factory=dict)
 
 
+RemovalModelRequest = GenerationModelRequest
+
+
 class SegmentModelAdapter(Protocol):
     def run(self, request: SegmentModelRequest) -> str:
         ...
@@ -59,6 +62,11 @@ class GenerationModelAdapter(Protocol):
         ...
 
 
+class RemovalModelAdapter(Protocol):
+    def run(self, request: RemovalModelRequest) -> str:
+        ...
+
+
 @dataclass(frozen=True)
 class ProcessModelDefinition:
     key: str
@@ -66,7 +74,7 @@ class ProcessModelDefinition:
     process_type: ProcessType
     provider: str
     provider_model_id: str
-    adapter: SegmentModelAdapter | GenerationModelAdapter
+    adapter: SegmentModelAdapter | GenerationModelAdapter | RemovalModelAdapter
     supports_text_prompt: bool = True
     default: bool = False
     additional_settings: tuple[AdditionalSettingDefinitionData, ...] = ()

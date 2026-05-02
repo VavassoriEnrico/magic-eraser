@@ -10,12 +10,7 @@ class LaboratoryPipelineStep(Base):
     __tablename__ = "laboratory_pipeline_steps"
 
     id = Column(Integer, primary_key=True, index=True)
-    pipeline_id = Column(
-        Integer,
-        ForeignKey("laboratory_pipelines.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
+    pipeline_id = Column(Integer, ForeignKey("laboratory_pipelines.id", ondelete="CASCADE"), nullable=False, index=True)
     step_index = Column(Integer, nullable=False)
     process_type = Column(String, nullable=False)
     priority = Column(Integer, nullable=False)

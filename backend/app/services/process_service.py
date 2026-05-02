@@ -2,8 +2,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.processes.executor import ProcessExecutor
-from app.schemas.process import ProcessRunRequest, ProcessRunResponse
+from app.schemas.process import ConvexHullMaskResponse, ProcessRunRequest, ProcessRunResponse
 from app.services import laboratory_pipeline_service
+from app.utils.masks import build_convex_hull_mask
 
 process_executor = ProcessExecutor()
 
@@ -18,8 +19,6 @@ def _safe_text(value: object) -> str | None:
         if clean:
             return clean
     return None
-
-
 def _log_step_success(
     db: Session,
     payload: ProcessRunRequest,
@@ -30,7 +29,7 @@ def _log_step_success(
 
     laboratory_pipeline_service.create_step(
         db,
-        pipeline_id=payload.pipeline_id,
+        pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(payload.pipeline_id),
         step_index=_resolve_step_index(payload),
         process_type=payload.process_type,
         priority=payload.priority,
@@ -54,7 +53,7 @@ def _log_step_failure(
 
     laboratory_pipeline_service.create_step(
         db,
-        pipeline_id=payload.pipeline_id,
+        pipeline_id=laboratory_pipeline_service.parse_pipeline_identifier(payload.pipeline_id),
         step_index=_resolve_step_index(payload),
         process_type=payload.process_type,
         priority=payload.priority,
@@ -86,4 +85,17 @@ def run_process(db: Session, payload: ProcessRunRequest) -> ProcessRunResponse:
     return ProcessRunResponse(
         process_type=result.process_type,
         output_image_url=result.output_image_url,
+    )
+
+
+def build_convex_hull_preview(
+    mask_image_url: str,
+    mode: str,
+) -> ConvexHullMaskResponse:
+    clean_url = _safe_text(mask_image_url)
+    if not clean_url:
+        raise HTTPException(status_code=400, detail="mask image url is required")
+
+    return ConvexHullMaskResponse(
+        output_image_url=build_convex_hull_mask(clean_url, mode=mode),
     )

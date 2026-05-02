@@ -84,13 +84,15 @@ function renderPage() {
 
 describe("LaboratoryPage", () => {
   const runAllCells = vi.fn();
-  const savePipelineName = vi.fn();
+  const savePipeline = vi.fn(async () => true);
   const addCell = vi.fn();
   const setSelectedProcessTypeFor = vi.fn();
   const runCell = vi.fn();
   const resetFromCell = vi.fn();
   const removeCell = vi.fn();
   const saveCellOutputToProject = vi.fn();
+  const setSegmentOutputConvexHull = vi.fn();
+  const setSegmentOutputConvexHullMode = vi.fn();
   const updateCell = vi.fn();
   const updateModelForCell = vi.fn();
   const updateAdditionalSetting = vi.fn();
@@ -108,13 +110,13 @@ describe("LaboratoryPage", () => {
       queryProjectId: "3",
       queryImageId: "7",
       selectedImage: {
-        id: 7,
-        project_id: 3,
+        id: "7",
+        project_id: "3",
         fileName: "source.png",
         filePath: "/uploads/source.png",
         created_at: "2026-04-20T08:00:00Z",
       },
-      activePipelineId: 21,
+      activePipelineId: "21",
       catalog: [],
       cells: [
         {
@@ -127,18 +129,24 @@ describe("LaboratoryPage", () => {
           prompt: "Select object",
           modelKey: "",
           additionalSettings: {},
+          originalOutputUrl: "/uploads/mask.png",
+          outputConvexHullEnabled: false,
+          outputConvexHullMode: "medium",
+          outputPreviewLoading: false,
           status: "done",
           outputUrl: "/uploads/mask.png",
           error: "",
         },
       ],
       runningAll: false,
+      savingPipeline: false,
       savingCellId: "",
-      saveMessageByCell: { "cell-1": "Saved to project #3" },
+      saveMessageByCell: { "cell-1": "Saved to project" },
       saveErrorByCell: {},
       saveMessage: "Pipeline saved",
       saveError: "",
       loadingPipeline: false,
+      currentPipelineName: "source.png",
       notebookExplanationList: ["Create a mask"],
       getAvailableProcessesAfter,
       getSelectedProcessTypeFor,
@@ -154,8 +162,10 @@ describe("LaboratoryPage", () => {
       removeCell,
       runCell,
       runAllCells,
-      savePipelineName,
+      savePipeline,
       saveCellOutputToProject,
+      setSegmentOutputConvexHull,
+      setSegmentOutputConvexHullMode,
     });
   });
 
@@ -172,6 +182,7 @@ describe("LaboratoryPage", () => {
     expect(screen.getAllByTestId("add-disabled")[0]).toHaveTextContent("false");
 
     await user.click(screen.getByRole("button", { name: "Save pipeline" }));
+    await user.click(screen.getByRole("button", { name: "Overwrite" }));
     await user.click(screen.getByRole("button", { name: "Run all cells" }));
     await user.click(screen.getByRole("button", { name: "Run cell" }));
     await user.click(screen.getByRole("button", { name: "Reset from here" }));
@@ -180,7 +191,7 @@ describe("LaboratoryPage", () => {
     await user.click(screen.getByRole("button", { name: "Select process" }));
     await user.click(screen.getByRole("button", { name: "Add process" }));
 
-    expect(savePipelineName).toHaveBeenCalledTimes(1);
+    expect(savePipeline).toHaveBeenCalledWith("overwrite", "source.png");
     expect(runAllCells).toHaveBeenCalledTimes(1);
     expect(runCell).toHaveBeenCalledWith(0);
     expect(resetFromCell).toHaveBeenCalledWith(0);
@@ -198,8 +209,8 @@ describe("LaboratoryPage", () => {
       queryProjectId: null,
       queryImageId: null,
       selectedImage: {
-        id: 7,
-        project_id: 3,
+        id: "7",
+        project_id: "3",
         fileName: "source.png",
         filePath: "/uploads/source.png",
         created_at: "2026-04-20T08:00:00Z",
@@ -208,12 +219,14 @@ describe("LaboratoryPage", () => {
       catalog: [],
       cells: [],
       runningAll: false,
+      savingPipeline: false,
       savingCellId: "",
       saveMessageByCell: {},
       saveErrorByCell: {},
       saveMessage: "",
       saveError: "",
       loadingPipeline: true,
+      currentPipelineName: "",
       notebookExplanationList: [],
       getAvailableProcessesAfter,
       getSelectedProcessTypeFor,
@@ -229,8 +242,10 @@ describe("LaboratoryPage", () => {
       removeCell,
       runCell,
       runAllCells,
-      savePipelineName,
+      savePipeline,
       saveCellOutputToProject,
+      setSegmentOutputConvexHull,
+      setSegmentOutputConvexHullMode,
     });
 
     renderPage();
@@ -248,12 +263,14 @@ describe("LaboratoryPage", () => {
       catalog: [],
       cells: [],
       runningAll: false,
+      savingPipeline: false,
       savingCellId: "",
       saveMessageByCell: {},
       saveErrorByCell: {},
       saveMessage: "",
       saveError: "Select an image first",
       loadingPipeline: false,
+      currentPipelineName: "",
       notebookExplanationList: [],
       getAvailableProcessesAfter,
       getSelectedProcessTypeFor,
@@ -268,8 +285,10 @@ describe("LaboratoryPage", () => {
       removeCell,
       runCell,
       runAllCells,
-      savePipelineName,
+      savePipeline,
       saveCellOutputToProject,
+      setSegmentOutputConvexHull,
+      setSegmentOutputConvexHullMode,
     });
 
     renderPage();

@@ -5,7 +5,12 @@ import { beforeEach, describe, expect, it as test, vi } from "vitest";
 
 import { useHomeData } from "../hooks/useHomeData";
 import { useUploadImageSelection } from "../hooks/useUploadImageSelection";
+import { listPipelines } from "../api/processes";
 import type { ImageAsset, Project } from "../types/api";
+import {
+  LABORATORY_SELECTED_IMAGE_STORAGE_KEY,
+  getLaboratorySelectedImageStorageKey,
+} from "../utils/laboratorySelection";
 import HomePage from "./homePage";
 import theme from "../theme";
 
@@ -17,6 +22,38 @@ vi.mock("../hooks/useUploadImageSelection", () => ({
   useUploadImageSelection: vi.fn(),
 }));
 
+vi.mock("../api/processes", () => ({
+  listPipelines: vi.fn(),
+}));
+
+function mockLocalStorage() {
+  const store = new Map<string, string>();
+
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: {
+      get length() {
+        return store.size;
+      },
+      key(index: number) {
+        return Array.from(store.keys())[index] ?? null;
+      },
+      getItem(key: string) {
+        return store.get(key) ?? null;
+      },
+      setItem(key: string, value: string) {
+        store.set(key, value);
+      },
+      removeItem(key: string) {
+        store.delete(key);
+      },
+      clear() {
+        store.clear();
+      },
+    },
+  });
+}
+
 vi.mock("../components/common/PageHeader", () => ({
   PageHeader: ({ title }: { title: string }) => <div>{title}</div>,
 }));
@@ -25,27 +62,13 @@ vi.mock("../components/common/StatusNotice", () => ({
   StatusNotice: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("../components/home/HomeToolbar", () => ({
-  HomeToolbar: ({
-    loadingProjects,
-    onRefresh,
-  }: {
-    loadingProjects: boolean;
-    onRefresh: () => void;
-  }) => (
-    <button onClick={onRefresh} disabled={loadingProjects}>
-      Refresh
-    </button>
-  ),
-}));
-
 vi.mock("../components/home/ProjectOverviewSection", () => ({
   ProjectOverviewSection: (props: {
     projects: Project[];
     orderedProjects: Project[];
-    onOpenLaboratory: (image: ImageAsset, projectId: number) => void;
+    onOpenLaboratory: (image: ImageAsset, projectId: string) => void;
     onCreateProject: (event: React.FormEvent<HTMLFormElement>) => void;
-    onToggleProject: (projectId: number) => void;
+    onToggleProject: (projectId: string) => void;
   }) => (
     <div>
       <div data-testid="ordered-projects">{props.orderedProjects.map((project) => project.name).join(",")}</div>
@@ -54,7 +77,7 @@ vi.mock("../components/home/ProjectOverviewSection", () => ({
         onClick={() =>
           props.onOpenLaboratory(
             {
-              id: 7,
+              id: "7",
               project_id: props.projects[0].id,
               fileName: "image.png",
               filePath: "/uploads/image.png",
@@ -140,13 +163,13 @@ function renderPage() {
 describe("HomePage", () => {
   const projects: Project[] = [
     {
-      id: 1,
+      id: "1",
       name: "Alpha",
       created_at: "2026-04-19T08:00:00Z",
       updated_at: "2026-04-19T10:00:00Z",
     },
     {
-      id: 2,
+      id: "2",
       name: "Beta",
       created_at: "2026-04-20T08:00:00Z",
       updated_at: "2026-04-20T10:00:00Z",
@@ -169,8 +192,22 @@ describe("HomePage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocalStorage();
     window.sessionStorage.clear();
     window.history.replaceState({}, "", "/");
+    vi.mocked(listPipelines).mockResolvedValue([
+      {
+        id: "21",
+        project_id: "4",
+        source_image_id: "12",
+        name: "Pipeline Alpha",
+        start_image_url: "/uploads/start.png",
+        final_image_url: "/uploads/final.png",
+        status: "done",
+        created_at: "2026-04-19T08:00:00Z",
+        updated_at: "2026-04-20T10:00:00Z",
+      },
+    ]);
 
     vi.mocked(useHomeData).mockReturnValue({
       projects,
@@ -178,8 +215,8 @@ describe("HomePage", () => {
       uploadProjectId: "1",
       expandedProjectId: "2",
       projectImagesMap: {
-        1: [],
-        2: [],
+        "1": [],
+        "2": [],
       },
       projectName: "Draft project",
       loadingProjects: false,
@@ -215,15 +252,13 @@ describe("HomePage", () => {
     });
   });
 
-  test("wires refresh, create project and upload submit to the hooks", async () => {
+  test("wires create project and upload submit to the hooks", async () => {
     const user = userEvent.setup();
     renderPage();
 
-    await user.click(screen.getByRole("button", { name: "Refresh" }));
     await user.click(screen.getByRole("button", { name: "Create project from section" }));
     await user.click(screen.getByRole("button", { name: "Upload image" }));
 
-    expect(loadProjects).toHaveBeenCalledTimes(1);
     expect(onCreateProject).toHaveBeenCalledTimes(1);
     expect(onCreateImage).toHaveBeenCalledTimes(1);
     expect(onCreateImage).toHaveBeenCalledWith(
@@ -237,12 +272,20 @@ describe("HomePage", () => {
     const pushStateSpy = vi.spyOn(window.history, "pushState");
     const dispatchEventSpy = vi.spyOn(window, "dispatchEvent");
     const user = userEvent.setup();
+    window.localStorage.setItem(
+      "sb-test-auth-token",
+      JSON.stringify({
+        access_token: "token",
+        user: { id: "user-1" },
+      }),
+    );
 
     renderPage();
 
     await user.click(screen.getByRole("button", { name: "Open laboratory" }));
 
-    expect(window.sessionStorage.getItem("laboratory:selected-image")).toContain("\"id\":7");
+    const storageKey = getLaboratorySelectedImageStorageKey("user-1") ?? LABORATORY_SELECTED_IMAGE_STORAGE_KEY;
+    expect(window.sessionStorage.getItem(storageKey)).toContain("\"id\":\"7\"");
     expect(pushStateSpy).toHaveBeenCalledWith({}, "", "/laboratory?projectId=1&imageId=7");
     expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
   });
@@ -286,5 +329,19 @@ describe("HomePage", () => {
     renderPage();
 
     expect(screen.getByTestId("ordered-projects")).toHaveTextContent("Beta,Alpha");
+  });
+
+  test("opens a pipeline from the home sidebar", async () => {
+    const pushStateSpy = vi.spyOn(window.history, "pushState");
+    const dispatchEventSpy = vi.spyOn(window, "dispatchEvent");
+    const user = userEvent.setup();
+
+    renderPage();
+
+    await screen.findByText("Saved pipelines");
+    await user.click(screen.getByRole("button", { name: /Pipeline Alpha #21 done/i }));
+
+    expect(pushStateSpy).toHaveBeenCalledWith({}, "", "/laboratory?pipelineId=21&projectId=4&imageId=12");
+    expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
   });
 });

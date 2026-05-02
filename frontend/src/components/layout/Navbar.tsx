@@ -1,10 +1,19 @@
-import type { MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 
 import { IconButton, useColorMode } from "@chakra-ui/react";
-import { BiSolidMoon, BiSolidSun } from "react-icons/bi";
+import {
+  BiBookContent,
+  BiHomeAlt2,
+  BiSolidMoon,
+  BiSolidSun,
+  BiUserCircle,
+  BiWrench,
+} from "react-icons/bi";
+
 import logoBlack from "../../assets/me_logo_black.png";
 import logoWhite from "../../assets/me_logo_white.png";
 import type { AppPath } from "../../types/ui";
+import { getLaboratorySelectedImage } from "../../utils/laboratorySelection";
 
 interface NavbarProps {
   currentPath: AppPath;
@@ -13,78 +22,164 @@ interface NavbarProps {
 
 export default function Navbar({ currentPath, onNavigate }: NavbarProps) {
   const { colorMode, toggleColorMode } = useColorMode();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isColorTheme = colorMode === "dark";
+  const currentThemeLabel = isColorTheme ? "Colorato" : "Grigio";
+  const nextThemeLabel = isColorTheme ? "Grigio" : "Colorato";
 
   const titleLabel = "Magic Eraser";
-  const logoSource = colorMode === "dark" ? logoWhite : logoBlack;
-  const homeLabel = "Home";
-  const pipelinesLabel = "Pipelines";
+  const logoSource = logoWhite;
+  const loginLabel = "Login";
   const profileLabel = "Profile";
+  const navigationItems: Array<{ path: AppPath; label: string; icon: JSX.Element }> = [
+    { path: "/", label: "Home", icon: <BiHomeAlt2 /> },
+    { path: "/pipelines", label: "Pipelines", icon: <BiBookContent /> },
+    { path: "/laboratory", label: "Laboratory", icon: <BiWrench /> },
+  ];
+
+  useEffect(() => {
+    const checkAuth = () => setIsLoggedIn(hasSupabaseSession());
+    checkAuth();
+
+    window.addEventListener("storage", checkAuth);
+    window.addEventListener("focus", checkAuth);
+    window.addEventListener("popstate", checkAuth);
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      window.removeEventListener("focus", checkAuth);
+      window.removeEventListener("popstate", checkAuth);
+    };
+  }, []);
 
   return (
-    <header className="app-navbar">
-      <div className="app-navbar__inner">
+    <>
+      <header className="app-topbar">
         <a
           href="/"
-          className="app-navbar__brand"
+          className="app-topbar__brand"
           onClick={(event) => onLinkClick(event, "/", onNavigate)}
           aria-label={titleLabel}
         >
-          <img className="app-navbar__logo-image" src={logoSource} alt={titleLabel} />
+          <img className="app-topbar__logo-image" src={logoSource} alt={titleLabel} />
         </a>
 
-        <nav className="app-navbar__nav" aria-label="Main navigation">
-          <a
-            href="/"
-            className={navClass(currentPath === "/")}
-            onClick={(event) => onLinkClick(event, "/", onNavigate)}
-          >
-            {homeLabel}
-          </a>
-          <a
-            href="/pipelines"
-            className={navClass(currentPath === "/pipelines")}
-            onClick={(event) => onLinkClick(event, "/pipelines", onNavigate)}
-          >
-            {pipelinesLabel}
-          </a>
+        <nav className="app-topbar__nav" aria-label="Main navigation">
+          {navigationItems.map((item) => (
+            <a
+              key={item.path}
+              href={item.path}
+              className={navClass(currentPath === item.path)}
+              onClick={(event) =>
+                onLinkClick(
+                  event,
+                  item.path,
+                  onNavigate,
+                  item.path === "/laboratory" ? getLaboratorySearch() : ""
+                )
+              }
+            >
+              <span className="app-topbar__link-icon" aria-hidden="true">
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+            </a>
+          ))}
         </nav>
 
-        <div className="app-navbar__actions">
+        <div className="app-topbar__actions">
           <IconButton
             size="sm"
             variant="outline"
             onClick={toggleColorMode}
-            className="app-navbar__theme-btn"
-            aria-label={colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="app-topbar__theme-btn"
+            aria-label={`Tema attuale: ${currentThemeLabel}. Passa a ${nextThemeLabel}`}
+            title={`Tema attuale: ${currentThemeLabel}. Passa a ${nextThemeLabel}`}
             icon={
               <span aria-hidden="true">
-                {colorMode === "dark" ? <BiSolidSun /> : <BiSolidMoon />}
+                {isColorTheme ? <BiSolidSun /> : <BiSolidMoon />}
               </span>
             }
           />
-          <a
-            href="/profile"
-            className="app-navbar__profile"
-            onClick={(event) => onLinkClick(event, "/profile", onNavigate)}
-          >
-            <span>{profileLabel}</span>
-            <span className="app-navbar__avatar" aria-hidden="true" />
-          </a>
+
+          {isLoggedIn ? (
+            <a
+              href="/profile"
+              className="app-topbar__profile"
+              onClick={(event) => onLinkClick(event, "/profile", onNavigate)}
+            >
+              <span>{profileLabel}</span>
+              <span className="app-topbar__avatar" aria-hidden="true" />
+            </a>
+          ) : (
+            <a
+              href="/login"
+              className="app-topbar__profile app-topbar__login-btn"
+              onClick={(event) => onLinkClick(event, "/login", onNavigate)}
+            >
+              <span className="app-topbar__link-icon" aria-hidden="true">
+                <BiUserCircle />
+              </span>
+              <span>{loginLabel}</span>
+            </a>
+          )}
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
 function navClass(isActive: boolean) {
-  return `app-navbar__link${isActive ? " is-active" : ""}`;
+  return `app-topbar__link${isActive ? " is-active" : ""}`;
 }
 
 function onLinkClick(
   event: MouseEvent<HTMLAnchorElement>,
   path: AppPath,
-  onNavigate: (path: AppPath, search?: string) => void
+  onNavigate: (path: AppPath, search?: string) => void,
+  search = "",
 ) {
   event.preventDefault();
-  onNavigate(path);
+  onNavigate(path, search);
+}
+
+function getLaboratorySearch() {
+  try {
+    const parsed = getLaboratorySelectedImage();
+    if (!parsed?.id || !parsed.project_id) {
+      return "";
+    }
+
+    const params = new URLSearchParams({
+      projectId: String(parsed.project_id),
+      imageId: String(parsed.id),
+    });
+    return `?${params.toString()}`;
+  } catch {
+    return "";
+  }
+}
+
+function hasSupabaseSession() {
+  try {
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith("sb-") || !key.endsWith("-auth-token")) {
+        continue;
+      }
+
+      const raw = window.localStorage.getItem(key);
+      if (!raw) {
+        continue;
+      }
+
+      const parsed = JSON.parse(raw) as { access_token?: string };
+      if (parsed?.access_token) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
 }

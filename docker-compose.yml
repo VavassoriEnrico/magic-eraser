@@ -1,34 +1,12 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: magic-eraser-db
-    environment:
-      POSTGRES_USER: simpleuser
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U simpleuser -d db"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   backend:
     build:
       context: ./backend
     container_name: magic-eraser-backend
     env_file:
       - ./backend/.env
-    environment:
-      DATABASE_URL: postgresql+psycopg2://simpleuser:password@db:5432/db
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       - "8000:8000"
-    volumes:
-      - backend_uploads:/app/uploads
     restart: unless-stopped
 
   frontend:
@@ -42,7 +20,3 @@ services:
     ports:
       - "5173:80"
     restart: unless-stopped
-
-volumes:
-  postgres_data:
-  backend_uploads:
