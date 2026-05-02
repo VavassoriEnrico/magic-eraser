@@ -1,0 +1,913 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.10.14)  2 MAY 2026 15:37
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.tex
+(/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.tex
+LaTeX2e <2024-11-01> patch level 2
+L3 programming layer <2025-01-18>
+(/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/supsistudent.cls
+Document Class: supsistudent 2012/09/27 v0.02 SUPSI Student, amos.brocco@supsi.ch
+(/usr/local/texlive/2025/texmf-dist/tex/latex/base/book.cls
+Document Class: book 2024/06/29 v1.4n Standard LaTeX document class
+(/usr/local/texlive/2025/texmf-dist/tex/latex/base/bk11.clo
+File: bk11.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count196
+\c@chapter=\count197
+\c@section=\count198
+\c@subsection=\count199
+\c@subsubsection=\count266
+\c@paragraph=\count267
+\c@subparagraph=\count268
+\c@figure=\count269
+\c@table=\count270
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\bibindent=\dimen141
+) (/usr/local/texlive/2025/texmf-dist/tex/generic/babel/babel.sty
+Package: babel 2025/02/14 v25.4 The multilingual framework for pdfLaTeX, LuaLaTeX and XeLaTeX
+\babel@savecnt=\count271
+\U@D=\dimen142
+\l@unhyphenated=\language90
+ (/usr/local/texlive/2025/texmf-dist/tex/generic/babel/txtbabel.def)
+\bbl@readstream=\read2
+\bbl@dirlevel=\count272
+ (/usr/local/texlive/2025/texmf-dist/tex/generic/babel-italian/italian.ldf
+Language: italian 2024/10/10 v.1.5.01 Italian support for the babel system
+\it@lettering=\count273
+\it@doublequoteactive=\count274
+\it@ISOcompliance=\count275
+)) (/usr/local/texlive/2025/texmf-dist/tex/generic/babel/locale/it/babel-italian.tex
+Package babel Info: Importing font and identification data for italian
+(babel)             from babel-it.ini. Reported on input line 11.
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+Package: etoolbox 2025/02/11 v2.5l e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count276
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks17
+) (/usr/local/texlive/2025/texmf-dist/tex/generic/iftex/ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+ (/usr/local/texlive/2025/texmf-dist/tex/generic/iftex/iftex.sty
+Package: iftex 2024/12/12 v1.0g TeX engine tests
+))
+\Gm@cnth=\count277
+\Gm@cntv=\count278
+\c@Gm@tempcnt=\count279
+\Gm@bindingoffset=\dimen143
+\Gm@wd@mp=\dimen144
+\Gm@odd@mp=\dimen145
+\Gm@even@mp=\dimen146
+\Gm@layoutwidth=\dimen147
+\Gm@layoutheight=\dimen148
+\Gm@layouthoffset=\dimen149
+\Gm@layoutvoffset=\dimen150
+\Gm@dimlist=\toks18
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2024/02/08 v1.3d Input encoding file
+\inpenc@prehook=\toks19
+\inpenc@posthook=\toks20
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/tools/array.sty
+Package: array 2024/10/17 v2.6g Tabular extension package (FMi)
+\col@sep=\dimen151
+\ar@mcellbox=\box52
+\extrarowheight=\dimen152
+\NC@list=\toks21
+\extratabsurround=\skip51
+\backup@length=\skip52
+\ar@cellbox=\box53
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2024/11/05 v2.17t AMS math features
+\@mathmargin=\skip53
+
+For additional information on amsmath, use the `?' option.
+(/usr/local/texlive/2025/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2021/08/26 v2.01 AMS text
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks22
+\ex@=\dimen153
+)) (/usr/local/texlive/2025/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen154
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count280
+LaTeX Info: Redefining \frac on input line 233.
+\uproot@=\count281
+\leftroot@=\count282
+LaTeX Info: Redefining \overline on input line 398.
+LaTeX Info: Redefining \colon on input line 409.
+\classnum@=\count283
+\DOTSCASE@=\count284
+LaTeX Info: Redefining \ldots on input line 495.
+LaTeX Info: Redefining \dots on input line 498.
+LaTeX Info: Redefining \cdots on input line 619.
+\Mathstrutbox@=\box54
+\strutbox@=\box55
+LaTeX Info: Redefining \big on input line 721.
+LaTeX Info: Redefining \Big on input line 722.
+LaTeX Info: Redefining \bigg on input line 723.
+LaTeX Info: Redefining \Bigg on input line 724.
+\big@size=\dimen155
+LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
+\macc@depth=\count285
+LaTeX Info: Redefining \bmod on input line 904.
+LaTeX Info: Redefining \pmod on input line 909.
+LaTeX Info: Redefining \smash on input line 939.
+LaTeX Info: Redefining \relbar on input line 969.
+LaTeX Info: Redefining \Relbar on input line 970.
+\c@MaxMatrixCols=\count286
+\dotsspace@=\muskip17
+\c@parentequation=\count287
+\dspbrk@lvl=\count288
+\tag@help=\toks23
+\row@=\count289
+\column@=\count290
+\maxfields@=\count291
+\andhelp@=\toks24
+\eqnshift@=\dimen156
+\alignsep@=\dimen157
+\tagshift@=\dimen158
+\tagwidth@=\dimen159
+\totwidth@=\dimen160
+\lineht@=\dimen161
+\@envbody=\toks25
+\multlinegap=\skip54
+\multlinetaggap=\skip55
+\mathdisplay@stack=\toks26
+LaTeX Info: Redefining \[ on input line 2953.
+LaTeX Info: Redefining \] on input line 2954.
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/titlesec/titlesec.sty
+Package: titlesec 2025/01/04 v2.17 Sectioning titles
+\ttl@box=\box56
+\beforetitleunit=\skip56
+\aftertitleunit=\skip57
+\ttl@plus=\dimen162
+\ttl@minus=\dimen163
+\ttl@toksa=\toks27
+\titlewidth=\dimen164
+\titlewidthlast=\dimen165
+\titlewidthfirst=\dimen166
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/base/fontenc.sty
+Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/helvet.sty
+Package: helvet 2020/03/25 PSNFSS-v9.3 (WaS) 
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/setspace/setspace.sty
+Package: setspace 2022/12/04 v6.7b set line spacing
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/tools/varioref.sty
+Package: varioref 2024/05/23 v1.6g package for extended references (FMi)
+\c@vrcnt=\count292
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen167
+\Gin@req@width=\dimen168
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/changepage/changepage.sty
+Package: changepage 2009/10/20 v1.0c check page and change page layout
+\c@cp@cntr=\count293
+\cp@tempcnt=\count294
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/lipsum/lipsum.sty (/usr/local/texlive/2025/texmf-dist/tex/latex/l3packages/l3keys2e/l3keys2e.sty (/usr/local/texlive/2025/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2025-01-18 L3 programming layer (loader) 
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count295
+\l__pdf_internal_box=\box57
+))
+Package: l3keys2e 2024-08-16 LaTeX2e option processing using LaTeX3 keys
+)
+Package: lipsum 2021-09-20 v2.7 150 paragraphs of Lorem Ipsum dummy text
+\g__lipsum_par_int=\count296
+\l__lipsum_a_int=\count297
+\l__lipsum_b_int=\count298
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/lipsum/lipsum.ltd.tex)) (/usr/local/texlive/2025/texmf-dist/tex/latex/eso-pic/eso-pic.sty
+Package: eso-pic 2023/05/03 v3.0c eso-pic (RN)
+\ESO@tempdima=\dimen169
+\ESO@tempdimb=\dimen170
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 274.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
+Package xcolor Info: Model `RGB' extended on input line 1365.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1367.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
+)) (/usr/local/texlive/2025/texmf-dist/tex/latex/lastpage/lastpage.sty
+Package: lastpage 2025/01/27 v2.1e lastpage: 2.09 or 2e? (HMM)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/lastpage/lastpage2e.sty
+Package: lastpage2e 2025/01/27 v2.1e Decide which 2e lastpage version to use (HMM)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/lastpage/lastpagemodern.sty
+Package: lastpagemodern 2025-01-27 v2.1e Refers to last page's name (HMM; JPG)
+\c@lastpagecount=\count299
+) 
+)) (/usr/local/texlive/2025/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty
+Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
+\f@nch@headwidth=\skip58
+\f@nch@offset@elh=\skip59
+\f@nch@offset@erh=\skip60
+\f@nch@offset@olh=\skip61
+\f@nch@offset@orh=\skip62
+\f@nch@offset@elf=\skip63
+\f@nch@offset@erf=\skip64
+\f@nch@offset@olf=\skip65
+\f@nch@offset@orf=\skip66
+\f@nch@height=\skip67
+\f@nch@footalignment=\skip68
+\f@nch@widthL=\skip69
+\f@nch@widthC=\skip70
+\f@nch@widthR=\skip71
+\@temptokenb=\toks28
+)) (/usr/local/texlive/2025/texmf-dist/tex/latex/placeins/placeins.sty
+Package: placeins 2005/04/18  v 2.2
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count300
+\float@exts=\toks29
+\float@box=\box58
+\@float@everytoks=\toks30
+\@floatcapt=\box59
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2023/08/05 v3.6o Customizing captions (AR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
+\caption@tempdima=\dimen171
+\captionmargin=\dimen172
+\caption@leftmargin=\dimen173
+\caption@rightmargin=\dimen174
+\caption@width=\dimen175
+\caption@indent=\dimen176
+\caption@parindent=\dimen177
+\caption@hangindent=\dimen178
+Package caption Info: Standard document class detected.
+)
+\c@caption@flags=\count301
+\c@continuedfloat=\count302
+Package caption Info: changepage package is loaded.
+\caption@adjustwidth@hsize=\dimen179
+\caption@adjustwidth@linewidth=\dimen180
+Package caption Info: float package is loaded.
+)
+Package caption Info: New subtype `subfigure' on input line 238.
+\c@subfigure=\count303
+Package caption Info: New subtype `subtable' on input line 238.
+\c@subtable=\count304
+)
+LaTeX Font Info:    Trying to load font information for T1+phv on input line 48.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/t1phv.fd
+File: t1phv.fd 2020/03/25 scalable font definitions for T1/phv.
+)
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 10.40245pt on input line 48.
+ (/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.aux
+
+LaTeX Warning: Label `fig:mountain-mask' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:mountain-mask' multiply defined.
+
+
+LaTeX Warning: Label `fig:mountain-after' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:mountain-after' multiply defined.
+
+
+LaTeX Warning: Label `fig:mountain-before-after' multiply defined.
+
+
+LaTeX Warning: Label `fig:mountain-mask' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:mountain-mask' multiply defined.
+
+
+LaTeX Warning: Label `fig:mountain-after' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:mountain-after' multiply defined.
+
+
+LaTeX Warning: Label `fig:mountain-before-after' multiply defined.
+
+)
+\openout1 = `document.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 48.
+LaTeX Font Info:    ... okay on input line 48.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 48.
+LaTeX Font Info:    ... okay on input line 48.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 48.
+LaTeX Font Info:    ... okay on input line 48.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 48.
+LaTeX Font Info:    ... okay on input line 48.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 48.
+LaTeX Font Info:    ... okay on input line 48.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 48.
+LaTeX Font Info:    ... okay on input line 48.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 48.
+LaTeX Font Info:    ... okay on input line 48.
+LaTeX Info: Redefining \it@ocap on input line 48.
+LaTeX Info: Redefining \it@ccap on input line 48.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: twoside 
+* h-part:(L,W,R)=(71.70166pt, 418.25368pt, 107.55254pt)
+* v-part:(T,H,B)=(113.81102pt, 645.87756pt, 85.35826pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=418.25368pt
+* \textheight=645.87756pt
+* \oddsidemargin=-0.56833pt
+* \evensidemargin=35.28255pt
+* \topmargin=9.66724pt
+* \headheight=17.0pt
+* \headsep=40.0pt
+* \topskip=11.0pt
+* \footskip=50.0pt
+* \marginparwidth=116.0pt
+* \marginparsep=7.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidetrue
+* \@mparswitchtrue
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+(/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count305
+\scratchdimen=\dimen181
+\scratchbox=\box60
+\nofMPsegments=\count306
+\nofMParguments=\count307
+\everyMPshowfont=\toks31
+\MPscratchCnt=\count308
+\MPscratchDim=\dimen182
+\MPnumerator=\count309
+\makeMPintoPDFobject=\count310
+\everyMPtoPDFconversion=\toks32
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+))
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
+<logoprima.png, id=1, 483.60675pt x 99.61215pt>
+File: logoprima.png Graphic file (type png)
+<use logoprima.png>
+Package pdftex.def Info: logoprima.png  used on input line 51.
+(pdftex.def)             Requested size: 483.69684pt x 99.63165pt.
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 23.63593pt on input line 51.
+LaTeX Font Info:    Trying to load font information for T1+ptm on input line 51.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/t1ptm.fd
+File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
+)
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 7.59998pt on input line 51.
+LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <14> not available
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 51.
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 13.29996pt on input line 51.
+<logoverticale.png, id=2, 69.25874pt x 649.42625pt>
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 51.
+(pdftex.def)             Requested size: 21.54396pt x 202.01456pt.
+
+
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 13.29996pt on input line 51.
+[1
+
+
+{/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc} </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/logoprima.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/logoverticale.png>]
+
+[2]
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 23.63593pt on input line 57.
+ (/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.toc
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 10.40245pt on input line 3.
+
+
+<logoheader.png, id=16, 209.1012pt x 12.74646pt>
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 31.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 9.49997pt on input line 31.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 31.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[1
+
+
+ </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/logoheader.png>])
+\tf@toc=\write3
+\openout3 = `document.toc'.
+
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 61.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[2]
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 13.67995pt on input line 63.
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 13.67995pt on input line 63.
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 11.39996pt on input line 64.
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 11.39996pt on input line 64.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 113.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 113.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[3
+
+]
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 124.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[4]
+Capitolo 1.
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 19.70294pt on input line 130.
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 19.70294pt on input line 130.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 168.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 168.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[1
+
+
+]
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 175.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[2]
+Capitolo 2.
+LaTeX Font Info:    Trying to load font information for TS1+phv on input line 198.
+(/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ts1phv.fd
+File: ts1phv.fd 2020/03/25 scalable font definitions for TS1/phv.
+)
+LaTeX Font Info:    Font shape `TS1/phv/m/n' will be
+(Font)              scaled to size 10.40245pt on input line 198.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 215.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 215.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[3
+
+]
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 241.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[4]
+Capitolo 3.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <10.95> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 261.
+LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
+(Font)              scaled to size 10.40245pt on input line 261.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 285.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 285.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[5
+
+]
+<assets/segmentation-example-horse.png, id=47, 331.2375pt x 204.765pt>
+File: assets/segmentation-example-horse.png Graphic file (type png)
+<use assets/segmentation-example-horse.png>
+Package pdftex.def Info: assets/segmentation-example-horse.png  used on input line 288.
+(pdftex.def)             Requested size: 355.51817pt x 219.78374pt.
+<assets/sam-structure.png, id=49, 746.79pt x 571.13374pt>
+File: assets/sam-structure.png Graphic file (type png)
+<use assets/sam-structure.png>
+Package pdftex.def Info: assets/sam-structure.png  used on input line 295.
+(pdftex.def)             Requested size: 313.69025pt x 239.90068pt.
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 312.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[6 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/segmentation-example-horse.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/sam-structure.png>]
+<assets/normal-image.jpg, id=55, 963.6pt x 1284.8pt>
+File: assets/normal-image.jpg Graphic file (type jpg)
+<use assets/normal-image.jpg>
+Package pdftex.def Info: assets/normal-image.jpg  used on input line 317.
+(pdftex.def)             Requested size: 129.65761pt x 172.87198pt.
+<assets/normal-mask.png, id=56, 963.6pt x 1284.8pt>
+File: assets/normal-mask.png Graphic file (type png)
+<use assets/normal-mask.png>
+Package pdftex.def Info: assets/normal-mask.png  used on input line 323.
+(pdftex.def)             Requested size: 129.65761pt x 172.87198pt.
+<assets/convex-hull-mask.png, id=57, 963.6pt x 1284.8pt>
+File: assets/convex-hull-mask.png Graphic file (type png)
+<use assets/convex-hull-mask.png>
+Package pdftex.def Info: assets/convex-hull-mask.png  used on input line 329.
+(pdftex.def)             Requested size: 129.65761pt x 172.87198pt.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 370.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 370.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[7 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/normal-image.jpg> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/normal-mask.png (PNG copy)> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/convex-hull-mask.png (PNG copy)>]
+<assets/liam-gallagher.png, id=62, 642.4pt x 428.60126pt>
+File: assets/liam-gallagher.png Graphic file (type png)
+<use assets/liam-gallagher.png>
+Package pdftex.def Info: assets/liam-gallagher.png  used on input line 385.
+(pdftex.def)             Requested size: 129.65761pt x 86.50351pt.
+<assets/tambourine-segmented.png, id=63, 654.445pt x 438.63875pt>
+File: assets/tambourine-segmented.png Graphic file (type png)
+<use assets/tambourine-segmented.png>
+Package pdftex.def Info: assets/tambourine-segmented.png  used on input line 391.
+(pdftex.def)             Requested size: 129.65761pt x 86.90294pt.
+<assets/liam-gallagher-without-tambourine.jpg, id=64, 642.4pt x 428.60126pt>
+File: assets/liam-gallagher-without-tambourine.jpg Graphic file (type jpg)
+<use assets/liam-gallagher-without-tambourine.jpg>
+Package pdftex.def Info: assets/liam-gallagher-without-tambourine.jpg  used on input line 397.
+(pdftex.def)             Requested size: 129.65761pt x 86.50351pt.
+<assets/romeo-mattonelle.jpg, id=65, 963.6pt x 1284.8pt>
+File: assets/romeo-mattonelle.jpg Graphic file (type jpg)
+<use assets/romeo-mattonelle.jpg>
+Package pdftex.def Info: assets/romeo-mattonelle.jpg  used on input line 424.
+(pdftex.def)             Requested size: 164.69203pt x 219.596pt.
+<assets/mattonelle-wrong.jpg, id=66, 963.6pt x 1284.8pt>
+File: assets/mattonelle-wrong.jpg Graphic file (type jpg)
+<use assets/mattonelle-wrong.jpg>
+Package pdftex.def Info: assets/mattonelle-wrong.jpg  used on input line 430.
+(pdftex.def)             Requested size: 164.69203pt x 219.596pt.
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 438.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[8 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/liam-gallagher.png (PNG copy)> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/tambourine-segmented.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/liam-gallagher-without-tambourine.jpg>]
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 473.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 473.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[9 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/romeo-mattonelle.jpg> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/mattonelle-wrong.jpg>]
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 537.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[10{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
+Underfull \hbox (badness 10000) in paragraph at lines 555--555
+[]|\T1/phv/m/n/10.95 Editor pro-fes-sio-na-li
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 555--555
+\T1/phv/m/n/10.95 (Pho-to-shop, Kri-ta,
+ []
+
+
+Underfull \hbox (badness 1917) in paragraph at lines 559--559
+[]|\T1/phv/m/n/10.95 Strumenti au-to-ma-ti-ci
+ []
+
+
+Underfull \hbox (badness 5817) in paragraph at lines 559--559
+\T1/phv/m/n/10.95 (Can-va PRO, Ca-p-
+ []
+
+
+Underfull \hbox (badness 1337) in paragraph at lines 564--564
+[]|\T1/phv/m/n/10.95 Demo di mo-del-li AI
+ []
+
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 571.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 571.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[11]
+Capitolo 4.
+
+Underfull \hbox (badness 10000) in paragraph at lines 574--582
+
+ []
+
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 595.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[12
+
+]
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 630.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 630.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[13]
+<assets/lab.png, id=88, 779.91376pt x 218.8175pt>
+File: assets/lab.png Graphic file (type png)
+<use assets/lab.png>
+Package pdftex.def Info: assets/lab.png  used on input line 645.
+(pdftex.def)             Requested size: 334.60422pt x 93.87599pt.
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 658.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[14 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/lab.png>]
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 685.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 685.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[15]
+Capitolo 5.
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 713.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[16
+
+]
+<assets/person_removed_before.png, id=99, 560.0925pt x 668.4975pt>
+File: assets/person_removed_before.png Graphic file (type png)
+<use assets/person_removed_before.png>
+Package pdftex.def Info: assets/person_removed_before.png  used on input line 728.
+(pdftex.def)             Requested size: 158.93843pt x 189.69753pt.
+<assets/person_removed_after.png, id=100, 560.0925pt x 668.4975pt>
+File: assets/person_removed_after.png Graphic file (type png)
+<use assets/person_removed_after.png>
+Package pdftex.def Info: assets/person_removed_after.png  used on input line 735.
+(pdftex.def)             Requested size: 158.93843pt x 189.69753pt.
+<assets/mountain_before.jpg, id=101, 1204.5pt x 1606.0pt>
+File: assets/mountain_before.jpg Graphic file (type jpg)
+<use assets/mountain_before.jpg>
+Package pdftex.def Info: assets/mountain_before.jpg  used on input line 748.
+(pdftex.def)             Requested size: 117.1105pt x 156.1249pt.
+<assets/mountain_mask.png, id=102, 489.83pt x 655.44875pt>
+File: assets/mountain_mask.png Graphic file (type png)
+<use assets/mountain_mask.png>
+Package pdftex.def Info: assets/mountain_mask.png  used on input line 755.
+(pdftex.def)             Requested size: 117.1105pt x 156.70082pt.
+<assets/mountain_after.jpg, id=103, 1204.5pt x 1606.0pt>
+File: assets/mountain_after.jpg Graphic file (type jpg)
+<use assets/mountain_after.jpg>
+Package pdftex.def Info: assets/mountain_after.jpg  used on input line 762.
+(pdftex.def)             Requested size: 117.1105pt x 156.1249pt.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 769.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 769.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[17 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/person_removed_before.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/person_removed_after.png>]
+<assets/segmantation_sam3.png, id=109, 181.67876pt x 170.6375pt>
+File: assets/segmantation_sam3.png Graphic file (type png)
+<use assets/segmantation_sam3.png>
+Package pdftex.def Info: assets/segmantation_sam3.png  used on input line 797.
+(pdftex.def)             Requested size: 188.21288pt x 176.77922pt.
+<assets/segmentation_moondream3.png, id=110, 181.67876pt x 170.6375pt>
+File: assets/segmentation_moondream3.png Graphic file (type png)
+<use assets/segmentation_moondream3.png>
+Package pdftex.def Info: assets/segmentation_moondream3.png  used on input line 804.
+(pdftex.def)             Requested size: 188.21288pt x 176.77922pt.
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 811.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[18 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/mountain_before.jpg> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/mountain_mask.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/mountain_after.jpg>]
+<assets/generate_fluxfill.png, id=115, 386.44376pt x 372.39125pt>
+File: assets/generate_fluxfill.png Graphic file (type png)
+<use assets/generate_fluxfill.png>
+Package pdftex.def Info: assets/generate_fluxfill.png  used on input line 816.
+(pdftex.def)             Requested size: 188.21288pt x 181.37096pt.
+<assets/generate_briagenfill.png, id=116, 386.44376pt x 372.39125pt>
+File: assets/generate_briagenfill.png Graphic file (type png)
+<use assets/generate_briagenfill.png>
+Package pdftex.def Info: assets/generate_briagenfill.png  used on input line 823.
+(pdftex.def)             Requested size: 188.21288pt x 181.37096pt.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 834.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 834.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[19 </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/segmantation_sam3.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/segmentation_moondream3.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/generate_fluxfill.png> </Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/assets/generate_briagenfill.png>]
+Capitolo 6.
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 858.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[20
+
+]
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 882.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 882.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[21]
+Underfull \hbox (badness 3364) in paragraph at lines 885--886
+[]\T1/phv/m/n/10.95 Kirillov, A. et al. Seg-ment Any-thing. ar-Xiv:2304.02643, 2023. Di-spo-ni-bi-le su:
+ []
+
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 915.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[22
+
+]
+Appendice A.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 936.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 936.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[23
+
+]
+Appendice B.
+
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 950.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[24
+
+]
+Appendice C.
+
+
+File: logoheader.png Graphic file (type png)
+<use logoheader.png>
+Package pdftex.def Info: logoheader.png  used on input line 976.
+(pdftex.def)             Requested size: 199.16928pt x 12.14133pt.
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 976.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[25
+
+]
+
+File: logoverticale.png Graphic file (type png)
+<use logoverticale.png>
+Package pdftex.def Info: logoverticale.png  used on input line 980.
+(pdftex.def)             Requested size: 13.35057pt x 125.19212pt.
+[26] 
+enddocument/afterlastpage (AED): lastpage setting LastPage.
+(/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.aux)
+ ***********
+LaTeX2e <2024-11-01> patch level 2
+L3 programming layer <2025-01-18>
+ ***********
+
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 8363 strings out of 473190
+ 143949 string characters out of 5715799
+ 649715 words of memory out of 5000000
+ 31487 multiletter control sequences out of 15000+600000
+ 603114 words of font info for 78 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 94i,15n,107p,433b,527s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
+Output written on /Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.pdf (32 pages, 14577135 bytes).
+PDF statistics:
+ 172 PDF objects out of 1000 (max. 8388607)
+ 90 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 116 words of extra memory for PDF output out of 10000 (max. 10000000)
+

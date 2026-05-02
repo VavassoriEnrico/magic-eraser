@@ -1,0 +1,56 @@
+\babel@toc {italian}{}\relax 
+\babel@toc {italian}{}\relax 
+\contentsline {chapter}{Introduzione}{iii}{}%
+\contentsline {chapter}{\numberline {1}Motivazione e Contesto}{1}{}%
+\contentsline {section}{\numberline {1.1}Rilevanza del problema}{1}{}%
+\contentsline {section}{\numberline {1.2}Contesto tecnologico}{1}{}%
+\contentsline {section}{\numberline {1.3}Obiettivo del progetto}{1}{}%
+\contentsline {chapter}{\numberline {2}Definizione del Problema}{3}{}%
+\contentsline {section}{\numberline {2.1}Aspetti del problema}{3}{}%
+\contentsline {section}{\numberline {2.2}Conseguenze operative}{4}{}%
+\contentsline {chapter}{\numberline {3}Stato dell'Arte}{5}{}%
+\contentsline {section}{\numberline {3.1}Segmentazione e maschere}{5}{}%
+\contentsline {subsection}{\numberline {3.1.1}Convex hull delle maschere}{7}{}%
+\contentsline {section}{\numberline {3.2}Image Inpainting}{8}{}%
+\contentsline {section}{\numberline {3.3}Modelli generativi}{9}{}%
+\contentsline {section}{\numberline {3.4}Confronto con strumenti esistenti}{11}{}%
+\contentsline {chapter}{\numberline {4}Approccio al problema}{12}{}%
+\contentsline {section}{\numberline {4.1}Impostazione generale}{12}{}%
+\contentsline {section}{\numberline {4.2}Strategia architetturale}{12}{}%
+\contentsline {section}{\numberline {4.3}Pattern e scelte progetturali}{13}{}%
+\contentsline {subsection}{\numberline {4.3.1}Separation of Concerns}{13}{}%
+\contentsline {subsection}{\numberline {4.3.2}Strategy pattern}{13}{}%
+\contentsline {subsection}{\numberline {4.3.3}Registry Pattern}{13}{}%
+\contentsline {subsection}{\numberline {4.3.4}Adapter pattern}{13}{}%
+\contentsline {subsection}{\numberline {4.3.5}Vantaggi principali}{13}{}%
+\contentsline {section}{\numberline {4.4}Pipeline di elaborazione}{14}{}%
+\contentsline {section}{\numberline {4.5}Scelte tecnologiche}{14}{}%
+\contentsline {section}{\numberline {4.6}Trade-off dell'approccio}{15}{}%
+\contentsline {subsubsection}{\numberline {4.6.0.1}Vantaggi}{15}{}%
+\contentsline {subsubsection}{\numberline {4.6.0.2}Limiti}{15}{}%
+\contentsline {chapter}{\numberline {5}Risultati}{16}{}%
+\contentsline {section}{\numberline {5.1}Risultati funzionali}{16}{}%
+\contentsline {section}{\numberline {5.2}Risultati tecnici}{16}{}%
+\contentsline {section}{\numberline {5.3}Validazione qualitativa}{17}{}%
+\contentsline {section}{\numberline {5.4}Discussione critica}{18}{}%
+\contentsline {subsection}{\numberline {5.4.1}Confronto tra modelli presenti}{18}{}%
+\contentsline {chapter}{\numberline {6}Conclusioni}{20}{}%
+\contentsline {section}{\numberline {6.1}Sintesi}{20}{}%
+\contentsline {section}{\numberline {6.2}Lavoro effettuato}{20}{}%
+\contentsline {section}{\numberline {6.3}Utilità e limiti}{20}{}%
+\contentsline {section}{\numberline {6.4}Sviluppi futuri}{21}{}%
+\contentsline {section}{\numberline {6.5}Conclusione finale}{21}{}%
+\contentsline {chapter}{\numberline {A}Manuale Utente}{23}{}%
+\contentsline {section}{\numberline {A.1}Login}{23}{}%
+\contentsline {section}{\numberline {A.2}Creare un progetto}{23}{}%
+\contentsline {section}{\numberline {A.3}Caricare un'immagine}{23}{}%
+\contentsline {section}{\numberline {A.4}Usare il laboratorio}{23}{}%
+\contentsline {section}{\numberline {A.5}Salvare una pipeline}{23}{}%
+\contentsline {chapter}{\numberline {B}API principali}{24}{}%
+\contentsline {section}{\numberline {B.1}Elenco endpoint}{24}{}%
+\contentsline {chapter}{\numberline {C}Configurazione e Avvio}{25}{}%
+\contentsline {section}{\numberline {C.1}Docker Compose}{25}{}%
+\contentsline {section}{\numberline {C.2}Variabili ambiente}{25}{}%
+\contentsline {section}{\numberline {C.3}Avvio frontend e backend}{25}{}%
+\contentsline {section}{\numberline {C.4}Deployement}{25}{}%
+\contentsline {subsection}{\numberline {C.4.1}Deployement su vercel}{25}{}%

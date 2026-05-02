@@ -1018,7 +1018,7 @@ export function useLaboratoryNotebook() {
         }
       }
 
-      const successMessage = `Saved to project #${targetProjectId}`;
+      const successMessage = `Saved to project`;
       setSaveMessageByCell((prev) => ({ ...prev, [cell.id]: successMessage }));
       setSaveErrorByCell((prev) => ({ ...prev, [cell.id]: "" }));
     } catch (error) {
