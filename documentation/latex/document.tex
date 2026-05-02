@@ -51,63 +51,68 @@
 % \listoffigures					% Opzionale
 % \listoftables					% Opzionale
 
-\newpage
-\problemchapter{Abstract}
-
-\section*{Italiano}
-Magic Eraser è una piattaforma web per l'editing di immagini assistito da intelligenza artificiale. Il progetto nasce nel contesto degli 
-strumenti generativi applicati alla computer vision, con particolare attenzione alla rimozione automatica di oggetti e alla modifica di 
-immagini tramite maschere. Il problema affrontato riguarda la difficoltà, per utenti non esperti, di rimuovere contenuti indesiderati senza 
-ricorrere a software professionali complessi e senza dover costruire manualmente selezioni precise.
-
-La soluzione proposta combina gestione dei progetti, caricamento delle immagini, segmentazione da prompt, rimozione tramite maschera e 
-generazione di nuove aree coerenti con il contesto visivo. Il sistema è organizzato come applicazione web con frontend React, backend 
-FastAPI, persistenza su Supabase Postgres, storage delle immagini e integrazione con provider AI esterni. L'elaborazione è strutturata in 
-pipeline, così da rendere tracciabili i passaggi applicati e consentire all'utente di salvare, rivedere e riutilizzare i risultati.
-
-Il lavoro ha portato alla realizzazione di un prototipo funzionante che permette di creare progetti, caricare immagini, applicare processi 
-AI e mantenere una cronologia ordinata delle elaborazioni. I risultati mostrano come l'approccio semplifica il flusso di editing e rende 
-accessibili operazioni avanzate, pur però rimanendo dipendente dalla qualità dei modelli esterni, dalla precisione delle maschere e dai tempi di 
-risposta dei servizi AI. In conclusione, Magic Eraser rappresenta una base estendibile per sperimentare workflow di image editing 
-generativo e per confrontare modelli differenti in situazioni reali.
-
-\section*{English}
-Magic Eraser is a web platform for AI-assisted image editing. The project was born in the context of generative tools applied to computer 
-vision, with a particular focus on automatic object removal and image editing using masks. The problem addressed is the difficulty for 
-non-expert users to remove unwanted content without resorting to complex professional software and without having to manually construct 
-precise selections.
-
-The proposed solution combines project management, image loading, segmentation from prompts, mask removal, and generation of new areas 
-consistent with the visual context. The system is organized as a web application with a React frontend, FastAPI backend, persistence on 
-Supabase Postgres, image storage, and integration with external AI providers. Processing is structured in pipelines, making the applied 
-steps traceable and allowing the user to save, review, and reuse the results.
-
-The work led to the creation of a working prototype that allows you to create projects, upload images, apply AI processes, and maintain an 
-organized history of processing. The results show that the approach simplifies the editing workflow and makes advanced operations 
-accessible, while still being dependent on the quality of external models, mask accuracy, and AI service response times. In conclusion, 
-Magic Eraser represents an extensible basis for experimenting with generative image editing workflows and comparing different models in 
-real-world situations.
 \problemchapter{Introduzione}
 
-Magic Eraser è una piattaforma web per l'editing di immagini assistito da AI. Il sistema consente di organizzare immagini in progetti, 
-applicare processi di segmentazione, rimozione e generazione, e conservare le pipeline di elaborazione prodotte durante il lavoro. 
-L'obiettivo non è soltanto rimuovere oggetti indesiderati, ma costruire un ambiente sperimentale in cui l'utente possa osservare, 
-ripetere e confrontare il comportamento di modelli generativi applicati a immagini reali.
+\section*{Abstract}
+\subsection*{Italiano}
+
+
+Magic Eraser è uno strumento per la modifica di immagini tramite modelli di intelligenza artificiale.
+Il progetto nasce come tool utilizzato per ricerca, sperimentazione, analisi e valutazione
+di modelli per segmentazione, rimozione e generazione; nello specifico per quanto riguarda
+la rimozione automatica di oggetti e alla modifica di immagini tramite maschere.
+La soluzione proposta combina gestione dei progetti, caricamento delle immagini in essi,
+segmentazione da prompt, rimozione tramite maschera e generazione di nuove aree
+coerenti con il contesto visivo.\
+\\Il sistema è organizzato come applicazione web con frontend React (TypeScript), backend 
+FastAPI, persistenza dati su Supabase Postgres e integrazione con provider AI esterni (tra cui Fal.ai).
+\\L'elaborazione delle immagini è gestita tramite pipeline persistite, in modo da 
+rendere tracciabili i passaggi applicati e permettere di salvare, modificare e riutilizzare
+i risultati.
+\\Il prodotto risultante permette la creazione di progetti, caricamento di immagini,
+applicazione di processi AI (segmentazione, rimozione, generazione) tramite provider esterni su esse,
+e di mantenere una cronologia ordinata delle elaborazioni.
+\\Magic Eraser può essere anche utilizzato come strumento di modifica assistita di immagini
+per semplificare e rendere più accessibile operazioni avanzate. Questo tenendo in considerazione
+che i risultati prodotti restano dipendenti dalla qualità dei modelli esterni, dalla precisione delle maschere
+e dai tempi di risposta dei servizi AI.
+Magic Eraser rappresenta una base estendibile per la sperimentazione di workflow di modifica
+immagini con un approcio generativo e per il confronto di modelli differenti in situazioni reali.
+
+
+\subsection*{English}
+Magic Eraser is a tool for editing images using artificial intelligence models.
+The project began as a tool for research, experimentation, analysis and evaluation
+of models for segmentation, removal and generation; specifically with regard to
+the automatic removal of objects and the modification of images using masks.
+The proposed solution combines project management, the uploading of images to projects,
+segmentation from prompts, removal via masks.
+The proposed solution combines project management, the uploading of images to these projects,
+segmentation based on prompts, removal using masks, and the generation of new areas
+that are consistent with the visual context.\
+\\The system is structured as a web application with a React (TypeScript) frontend, a 
+FastAPI backend, data storage on Supabase Postgres, and integration with external AI providers (including Fal.ai).
+\\Image processing is managed via persistent pipelines, so that 
+the steps applied can be traced and the results can be saved, modified and reused.
+\\The resulting product enables users to create projects, upload images,
+apply AI processes (segmentation, removal, generation) to them via external providers,
+and maintain a clear history of the processing steps.
+\\Magic Eraser can also be used as an assisted image editing tool
+to simplify advanced operations and make them more accessible. This is bearing in mind
+that the results produced depend on the quality of the external models, the precision of the masks
+and the response times of the AI services.
+Magic Eraser serves as a flexible platform for experimenting with image editing workflows
+using a generative approach and for comparing different models in real-world scenarios.
 
 \section*{Struttura del documento}
 
-Il documento segue il percorso logico del progetto: prima chiarisce il contesto e il problema, poi descrive le tecnologie e gli approcci 
-esistenti, quindi presenta l'architettura, l'implementazione e i risultati ottenuti. Le appendici raccolgono informazioni operative utili 
-per usare il sistema, consultare le API e configurare l'ambiente tecnico.
+Il documento è strutturato come segue:
+vengono prima chiariti contesto e problema, successivamente vengono
+descritte le tecnologie, architetture e approci adottati, per poi passare all'implementazione
+e ai risultati.
+In conclusione le appendici che contengono informazioni,
+guide e istruzioni per utilizzare Magic Eraser.
 
-\section*{Guida alla lettura}
-
-Il documento è organizzato in sette capitoli principali. Il Capitolo 1 introduce la motivazione del progetto, l'importanza del problema e il 
-contesto tecnologico. Il Capitolo 2 definisce il problema pratico, i limiti delle soluzioni attuali e le necessità dell'utente. Il Capitolo 3 
-presenta lo stato dell'arte relativo a inpainting, segmentazione, maschere e modelli generativi. Il Capitolo 4 descrive la soluzione 
-proposta, l'architettura del sistema, la pipeline di elaborazione e le scelte tecnologiche. Il Capitolo 5 approfondisce l'implementazione, 
-includendo frontend, backend, gestione immagini e pipeline AI. Il Capitolo 6 riporta funzionalità implementate, test, validazione e risultati. 
-Il Capitolo 7 conclude il lavoro con una valutazione critica, i limiti della soluzione, il contributo del progetto e gli sviluppi futuri.
 
 \newpage
 \mainmatter
@@ -117,56 +122,115 @@ Il Capitolo 7 conclude il lavoro con una valutazione critica, i limiti della sol
 
 \chapter{Motivazione e Contesto}
 
-La diffusione di strumenti di image editing basati su AI ha reso più accessibili operazioni che in passato richiedevano competenze grafiche 
-avanzate. La rimozione di oggetti da immagini, spesso indicata come funzionalità di ``magic eraser'', è un caso particolarmente rilevante 
-perché unisce comprensione semantica della scena, generazione di maschere e ricostruzione visiva delle aree modificate.
+Nel corso dell'ultimo decennio, la diffusione di strumenti per la modifica di immagini basati su 
+Intelligenza Artificiale ha reso accessibili operazioni che, nella maggior parte dei casi,
+richiedevano competenze grafiche avanzate. Magic Eraser si inserisce in questo contesto come uno strumento
+che, non solo automatizza e semplifica le operazioni precedentemente citate, ma permette anche il
+confronto tra modelli e processi di diversa natura.
+
 
 \section{Rilevanza del problema}
 
-L'editing tradizionale richiede selezioni manuali, conoscenza di strumenti professionali e tempo per rifinire il risultato. In molti 
-scenari, come la preparazione di immagini per presentazioni, contenuti web, materiale didattico o prototipi visivi, l'utente ha invece 
-bisogno di un flusso rapido e guidato. Un sistema automatico di rimozione oggetti può ridurre la complessità operativa, lasciando 
-all'utente il controllo sull'intenzione e delegando ai modelli AI le operazioni più tecniche.
+La modifica tradizionale di immagini richiede conoscenza di strumenti 
+professionali e spesso complicati, selezioni manuali e tempo per rifinire 
+il risultato. 
+In molte situazioni reali, come la preparazione di immagini per presentazioni, 
+contenuti per social media, 
+materiale didattico o prototipi visivi, si ha bisogno di un risultato rapido e il meno macchinoso possibile. 
+Un sistema automatico di rimozione 
+oggetti può ridurre la complessità, lasciando 
+all'utente il controllo sull'idea e intenzione, delegando ai modelli AI le operazioni 
+più tecniche e "noiose".
 
 \section{Contesto tecnologico}
 
-Il progetto si colloca all'intersezione tra AI generativa e computer vision. La computer vision permette di individuare aree rilevanti 
-dell'immagine tramite segmentazione e maschere, mentre i modelli generativi consentono di ricostruire contenuti coerenti nelle zone 
-rimosse. L'integrazione di questi elementi in una piattaforma web richiede anche aspetti applicativi: gestione degli utenti, persistenza 
-dei dati, archiviazione delle immagini, tracciamento delle elaborazioni e interfacce semplici da usare.
+Magic Eraser si colloca tra AI generativa e computer vision.
+Segmentazione e maschere rientrano nel contesto di Pattern Recognition e Computer Vision
+e hanno lo scopo di individuare e isolare le aree rilevanti di un'immagine.
+Mentre i modelli generativi consentono di ricostruire contenuti coerenti nelle zone 
+interessate, nel caso di Magic Eraser, coincidenti con le maschere. 
 
 \section{Obiettivo del progetto}
 
-L'obiettivo generale è sviluppare un sistema web che permetta di caricare immagini, selezionare processi AI, generare maschere, 
-rimuovere contenuti e salvare i risultati all'interno di progetti organizzati. Il sistema deve essere sufficientemente semplice 
-per un utente non specialista, ma anche strutturato in modo da supportare analisi e sperimentazione sui modelli impiegati.
+L'obiettivo, da un punto di vista macroscopico, è sviluppare un sistema che permetta di 
+caricare immagini personali, selezionare i processi AI che si desidera usare, generare 
+maschere, rimuovere contenuti e salvare i risultati all'interno di progetti organizzati. 
+L'utilizzo deve essere sufficientemente semplice 
+per un utente non tecnico, ma anche predisposto per analisi 
+e sperimentazione sui modelli impiegati.
+
+
+
+
+
+
 
 \chapter{Definizione del Problema}
 
-Il problema principale riguarda la trasformazione di un'attività grafica complessa in un workflow accessibile. La rimozione di un 
-oggetto non consiste solo nel cancellare pixel: occorre identificare correttamente l'area interessata, produrre una maschera utilizzabile, 
-inviare l'immagine a un modello adeguato e valutare se il risultato è coerente con il contesto.
+Il problema affrontato dal progetto riguarda la gestione completa di un 
+processo di modifica immagini basato su modelli AI. 
+In particolare, non si tratta soltanto di applicare un effetto automatico 
+a un'immagine, come potrebbe essere fatto tramite smartphone in pochi istanti, ma 
+di coordinare più passaggi collegati tra loro: selezione
+dell'area da modificare, generazione di una maschera da tale area, rimozione e ricostruzione, 
+generazione di una nuova entità nella stessa area, recupero del risultato per ogni processo 
+da modelli esterni e salvataggio dell'intera pipeline.
 
-\section{Problema pratico}
+Questi passaggi introducono diversi aspetti critici. 
+L'immagine di partenza deve essere in formati standard per poter essere 
+processata dai modelli, le maschere devono essere associate correttamente 
+all'immagine originale, questo significa anche che 
+devono essere coerenti con le caratteristiche di essa (dimensione, formato, qualità), 
+e ogni pipeline deve poter essere ricostruita in seguito. 
+Senza una struttura pensata, il flusso può diventare difficile da controllare,
+soprattutto quando l'utente lavora su più immagini e/o prova più modelli.
 
-L'utente vuole modificare un'immagine senza dover conoscere strumenti professionali. Nel caso di Magic Eraser, il flusso pratico comprende 
-tre azioni principali: scegliere un'immagine, indicare cosa rimuovere o generare, e ottenere un output visualmente credibile. 
-La generazione delle maschere è un passaggio centrale perché determina l'area su cui agisce il modello di rimozione o riempimento.
+\section{Aspetti del problema}
+RICORDATI DI FARE LA LISTA PUNTATA BENE IN LATEX
 
-\section{Limiti delle soluzioni attuali}
+1. Selezione dell'area da modificare.\\
+Per rimuovere o generare contenuto in una porzione specifica dell'immagine
+serve una maschera coerente. Una maschera 
+imprecisa può includere parti che si desidera invece conservare, oppure escludere parti
+che dovrebbero essere modificate, producendo risultati indesiderati anche 
+quando il modello generativo funziona correttamente.
+Allo stesso tempo, una maschera troppo specifica e dettagliata può portare a risultati ambigui,
+questo è spiegato dal fatto che i modelli di rimozione e filling vanno a modificare
+unicamente i pixel presenti nella maschera.
 
-Le soluzioni tradizionali offrono controllo elevato, ma richiedono competenze specifiche. Alcuni strumenti automatici semplificano 
-l'operazione, ma spesso nascondono completamente la pipeline, non permettono di salvare i passaggi intermedi o non consentono di 
-confrontare modelli e impostazioni. Inoltre, l'utente può avere difficoltà a organizzare più immagini, versioni e risultati all'interno 
-dello stesso lavoro.
+2. Dipendenza da modelli esterni.\\
+I provider AI, e gli stessi modelli, possono richiedere formati di input 
+differenti, tempi di elaborazione variabili, costi elevati e parametri specifici. 
+Il sistema deve quindi tradurre le operazioni richieste dall'utente in chiamate tecniche
+compatibili con il modello scelto, gestendo allo stesso tempo stati di avanzamento e 
+output prodotti.
 
-\section{Bisogni dell'utente}
+3. Tracciabilità.\\
+In un contesto di sperimentazione non è sufficiente 
+ottenere un'immagine finale per trarre conclusioni sulla qualità di un processo.
+Bisogna infatti sapere quale immagine sorgente è stata usata, quale processo è stato 
+applicato, quale modello ha prodotto il risultato e quali dati
+intermedi sono stati generati. Senza queste informazioni diventa 
+difficile confrontare risultati, ripetere un'elaborazione o capire da
+dove derivi un certo output.
 
-I bisogni individuati sono semplicità d'uso, automazione dei processi ripetitivi e gestione ordinata delle immagini. L'utente deve 
-poter creare progetti, caricare più asset, avviare processi AI, visualizzare output intermedi e finali, e ritrovare le pipeline salvate. 
-La piattaforma deve quindi comportarsi sia come editor assistito sia come ambiente di organizzazione del lavoro.
+\section{Conseguenze operative}
 
-\chapter{Stato dell'Arte}
+Dal punto di vista operativo, il problema richiede un sistema capace di 
+organizzare immagini, versioni e risultati in modo ordinato, strutturato e comprensibile. 
+Ogni progetto deve poter contenere immagini e ogni immagine deve poter essere 
+collegata alle elaborazioni eseguite. Inoltre, l'utente deve
+poter distinguere gli step della pipeline, visualizzare i risultati intermedi 
+e ritrovare le lavorazioni precedenti.
+
+La difficoltà principale consiste quindi nel trasformare un insieme di 
+operazioni tecniche e potenzialmente poco comprensibli, in un flusso
+controllabile. Magic Eraser affronta questo problema costruendo una 
+struttura applicativa in cui immagini, maschere, processi AI e output
+restano collegati tra loro e possono essere consultati anche dopo l'esecuzione
+e nel corso di sessioni differenti.
+
+\chapter{Stato dell'Arte} CONTINUA DA QUIIII
 
 Lo stato dell'arte considera le tecniche e gli strumenti che rendono possibile l'editing generativo: image inpainting, segmentazione, 
 maschere e modelli prompt-based. Questi concetti costituiscono la base teorica e applicativa della soluzione sviluppata.

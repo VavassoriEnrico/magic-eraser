@@ -1,8 +1,8 @@
 # Fdb version 4
-["pdflatex"] 1777370015.39849 "/home/luca/Documents/SUPSI/magic-eraser/documentation/latex/document.tex" "document.pdf" "document" 1777370016.21368 0
+["pdflatex"] 1777668873.96048 "/home/luca/Documents/SUPSI/magic-eraser/documentation/latex/document.tex" "document.pdf" "document" 1777668874.85532 0
   "/etc/texmf/web2c/texmf.cnf" 1777212251.37141 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/luca/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1095.600pk" 1777212315.38804 21952 e612ff43dca330568710f6ce0c64d1b5 ""
-  "/home/luca/Documents/SUPSI/magic-eraser/documentation/latex/document.tex" 1777370015.18252 25303 13e1f34aec2b7bc1c23483787e630806 ""
+  "/home/luca/Documents/SUPSI/magic-eraser/documentation/latex/document.tex" 1777668873.68312 26084 58027df2f10aac76cdb7cf996dac89d6 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/helvetic/phvb8r.tfm" 1136768653 4484 b828043cbd581d289d955903c1339981 ""
@@ -87,9 +87,9 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1777212256.66118 128028 f533b797fba58d231669ea19e894e23e ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1777212284 6802364 7a0cd58301e00460686a0fe6199cb67a ""
-  "document.aux" 1777370016.12602 7141 c15ab68ea189ae2e7499d212806808a4 "pdflatex"
-  "document.tex" 1777370015.18252 25303 13e1f34aec2b7bc1c23483787e630806 ""
-  "document.toc" 1777370016.12802 3766 513cdd2db913ab7705d201e7a5ae56b0 "pdflatex"
+  "document.aux" 1777668874.76513 6952 1efc10ddd4cfd36f7c33621ce3f2ef87 "pdflatex"
+  "document.tex" 1777668873.68312 26084 58027df2f10aac76cdb7cf996dac89d6 ""
+  "document.toc" 1777668874.76713 3659 7b5e5281ec26b785bb946c71bbedb98d "pdflatex"
   "logoheader.png" 1777211527.80837 2616 8047e09a53053880681cb48f6472e072 ""
   "logoprima.png" 1777211527.80837 8184 79f5107941fdc11bc70260674908206b ""
   "logoverticale.png" 1777211527.80837 2925 132f4d8d35734a6f7a0b5239849fa048 ""
