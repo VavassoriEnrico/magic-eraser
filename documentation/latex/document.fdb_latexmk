@@ -1,11 +1,14 @@
 # Fdb version 4
-["pdflatex"] 1777709137.69954 "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.tex" "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.pdf" "document" 1777709140.80202 0
-  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.aux" 1777709140.7374 7788 03c1c83dc27a9b586153b6d0cbce3d58 "pdflatex"
-  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.tex" 1777709137.41171 28274 9a14b48776ccd74f8b5ae730c03e5c00 ""
-  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.toc" 1777709140.73884 3698 e5f9e8b4dcad62291087b8832fb467c1 "pdflatex"
+["pdflatex"] 1777711364.65392 "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.tex" "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.pdf" "document" 1777711367.83928 0
+  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.aux" 1777711367.76977 8503 f75b45e8d1daf2d4ad27b94b20c107ac "pdflatex"
+  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.tex" 1777711364.38681 29245 d6b2038a368bfb4ad376b616a6e2fc22 ""
+  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/document.toc" 1777711367.77125 3698 e5f9e8b4dcad62291087b8832fb467c1 "pdflatex"
   "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/logoheader.png" 1772623182 2616 8047e09a53053880681cb48f6472e072 ""
   "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/logoprima.png" 1772623182 8184 79f5107941fdc11bc70260674908206b ""
   "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/logoverticale.png" 1772623182 2925 132f4d8d35734a6f7a0b5239849fa048 ""
+  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/mountain_after.jpg" 1777710383.78577 463006 88364ae6e3f9dee5760e21c0a14c1c19 ""
+  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/mountain_before.jpg" 1777710389.15787 467323 772288dc6b86456bd8dd4d3592698bf3 ""
+  "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/mountain_mask.png" 1777711049.88756 2626222 1f408fef9cd673fb5183363e15271247 ""
   "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/person_removed_after.png" 1777645420.61489 2292109 320601419bfd149faed3be86bc9c6986 ""
   "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/person_removed_before.png" 1777645399.00869 2321546 41e6a39678a03363f736ed27bb1db69d ""
   "/Users/vavas/Documents/università/anno3/semestre2/progetto_di_semestre/magic-eraser/documentation/latex/pipeline.png" 1777644928.20452 1977859 6d6b14bbc04fbb196adf62bea759dfc3 ""

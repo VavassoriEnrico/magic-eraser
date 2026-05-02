@@ -363,26 +363,54 @@ La validazione è stata effettuata osservando casi d'uso con diversa complessit�
 \begin{itemize}
   \item \emph{scene semplici} (sfondi uniformi e oggetto isolato): risultato convinvente con ricostruzione coerente con lo sfondo (come da esempio sottostante a figura 5.1).
   \item \emph{scene intermedie} (texture ripetute, bordi marcati): risultato sempre convincente ma con una qualità leggermente minore, a volte intaccata da piccoli artefatti.
-  \item \emph{scene complesse} (occlusioni, dettagli molto fini e geometrie non regolari): qualità variabile, dovuta spesso alla precisione della maschera e del prompt utilizzati.
+  \item \emph{scene complesse} (occlusioni, dettagli molto fini e geometrie non regolari): qualità variabile, dovuta spesso alla precisione della maschera e del prompt utilizzati. 
+  Nel caso della figura 5.2 mostrata qui sotto, la qualità dell'inpainting è comunque soddisfacente proprio a causa di una corretta segmentazione.
 \end{itemize}
 
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.38\textwidth}
         \centering
         \includegraphics[width=\textwidth]{person_removed_before.png}
         \caption{Immagine originale}
         \label{fig:before}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.38\textwidth}
         \centering
         \includegraphics[width=\textwidth]{person_removed_after.png}
         \caption{Risultato dopo la pipeline}
         \label{fig:after}
     \end{subfigure}
+    \hfill
     \caption{Confronto prima/dopo per un immagine ritenuta semplice.}
+    \label{fig:before_after}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.28\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{mountain_before.jpg}
+        \caption{Immagine originale}
+        \label{fig:before}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.28\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{mountain_mask.png}
+        \caption{Maschera di segmentazione}
+        \label{fig:before}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.28\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{mountain_after.jpg}
+        \caption{Risultato dopo la pipeline}
+        \label{fig:after}
+    \end{subfigure}
+    \caption{Confronto prima/dopo per un immagine di complessità maggiore.}
     \label{fig:before_after}
 \end{figure}
 

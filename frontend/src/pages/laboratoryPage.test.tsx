@@ -141,7 +141,7 @@ describe("LaboratoryPage", () => {
       runningAll: false,
       savingPipeline: false,
       savingCellId: "",
-      saveMessageByCell: { "cell-1": "Saved to project #3" },
+      saveMessageByCell: { "cell-1": "Saved to project" },
       saveErrorByCell: {},
       saveMessage: "Pipeline saved",
       saveError: "",
