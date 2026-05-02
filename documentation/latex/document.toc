@@ -12,37 +12,33 @@
 \contentsline {section}{\numberline {3.1}Segmentazione e maschere}{5}{}%
 \contentsline {subsection}{\numberline {3.1.1}Convex hull delle maschere}{7}{}%
 \contentsline {section}{\numberline {3.2}Image Inpainting}{8}{}%
-\contentsline {section}{\numberline {3.3}Modelli generativi}{10}{}%
-\contentsline {section}{\numberline {3.4}Confronto con strumenti esistenti}{12}{}%
-\contentsline {chapter}{\numberline {4}Approccio alla Soluzione}{13}{}%
-\contentsline {section}{\numberline {4.1}Descrizione generale}{13}{}%
-\contentsline {section}{\numberline {4.2}Architettura del sistema}{13}{}%
-\contentsline {subsection}{\numberline {4.2.1}Frontend}{13}{}%
-\contentsline {subsection}{\numberline {4.2.2}Backend}{13}{}%
-\contentsline {subsection}{\numberline {4.2.3}Database}{14}{}%
-\contentsline {subsection}{\numberline {4.2.4}AI provider}{14}{}%
-\contentsline {section}{\numberline {4.3}Pipeline di elaborazione}{14}{}%
-\contentsline {section}{\numberline {4.4}Scelte tecnologiche}{14}{}%
-\contentsline {chapter}{\numberline {5}Implementazione}{15}{}%
-\contentsline {section}{\numberline {5.1}Struttura del sistema}{15}{}%
-\contentsline {section}{\numberline {5.2}Frontend}{15}{}%
-\contentsline {section}{\numberline {5.3}Backend e API}{15}{}%
-\contentsline {section}{\numberline {5.4}Gestione immagini e progetti}{16}{}%
-\contentsline {section}{\numberline {5.5}Pipeline AI}{16}{}%
-\contentsline {subsection}{\numberline {5.5.1}Segmentazione}{16}{}%
-\contentsline {subsection}{\numberline {5.5.2}Rimozione}{16}{}%
-\contentsline {subsection}{\numberline {5.5.3}Generazione}{16}{}%
-\contentsline {section}{\numberline {5.6}Organizzazione del codice}{16}{}%
-\contentsline {chapter}{\numberline {6}Risultati e Validazione}{17}{}%
-\contentsline {section}{\numberline {6.1}Funzionalità implementate}{17}{}%
-\contentsline {section}{\numberline {6.2}Test}{17}{}%
-\contentsline {section}{\numberline {6.3}Validazione}{17}{}%
-\contentsline {section}{\numberline {6.4}Risultati}{18}{}%
-\contentsline {chapter}{\numberline {7}Conclusioni}{19}{}%
-\contentsline {section}{\numberline {7.1}Valutazione del lavoro}{19}{}%
-\contentsline {section}{\numberline {7.2}Limiti della soluzione}{19}{}%
-\contentsline {section}{\numberline {7.3}Contributo}{19}{}%
-\contentsline {section}{\numberline {7.4}Sviluppi futuri}{20}{}%
+\contentsline {section}{\numberline {3.3}Modelli generativi}{9}{}%
+\contentsline {section}{\numberline {3.4}Confronto con strumenti esistenti}{11}{}%
+\contentsline {chapter}{\numberline {4}Approccio al problema}{12}{}%
+\contentsline {section}{\numberline {4.1}Impostazione generale}{12}{}%
+\contentsline {section}{\numberline {4.2}Strategia architetturale}{12}{}%
+\contentsline {section}{\numberline {4.3}Pattern e scelte progetturali}{13}{}%
+\contentsline {subsection}{\numberline {4.3.1}Separation of Concerns}{13}{}%
+\contentsline {subsection}{\numberline {4.3.2}Strategy pattern}{13}{}%
+\contentsline {subsection}{\numberline {4.3.3}Registry Pattern}{13}{}%
+\contentsline {subsection}{\numberline {4.3.4}Adapter pattern}{13}{}%
+\contentsline {subsection}{\numberline {4.3.5}Vantaggi principali}{13}{}%
+\contentsline {section}{\numberline {4.4}Pipeline di elaborazione}{14}{}%
+\contentsline {section}{\numberline {4.5}Scelte tecnologiche}{14}{}%
+\contentsline {section}{\numberline {4.6}Trade-off dell'approccio}{15}{}%
+\contentsline {subsubsection}{\numberline {4.6.0.1}Vantaggi}{15}{}%
+\contentsline {subsubsection}{\numberline {4.6.0.2}Limiti}{15}{}%
+\contentsline {chapter}{\numberline {5}Risultati}{16}{}%
+\contentsline {section}{\numberline {5.1}Risultati funzionali}{16}{}%
+\contentsline {section}{\numberline {5.2}Risultati tecnici}{16}{}%
+\contentsline {section}{\numberline {5.3}Validazione qualitativa}{17}{}%
+\contentsline {section}{\numberline {5.4}Discussione critica}{18}{}%
+\contentsline {chapter}{\numberline {6}Conclusioni}{19}{}%
+\contentsline {section}{\numberline {6.1}Sintesi}{19}{}%
+\contentsline {section}{\numberline {6.2}Lavoro effettuato}{19}{}%
+\contentsline {section}{\numberline {6.3}Utilità e limiti}{19}{}%
+\contentsline {section}{\numberline {6.4}Sviluppi futuri}{20}{}%
+\contentsline {section}{\numberline {6.5}Conclusione}{20}{}%
 \contentsline {chapter}{\numberline {A}Manuale Utente}{22}{}%
 \contentsline {section}{\numberline {A.1}Login}{22}{}%
 \contentsline {section}{\numberline {A.2}Creare un progetto}{22}{}%
@@ -55,3 +51,5 @@
 \contentsline {section}{\numberline {C.1}Docker Compose}{24}{}%
 \contentsline {section}{\numberline {C.2}Variabili ambiente}{24}{}%
 \contentsline {section}{\numberline {C.3}Avvio frontend e backend}{24}{}%
+\contentsline {section}{\numberline {C.4}Deployement}{24}{}%
+\contentsline {subsection}{\numberline {C.4.1}Deployement su vercel}{24}{}%

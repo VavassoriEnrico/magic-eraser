@@ -196,7 +196,6 @@ export default function PipelinesPage() {
                       {pipeline.name?.trim() || `Pipeline #${pipeline.id}`}
                     </Text>
                     <HStack spacing={2} flexWrap="wrap">
-                      <Badge variant="subtle">#{pipeline.id}</Badge>
                       <Badge variant="subtle">{pipeline.status}</Badge>
                       <Text color={subtleText} fontSize="sm">
                         {formatRelativeTime(pipeline.updated_at)}

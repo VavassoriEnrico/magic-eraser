@@ -1,8 +1,8 @@
 % Esempio per lo stile supsi
-% \documentclass[twoside]{supsistudent} 
+% \documentclass[twoside]{supsistudent}
 % tolto sennò iniziava una pagina bianca dopo il frontespizio
 
-\documentclass[oneside]{supsistudent} 
+\documentclass[oneside]{supsistudent}
 \let\cleardoublepage\clearpage
 \raggedbottom
 \usepackage{placeins}
@@ -29,6 +29,10 @@
 \setcounter{secnumdepth}{5} 	%per avere più livelli nei titoli
 \setcounter{tocdepth}{5}		%per avere più livelli nell'indice
 
+% Pacchetti per immagini e figure
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
 
 \titolo{Magic Eraser}
 \studente{Abate Luca \vspace{1em}\\ Vavassori Enrico}
@@ -67,9 +71,9 @@ la rimozione automatica di oggetti e alla modifica di immagini tramite maschere.
 La soluzione proposta combina gestione dei progetti, caricamento delle immagini in essi,
 segmentazione da prompt, rimozione tramite maschera e generazione di nuove aree
 coerenti con il contesto visivo.\
-\\Il sistema è organizzato come applicazione web con frontend React (TypeScript), backend 
+\\Il sistema è organizzato come applicazione web con frontend React (TypeScript), backend
 FastAPI, persistenza dati su Supabase Postgres e integrazione con provider AI esterni (tra cui Fal.ai).
-\\L'elaborazione delle immagini è gestita tramite pipeline persistite, in modo da 
+\\L'elaborazione delle immagini è gestita tramite pipeline persistite, in modo da
 rendere tracciabili i passaggi applicati e permettere di salvare, modificare e riutilizzare
 i risultati.
 \\Il prodotto risultante permette la creazione di progetti, caricamento di immagini,
@@ -93,9 +97,9 @@ segmentation from prompts, removal via masks.
 The proposed solution combines project management, the uploading of images to these projects,
 segmentation based on prompts, removal using masks, and the generation of new areas
 that are consistent with the visual context.\
-\\The system is structured as a web application with a React (TypeScript) frontend, a 
+\\The system is structured as a web application with a React (TypeScript) frontend, a
 FastAPI backend, data storage on Supabase Postgres, and integration with external AI providers (including Fal.ai).
-\\Image processing is managed via persistent pipelines, so that 
+\\Image processing is managed via persistent pipelines, so that
 the steps applied can be traced and the results can be saved, modified and reused.
 \\The resulting product enables users to create projects, upload images,
 apply AI processes (segmentation, removal, generation) to them via external providers,
@@ -125,7 +129,7 @@ guide e istruzioni per utilizzare Magic Eraser.
 
 \chapter{Motivazione e Contesto}
 
-Nel corso dell'ultimo decennio, la diffusione di strumenti per la modifica di immagini basati su 
+Nel corso dell'ultimo decennio, la diffusione di strumenti per la modifica di immagini basati su
 Intelligenza Artificiale ha reso accessibili operazioni che, nella maggior parte dei casi,
 richiedevano competenze grafiche avanzate. Magic Eraser si inserisce in questo contesto come uno strumento
 che, non solo automatizza e semplifica le operazioni precedentemente citate, ma permette anche il
@@ -134,15 +138,15 @@ confronto tra modelli e processi di diversa natura.
 
 \section{Rilevanza del problema}
 
-La modifica tradizionale di immagini richiede conoscenza di strumenti 
-professionali e spesso complicati, selezioni manuali e tempo per rifinire 
-il risultato. 
-In molte situazioni reali, come la preparazione di immagini per presentazioni, 
-contenuti per social media, 
-materiale didattico o prototipi visivi, si ha bisogno di un risultato rapido e il meno macchinoso possibile. 
-Un sistema automatico di rimozione 
-oggetti può ridurre la complessità, lasciando 
-all'utente il controllo sull'idea e intenzione, delegando ai modelli AI le operazioni 
+La modifica tradizionale di immagini richiede conoscenza di strumenti
+professionali e spesso complicati, selezioni manuali e tempo per rifinire
+il risultato.
+In molte situazioni reali, come la preparazione di immagini per presentazioni,
+contenuti per social media,
+materiale didattico o prototipi visivi, si ha bisogno di un risultato rapido e il meno macchinoso possibile.
+Un sistema automatico di rimozione
+oggetti può ridurre la complessità, lasciando
+all'utente il controllo sull'idea e intenzione, delegando ai modelli AI le operazioni
 più tecniche e "noiose".
 
 \section{Contesto tecnologico}
@@ -150,16 +154,16 @@ più tecniche e "noiose".
 Magic Eraser si colloca tra AI generativa e computer vision.
 Segmentazione e maschere rientrano nel contesto di Pattern Recognition e Computer Vision
 e hanno lo scopo di individuare e isolare le aree rilevanti di un'immagine.
-Mentre i modelli generativi consentono di ricostruire contenuti coerenti nelle zone 
-interessate, nel caso di Magic Eraser, coincidenti con le maschere. 
+Mentre i modelli generativi consentono di ricostruire contenuti coerenti nelle zone
+interessate, nel caso di Magic Eraser, coincidenti con le maschere.
 
 \section{Obiettivo del progetto}
 
-L'obiettivo, da un punto di vista macroscopico, è sviluppare un sistema che permetta di 
-caricare immagini personali, selezionare i processi AI che si desidera usare, generare 
-maschere, rimuovere contenuti e salvare i risultati all'interno di progetti organizzati. 
-L'utilizzo deve essere sufficientemente semplice 
-per un utente non tecnico, ma anche predisposto per analisi 
+L'obiettivo, da un punto di vista macroscopico, è sviluppare un sistema che permetta di
+caricare immagini personali, selezionare i processi AI che si desidera usare, generare
+maschere, rimuovere contenuti e salvare i risultati all'interno di progetti organizzati.
+L'utilizzo deve essere sufficientemente semplice
+per un utente non tecnico, ma anche predisposto per analisi
 e sperimentazione sui modelli impiegati.
 
 
@@ -170,21 +174,21 @@ e sperimentazione sui modelli impiegati.
 
 \chapter{Definizione del Problema}
 
-Il problema affrontato dal progetto riguarda la gestione completa di un 
-processo di modifica immagini basato su modelli AI. 
-In particolare, non si tratta soltanto di applicare un effetto automatico 
-a un'immagine, come potrebbe essere fatto tramite smartphone in pochi istanti, ma 
+Il problema affrontato dal progetto riguarda la gestione completa di un
+processo di modifica immagini basato su modelli AI.
+In particolare, non si tratta soltanto di applicare un effetto automatico
+a un'immagine, come potrebbe essere fatto tramite smartphone in pochi istanti, ma
 di coordinare più passaggi collegati tra loro: selezione
-dell'area da modificare, generazione di una maschera da tale area, rimozione e ricostruzione, 
-generazione di una nuova entità nella stessa area, recupero del risultato per ogni processo 
+dell'area da modificare, generazione di una maschera da tale area, rimozione e ricostruzione,
+generazione di una nuova entità nella stessa area, recupero del risultato per ogni processo
 da modelli esterni e salvataggio dell'intera pipeline.
 
-Questi passaggi introducono diversi aspetti critici. 
-L'immagine di partenza deve essere in formati standard per poter essere 
-processata dai modelli, le maschere devono essere associate correttamente 
-all'immagine originale, questo significa anche che 
-devono essere coerenti con le caratteristiche di essa (dimensione, formato, qualità), 
-e ogni pipeline deve poter essere ricostruita in seguito. 
+Questi passaggi introducono diversi aspetti critici.
+L'immagine di partenza deve essere in formati standard per poter essere
+processata dai modelli, le maschere devono essere associate correttamente
+all'immagine originale, questo significa anche che
+devono essere coerenti con le caratteristiche di essa (dimensione, formato, qualità),
+e ogni pipeline deve poter essere ricostruita in seguito.
 Senza una struttura pensata, il flusso può diventare difficile da controllare,
 soprattutto quando l'utente lavora su più immagini e/o prova più modelli.
 
@@ -193,52 +197,52 @@ soprattutto quando l'utente lavora su più immagini e/o prova più modelli.
 \begin{itemize}
 \item \textbf{Selezione dell'area da modificare.}
 Per rimuovere o generare contenuto in una porzione specifica dell'immagine
-serve una maschera coerente. Una maschera 
+serve una maschera coerente. Una maschera
 imprecisa può includere parti che si desidera invece conservare, oppure escludere parti
-che dovrebbero essere modificate, producendo risultati indesiderati anche 
+che dovrebbero essere modificate, producendo risultati indesiderati anche
 quando il modello generativo funziona correttamente.
 Allo stesso tempo, una maschera troppo specifica e dettagliata può portare a risultati ambigui,
 questo è spiegato dal fatto che i modelli di rimozione e filling vanno a modificare
 unicamente i pixel presenti nella maschera.
 
 \item \textbf{Dipendenza da modelli esterni.}
-I provider AI, e gli stessi modelli, possono richiedere formati di input 
-differenti, tempi di elaborazione variabili, costi elevati e parametri specifici. 
+I provider AI, e gli stessi modelli, possono richiedere formati di input
+differenti, tempi di elaborazione variabili, costi elevati e parametri specifici.
 Il sistema deve quindi tradurre le operazioni richieste dall'utente in chiamate tecniche
-compatibili con il modello scelto, gestendo allo stesso tempo stati di avanzamento e 
+compatibili con il modello scelto, gestendo allo stesso tempo stati di avanzamento e
 output prodotti.
 
 \item \textbf{Tracciabilità.}
-In un contesto di sperimentazione non è sufficiente 
+In un contesto di sperimentazione non è sufficiente
 ottenere un'immagine finale per trarre conclusioni sulla qualità di un processo.
-Bisogna infatti sapere quale immagine sorgente è stata usata, quale processo è stato 
+Bisogna infatti sapere quale immagine sorgente è stata usata, quale processo è stato
 applicato, quale modello ha prodotto il risultato e quali dati
-intermedi sono stati generati. Senza queste informazioni diventa 
+intermedi sono stati generati. Senza queste informazioni diventa
 difficile confrontare risultati, ripetere un'elaborazione o capire da
 dove derivi un certo output.
 \end{itemize}
 
 \section{Conseguenze operative}
 
-Dal punto di vista operativo, il problema richiede un sistema capace di 
-organizzare immagini, versioni e risultati in modo ordinato, strutturato e comprensibile. 
-Ogni progetto deve poter contenere immagini e ogni immagine deve poter essere 
+Dal punto di vista operativo, il problema richiede un sistema capace di
+organizzare immagini, versioni e risultati in modo ordinato, strutturato e comprensibile.
+Ogni progetto deve poter contenere immagini e ogni immagine deve poter essere
 collegata alle elaborazioni eseguite. Inoltre, l'utente deve
-poter distinguere gli step della pipeline, visualizzare i risultati intermedi 
+poter distinguere gli step della pipeline, visualizzare i risultati intermedi
 e ritrovare le lavorazioni precedenti.
 
-La difficoltà principale consiste quindi nel trasformare un insieme di 
+La difficoltà principale consiste quindi nel trasformare un insieme di
 operazioni tecniche e potenzialmente poco comprensibli, in un flusso
-controllabile. Magic Eraser affronta questo problema costruendo una 
+controllabile. Magic Eraser affronta questo problema costruendo una
 struttura applicativa in cui immagini, maschere, processi AI e output
 restano collegati tra loro e possono essere consultati anche dopo l'esecuzione
 e nel corso di sessioni differenti.
 
 \chapter{Stato dell'Arte}
 
-Lo stato dell'arte considera le tecniche e gli strumenti che vengono utilizzati 
-nell'ambito dell'editing generativo: image inpainting, segmentazione, 
-maschere e modelli prompt-based. Questi concetti costituiscono la base teorica e 
+Lo stato dell'arte considera le tecniche e gli strumenti che vengono utilizzati
+nell'ambito dell'editing generativo: image inpainting, segmentazione,
+maschere e modelli prompt-based. Questi concetti costituiscono la base teorica e
 applicativa della soluzione sviluppata.
 Viene inoltre fatta un'analisi comparativa con strumenti simili a Magic Eraser già
 presenti sul mercato, evidenziando punti di forza e limiti di ciascuno.
@@ -247,36 +251,36 @@ presenti sul mercato, evidenziando punti di forza e limiti di ciascuno.
 
 \section{Segmentazione e maschere}
 
-La segmentazione consente di individuare regioni dell'immagine corrispondenti a 
-oggetti o concetti indicati dall'utente. Il risultato viene 
-rappresentato tramite maschere, immagini binarie o semi-binarie che separano le zone 
-da modificare dal resto della scena. Nel workflow di 
-Magic Eraser, la maschera è l'elemento di collegamento tra la selezione semantica e 
+La segmentazione consente di individuare regioni dell'immagine corrispondenti a
+oggetti o concetti indicati dall'utente. Il risultato viene
+rappresentato tramite maschere, immagini binarie o semi-binarie che separano le zone
+da modificare dal resto della scena. Nel workflow di
+Magic Eraser, la maschera è l'elemento di collegamento tra la selezione semantica e
 l'operazione di rimozione o generativa successiva.
 
-Nel paper dove viene introdotto SAM \textit{(Segment Anything Model)} - Meta AI (2023), 
-il progetto Segment Anything viene descritto come composto da task, 
-modello edataset per la segmentazione di immagini \cite{sam}. 
+Nel paper dove viene introdotto SAM \textit{(Segment Anything Model)} - Meta AI (2023),
+il progetto Segment Anything viene descritto come composto da task,
+modello edataset per la segmentazione di immagini \cite{sam}.
 L'idea centrale è la segmentazione guidata da prompt: il task è definito
-come la capacità di ``ottenere una maschera di segmentazione valida dato qualsiasi prompt'' 
+come la capacità di ``ottenere una maschera di segmentazione valida dato qualsiasi prompt''
 \cite{sam}. In questa prospettiva, il prompt non ssi limita a una
-descrizione testuale, ma può contenere informazioni spaziali o semantiche, 
+descrizione testuale, ma può contenere informazioni spaziali o semantiche,
 come punti, box, maschere o testo libero. Per Magic Eraser questo
-aspetto viene sfruttato perché l'utente non deve disegnare 
+aspetto viene sfruttato perché l'utente non deve disegnare
 manualmente la regione da modificare ma deve descrivere tramite testo l'oggetto o l'area
-su cui desidera appportare modifiche, lasciando al modello il compito di 
+su cui desidera appportare modifiche, lasciando al modello il compito di
 tradurre questa descrizione in una maschera coerente con l'immagine.
 
-Il Segment Anything Model (SAM) è progettato per separare l'analisi 
+Il Segment Anything Model (SAM) è progettato per separare l'analisi
 dell'immagine dalla generazione della maschera. Il modello usa un
-\textit{image encoder}, un \textit{prompt encoder} e un \textit{mask decoder}, 
-come mostrato in Figura~\ref{fig:sam-structure}; questa struttura permette di 
+\textit{image encoder}, un \textit{prompt encoder} e un \textit{mask decoder},
+come mostrato in Figura~\ref{fig:sam-structure}; questa struttura permette di
 calcolare una rappresentazione
-dell'immagine e poi riutilizzarla con prompt diversi. Gli autori indicano 
+dell'immagine e poi riutilizzarla con prompt diversi. Gli autori indicano
 esplicitamente l'uso di ``point, box, and mask prompts''
-\cite{sam}, cioè input compatibili con un'interazione visuale rapida. Dal punto 
+\cite{sam}, cioè input compatibili con un'interazione visuale rapida. Dal punto
 di vista applicativo, questa scelta rende la segmentazione
-adatta a strumenti in cui l'utente deve provare selezioni diverse sulla stessa 
+adatta a strumenti in cui l'utente deve provare selezioni diverse sulla stessa
 mmagine senza ripetere ogni volta l'intero processo.
 
 \begin{figure}[H]
@@ -289,21 +293,21 @@ mmagine senza ripetere ogni volta l'intero processo.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{assets/sam-structure.png}
-\caption{Architettura generale del Segment Anything Model: image encoder, 
-prompt encoder e mask decoder. L'immagine è tratta direttamente dal paper 
+\caption{Architettura generale del Segment Anything Model: image encoder,
+prompt encoder e mask decoder. L'immagine è tratta direttamente dal paper
 \textit{Segment Anything} (SAM) \cite{sam}.}
 \label{fig:sam-structure}
 \end{figure}
 
-Un punto importante per l'editing generativo è la gestione dell'ambiguità. Un 
+Un punto importante per l'editing generativo è la gestione dell'ambiguità. Un
 prompt può riferirsi a oggetti diversi o a parti diverse della
-stessa scena: ad esempio un punto sopra una maglietta può indicare la maglietta, 
+stessa scena: ad esempio un punto sopra una maglietta può indicare la maglietta,
 la persona o una regione più ampia. Per questo motivo SAM
-può produrre più maschere valide per un singolo prompt, associando anche un 
+può produrre più maschere valide per un singolo prompt, associando anche un
 punteggio di confidenza. Nel contesto di Magic Eraser, questa
-caratteristica è utile perché la qualità dell'inpainting dipende direttamente 
+caratteristica è utile perché la qualità dell'inpainting dipende direttamente
 dalla precisione della maschera: una maschera troppo ampia può
-rimuovere elementi da conservare, mentre una maschera troppo stretta può lasciare 
+rimuovere elementi da conservare, mentre una maschera troppo stretta può lasciare
 residui visivi dell'oggetto.
 
 \begin{figure}[h]
@@ -340,14 +344,14 @@ un'area di intervento più stabile e meno frammentata.
 
 Nel contesto di Magic Eraser, la convex hull viene usata come supporto operativo
 per trasformare maschere molto dettagliate in regioni più semplici da usare nei
-processi successivi. 
+processi successivi.
 Una maschera segmentata con bordi dettagliati e specifici rischia di fornire
 un'area di modifica troppo precisa per il modello e, specialmente nel caso
 in cui da segmentazione si passi direttamente a inpainting filling (senza passare
 prima dal proesso di rimozione oggetto), il risultato è spesso
 poco soddisfacente. Una
-convex hull, invece, generalizza la forma della maschera, creando un'area più 
-ampia e continua che può essere più adatta a processi di rimozione o generazione, 
+convex hull, invece, generalizza la forma della maschera, creando un'area più
+ampia e continua che può essere più adatta a processi di rimozione o generazione,
 soprattutto quando si vuole evitare imprecisioni dovuti a bordi troppo irregolari.
 
 
@@ -355,24 +359,24 @@ soprattutto quando si vuole evitare imprecisioni dovuti a bordi troppo irregolar
 
 \section{Image Inpainting}
 
-L'image inpainting è il processo di ricostruzione di aree mancanti, 
+L'image inpainting è il processo di ricostruzione di aree mancanti,
 danneggiate o mascherate di un'immagine. Nel paper
-\textit{Image Inpainting}, viene definito l'inpainting come la 
+\textit{Image Inpainting}, viene definito l'inpainting come la
 tecnica per ``modificare un'immagine in una forma non
 rilevabile'' \cite{bertalmio-inpainting}. Spesso l'operazione di inpainting
-viene associata al restauro artistico e fotografico, spiegando che l'obiettivo 
-è ricostruire parti mancanti o rovinate dell'immagine in modo 
+viene associata al restauro artistico e fotografico, spiegando che l'obiettivo
+è ricostruire parti mancanti o rovinate dell'immagine in modo
 da renderla nuovamente coerente.
 
-L'interazione richiesta all'utente è limitata alla selezione 
-della regione da correggere e come si desidera riempire. ''Dopo che 
-l'utente seleziona le regioni da restaurare, 
+L'interazione richiesta all'utente è limitata alla selezione
+della regione da correggere e come si desidera riempire. ''Dopo che
+l'utente seleziona le regioni da restaurare,
 l'algoritmo riempie automaticamente tali regioni usando
 l'informazione circostante'' \cite{bertalmio-inpainting}.
-In questo senso, l'inpainting è un processo che parte da un'immagine 
-e una maschera, e produce un risultato in cui la regione coperta 
-dalla maschera è stata sostituita con un contenuto coerente con 
-il contesto visivo. 
+In questo senso, l'inpainting è un processo che parte da un'immagine
+e una maschera, e produce un risultato in cui la regione coperta
+dalla maschera è stata sostituita con un contenuto coerente con
+il contesto visivo.
 
 \begin{figure}[H]
 \centering
@@ -398,18 +402,18 @@ il contesto visivo.
 \end{figure}
 
 
-Importante è anche distinguere l'inpainting dalla denoising classica. 
+Importante è anche distinguere l'inpainting dalla denoising classica.
 Nel denoising i pixel degradati contengono ancora informazione utile,
-mentre nell'inpainting la regione da ricostruire può non contenere 
+mentre nell'inpainting la regione da ricostruire può non contenere
 informazione significativa. Per questo motivo il contenuto va dedotto
 dalle zone circostanti. L'area coperta dalla
-maschera non deve essere migliorata, ma sostituita con un contenuto coerente 
+maschera non deve essere migliorata, ma sostituita con un contenuto coerente
 con il contesto.
 
 Tuttavia, uno dei problemi principali, come anche menzionato nel paper,
- è la ``riproduzione di grandi 
+ è la ``riproduzione di grandi
 regioni testurizzate'' \cite{bertalmio-inpainting}. Questo
-limite resta rilevante anche nei sistemi moderni: le aree con pattern complessi, 
+limite resta rilevante anche nei sistemi moderni: le aree con pattern complessi,
 sfondi molto ricchi o dettagli ripetitivi possono produrre
 imprecisioni, soprattutto quando la maschera è grande o poco precisa.
 
@@ -426,56 +430,56 @@ imprecisioni, soprattutto quando la maschera è grande o poco precisa.
 \includegraphics[height=0.34\textheight]{assets/mattonelle-wrong.jpg}\\
 \textbf{Risultato con imprecisioni}
 \end{minipage}
-\caption{Esempio di limite dell'image inpainting su una regione 
-testurizzata: la ripetizione delle mattonelle rende più difficile produrre 
+\caption{Esempio di limite dell'image inpainting su una regione
+testurizzata: la ripetizione delle mattonelle rende più difficile produrre
 un risultato coerente.}
 \label{fig:image-inpainting-texture-limit}
 \end{figure}
 
-Nei sistemi moderni, l'inpainting non si limita più a modelli basati su 
+Nei sistemi moderni, l'inpainting non si limita più a modelli basati su
 diffusione anisotropa o propagazione geometrica, ma utilizza anche
-modelli generativi capaci di interpretare il contesto visivo. Tuttavia, il 
+modelli generativi capaci di interpretare il contesto visivo. Tuttavia, il
 principio operativo rimane lo stesso: data un'immagine e una
-maschera, il sistema deve produrre una regione plausibile, coerente con il resto 
+maschera, il sistema deve produrre una regione plausibile, coerente con il resto
 della scena e utile all'obiettivo dell'utente.
 
 
 \section{Modelli generativi}
 
-I modelli generativi image-to-image permettono di produrre o modificare 
+I modelli generativi image-to-image permettono di produrre o modificare
 contenuti visivi a partire da istruzioni testuali, immagini di
-riferimento e maschere. Questo rende il problema diverso dalla 
+riferimento e maschere. Questo rende il problema diverso dalla
 generazione di un'immagine da zero, perché il risultato deve
-rispettare la prospettiva, la luce, la texture e la composizione dell'immagine 
+rispettare la prospettiva, la luce, la texture e la composizione dell'immagine
 di partenza.
 
 \vspace{\baselineskip}
 
-La famiglia di modelli che ha reso possibile questo tipo di workflow è 
+La famiglia di modelli che ha reso possibile questo tipo di workflow è
 quella dei modelli a diffusione. In generale, un modello
-di diffusione impara a ricostruire un'immagine partendo da rumore, procedendo 
+di diffusione impara a ricostruire un'immagine partendo da rumore, procedendo
 per passi successivi fino a ottenere una scena coerente.
-Stable Diffusion ha reso questo approccio molto diffuso perché sposta una 
+Stable Diffusion ha reso questo approccio molto diffuso perché sposta una
 parte importante del processo nello spazio latente: invece di
-lavorare direttamente su tutti i pixel dell'immagine, il modello opera su una 
+lavorare direttamente su tutti i pixel dell'immagine, il modello opera su una
 rappresentazione più compatta, riducendo il costo
 computazionale e rendendo più accessibili operazioni come
-image-to-image e inpainting \cite{latent-diffusion}. 
-L'articolo che abbiamo deciso di utilizzare per questa sezione 
-descrive proprio ''Stable Diffusion 
+image-to-image e inpainting \cite{latent-diffusion}.
+L'articolo che abbiamo deciso di utilizzare per questa sezione
+descrive proprio ''Stable Diffusion
 non è solo un modello, ma un ecosistema di varianti,
-interfacce e tecniche di controllo che hanno reso l'image generation utilizzabile 
+interfacce e tecniche di controllo che hanno reso l'image generation utilizzabile
 anche in contesti applicativi'' \cite{bentoml-generative-models}.
 
 \vspace{\baselineskip}
 
-Per quanto riguarda Magic Eraser, l'aspetto più importante non è la generazione 
+Per quanto riguarda Magic Eraser, l'aspetto più importante non è la generazione
 libera, ma l'editing controllato. Il modello riceve tre informazioni principali:
-l'immagine originale, la maschera e, quando necessario, un prompt. 
+l'immagine originale, la maschera e, quando necessario, un prompt.
 La maschera limita l'area di modifica, mentre il prompt orienta
-il tipo di contenuto da generare. Se l'obiettivo è rimuovere un oggetto, 
+il tipo di contenuto da generare. Se l'obiettivo è rimuovere un oggetto,
 il modello deve riempire l'area con uno sfondo coerente e credibile; se
-l'obiettivo è sostituire o aggiungere contenuto, deve invece generare un 
+l'obiettivo è sostituire o aggiungere contenuto, deve invece generare un
 elemento nuovo senza "rompere" la coerenza della scena. Questa
 distinzione è importante perché spiega la presenza di due processi separati
 presenti: \texttt{remove\_with\_mask} e
@@ -483,61 +487,61 @@ presenti: \texttt{remove\_with\_mask} e
 
 \vspace{\baselineskip}
 Tra i modelli usati nell'ambito dell'AI image generation, FLUX (di Black Forest Labs),
-è considerato, anche da Black Forest Labs stessa, lo stato dell'arte. 
+è considerato, anche da Black Forest Labs stessa, lo stato dell'arte.
 Sempre nell'articolo citato, vengono descritte
-le versioni più recenti della famiglia FLUX come modelli orientati alla 
-qualità visiva e alla fedeltà al prompt. \cite{bentoml-generative-models}. 
-Magic Eraser integra 
+le versioni più recenti della famiglia FLUX come modelli orientati alla
+qualità visiva e alla fedeltà al prompt. \cite{bentoml-generative-models}.
+Magic Eraser integra
 \textit{FLUX.1 [pro] Fill} tramite Fal.ai per il processo
-\texttt{generate\_from\_prompt}. Questo modello viene usato quando 
+\texttt{generate\_from\_prompt}. Questo modello viene usato quando
 l'utente vuole riempire una regione mascherata seguendo una
-descrizione testuale. Non genera quindi un'intera immagine indipendente, ma 
+descrizione testuale. Non genera quindi un'intera immagine indipendente, ma
 lavora dentro un'area precisa, come detto prima, usando il contesto visivo
 attorno alla maschera come vincolo.
 
 \vspace{\baselineskip}
 
-Accanto a FLUX, l'applicazione, al momento attuale, implementa anche \textit{Bria GenFill} come 
+Accanto a FLUX, l'applicazione, al momento attuale, implementa anche \textit{Bria GenFill} come
 modello alternativo per la generazione con maschera. La sua
-presenza è utile perché permette di confrontare risultati diversi sullo stesso 
+presenza è utile perché permette di confrontare risultati diversi sullo stesso
 input (stessa immagine, stessa maschera, stesso prompt, ma
-modello differente). Questo è uno degli obiettivi pratici di Magic Eraser: 
-rendere esplicito quali componenti hanno prodotto un certo risultato. 
+modello differente). Questo è uno degli obiettivi pratici di Magic Eraser:
+rendere esplicito quali componenti hanno prodotto un certo risultato.
 In questo modo l'utente può capire se un risultato poco convincente dipende
 dalla maschera, dal prompt o dal comportamento del modello scelto.
 
 \vspace{\baselineskip}
 
-Il processo di rimozione usa invece \textit{Finegrain Eraser}, sempre tramite Fal.ai. 
+Il processo di rimozione usa invece \textit{Finegrain Eraser}, sempre tramite Fal.ai.
 Anche se dal punto di vista dell'utente appare come
-una semplice cancellazione, il modello effettivamente genera contenuto nuovo 
+una semplice cancellazione, il modello effettivamente genera contenuto nuovo
 nella zona indicata con maschera. La differenza rispetto al filling
-guidato da prompt è che qui l'intenzione principale è far sparire l'oggetto, 
+guidato da prompt è che qui l'intenzione principale è far sparire l'oggetto,
 non sostituirlo con un elemento specifico. Per questo il
-prompt non è necessario: la maschera indica cosa rimuovere e il modello 
+prompt non è necessario: la maschera indica cosa rimuovere e il modello
 usa lo sfondo circostante per produrre una continuazione
 coerente.
 
 \vspace{\baselineskip}
 
 
-La qualità del risultato dipende da più fattori. Anche nell'articolo viene infatti 
-evidenziato che i modelli di generazione immagini sono particolarmente sensibili 
-alla formulazione del prompt, ai parametri di inferenza e alla complessità 
+La qualità del risultato dipende da più fattori. Anche nell'articolo viene infatti
+evidenziato che i modelli di generazione immagini sono particolarmente sensibili
+alla formulazione del prompt, ai parametri di inferenza e alla complessità
 del contenuto da produrre \cite{bentoml-generative-models}.
 Una maschera troppo stretta può lasciare bordi o residui
-dell'oggetto; una maschera troppo ampia può costringere il modello a inventare 
+dell'oggetto; una maschera troppo ampia può costringere il modello a inventare
 una porzione eccessiva dell'immagine. Per questo la
-pipeline combina segmentazione, (convex hull), rimozione e generazione: ogni 
+pipeline combina segmentazione, (convex hull), rimozione e generazione: ogni
 passaggio prepara meglio il successivo.
 
-Un limite da considerare è che questi modelli non garantiscono sempre un 
+Un limite da considerare è che questi modelli non garantiscono sempre un
 risultato deterministico e perfetto. Sfondi ripetitivi, superfici
-con pattern regolari, mani, testi e dettagli geometrici possono ancora 
+con pattern regolari, mani, testi e dettagli geometrici possono ancora
 produrre imperfezioni. Inoltre, l'uso di provider esterni introduce
-aspetti pratici come totale dipendenza dalle API disponibili, latenza e costo 
+aspetti pratici come totale dipendenza dalle API disponibili, latenza e costo
 delle richieste. Magic Eraser non elimina questi limiti, ma li rende
-osservabili: salvando input, maschere, modello scelto, impostazioni e output, 
+osservabili: salvando input, maschere, modello scelto, impostazioni e output,
 permette di confrontare tentativi diversi e di ragionare sul
 workflow invece che solo sull'immagine finale.
 
@@ -548,185 +552,272 @@ workflow invece che solo sull'immagine finale.
 \hline
 \textbf{Strumento} & \textbf{Analisi sintetica} \\
 \hline
-Editor professionali (Photoshop, Krita, Photopea)& 
-Offrono controllo preciso e manuale tramite strumenti avanzati, 
+Editor professionali (Photoshop, Krita, Photopea)&
+Offrono controllo preciso e manuale tramite strumenti avanzati,
 ma richiedono competenze specifiche e spesso licenze costose.\\
 \hline
-Strumenti automatici (Canva PRO, CapCut) & 
-Consentono una rimozione rapida degli oggetti, 
-ma nascondono completamente la pipeline e i modelli usati. Spesso le versioni gratuite 
+Strumenti automatici (Canva PRO, CapCut) &
+Consentono una rimozione rapida degli oggetti,
+ma nascondono completamente la pipeline e i modelli usati. Spesso le versioni gratuite
 presentano limitazioni. \\
 \hline
-Demo di modelli AI (Fal.ai, Replicate) & 
-Permettono di provare singoli modelli individualmente, 
+Demo di modelli AI (Fal.ai, Replicate) &
+Permettono di provare singoli modelli individualmente,
 senza offrire gestione di progetti e immagini al di fuori del singolo test. \\
 \hline
 \end{tabular}
 \end{center}
 
-\chapter{Approccio alla Soluzione}
+\chapter{Approccio al problema}
 
-La soluzione proposta è una piattaforma web composta da interfaccia utente, API backend, database, storage immagini e integrazione con 
-provider AI. L'architettura separa le responsabilità principali, rendendo il sistema più manutenibile e predisposto all'estensione 
-con nuovi modelli o nuovi processi.
+\section{Impostazione generale}
+Per affrontare il problema della rimozione e sostituzione di oggetti nelle immagini, è stato adottato un approccio
+in stile pipeline. \newline
+L'idea centrale è stata quella di scomporre il lavoro di editing in step distinti, ciascuno con suoi input, output e parametri,
+in modo da rendere il processo comprensibile, ripetibile e migliorabile nel tempo.
+Il vero vantaggio di questo approccio è quello di non considerare un processo come una \emph{black box}, ma come
+una \emph{scatola aperta} dove l'utente ha la possibilità di visualizzare i passaggi intermedi e conservarne lo storico
+per una revisione successiva o un'eventuale integrazione. \newline \newline
+L'approccio ha seguito 3 obiettivi principali:
+\begin{itemize}
+  \item Ridurre la complessità d'uso per utenti non esperti di modelli di editing.
+  \item Mantenere una struttura tecnica che renda il sistema facilmente estendibile a nuovi modelli AI.
+  \item Garantire una tracciabilità delle operazioni svolte su ciascun immagine.
+\end{itemize}
 
-\section{Descrizione generale}
+\section{Strategia architetturale}
+La piattaforma è stata progettata come un'applicazione web con una netta separazione delle responsabilità:
+\begin{itemize}
+  \item \emph{Frontend} per interazione utente, configurazione dei processi e visualizzazione dei risultati.
+  \item \emph{Backend API} per la logica applicativa.
+  \item \emph{Persistenza} su database per utenti, progetti, immagini e pipeline.
+  \item \emph{Integrazione} con provider AI esterno per l'esecuzione dei modelli.
+\end{itemize}
+Questa scelta consente di evolvere i singoli moduli senza dover ritoccare completamente il sistema. In particolare,
+la separazione tra logica di business e integrazione ai permette la sostituzione o l'aggiunta di modelli mantenendo
+stabile la relazione delle API con il frontend.
 
-L'utente accede all'applicazione, crea o seleziona un progetto, carica immagini e apre il laboratorio di editing. Nel laboratorio 
-può aggiungere processi alla pipeline, scegliere il modello, impostare prompt o parametri aggiuntivi e generare un risultato. Le 
-pipeline vengono salvate con i relativi step, input, output, maschere e stato di elaborazione.
+\section{Pattern e scelte progetturali}
+Nel backend sono state adottate scelte strutturali fondamentali data la necessità di un sistema modulare:
 
-\section{Architettura del sistema}
+\subsection{Separation of Concerns}
+La separazione in \emph{router, service e repository} è la prima scelta effettuata per una modularizzazione del sistema.
+\begin{itemize}
+  \item I router gestiscono gli endpoint e la validazione iniziale;
+  \item I service coordinano il flusso di lavoro;
+  \item I repository si occupano dell'accesso ai dati;
+\end{itemize}
 
-\subsection{Frontend}
+\subsection{Strategy pattern}
+I diversi tipi di processo (segmentazione da prompt, rimozione con maschera, generazione da prompt)
+sono gestiti come \emph{strategie operative differenti}. Il vantaggio principale è il fatto che ogni processo evolve in modo
+indipendente, senza andare ad intaccare le funzionalità degli altri.
 
-Il frontend è sviluppato con React e Vite. Le pagine principali includono login, signup, home, gallery, laboratory, pipelines e 
-profile. I componenti gestiscono la navigazione, la visualizzazione dei progetti, l'upload delle immagini, la configurazione dei 
-processi e la consultazione delle pipeline salvate.
+\subsection{Registry Pattern}
+I diversi modelli disponibili sono descritti in un catalogo centralizzato con metadati e parametri supportati. Il valore aggiunto
+dall'utilizzo di questa tecnica è quella di permettere un'aggiunta di ulteriori modelli tramite modifiche localizzate e non diffuse.
 
-\subsection{Backend}
+\subsection{Adapter pattern}
+L'interfaccia interna del sistema viene tradotta nel formato richiesto dal provider AI esterno.
 
-Il backend è sviluppato con FastAPI e fornisce endpoint REST per progetti, immagini, profilo utente, processi AI e pipeline di 
-laboratorio. La logica applicativa è organizzata in servizi, repository, schemi di validazione e router API.
-
-\subsection{Database}
-
-La persistenza è basata su Supabase Postgres. Le entità principali sono \texttt{Profile}, \texttt{Project}, \texttt{Image}, 
-\texttt{LaboratoryPipeline} e \texttt{LaboratoryPipelineStep}. Questa struttura consente di collegare utenti, progetti, immagini 
-sorgente e cronologie di elaborazione.
-
-\subsection{AI provider}
-
-L'integrazione con i modelli AI è gestita tramite registry e adapter. Il catalogo dei processi espone tre famiglie principali: 
-segmentazione da prompt, rimozione con maschera e generazione da prompt. Gli adapter traducono le richieste interne nel formato 
-richiesto dal provider esterno.
+\subsection{Vantaggi principali}
+Rispetto a una struttura unica con logica mista all'interno degli endpoint, questa impostazione, attraverso questi pattern di programmazione il sistema risulta più leggibile,
+testabile e soprattutto più estendibile.
 
 \section{Pipeline di elaborazione}
+Il flusso operativo è stato modellato come una sequenza di step (visualizzabili in figura 4.1), in cui l'utente ha sempre la situazione sotto controllo:
+\begin{enumerate}
+  \item L'utente crea o seleziona un progetto;
+  \item carica un'immagine sorgente;
+  \item seleziona un progesso e un modello dal catalogo;
+  \item inserisce il prompt (se richiesto) e i parametri aggiuntivi;
+  \item avvia l'elaborazione;
+  \item visualizza ed eventualmente salva il risultato.
+\end{enumerate}
+Nel caso della rimozione oggetti, la pipeline prevede:
+\begin{itemize}
+  \item uno step di segmentazione per ottenere la maschera dell'area target;
+  \item uno di rimozione guidata dalla maschera;
+  \item un eventuale step di generazione per sostituire la zona modificata con un nuovo contenuto coerente con il resto dell'immagine.
+\end{itemize}
+% Immagine singola
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{pipeline.png}
+    \caption{Pipeline di esecuzione}
+    \label{fig:architettura}
+\end{figure}
 
-La pipeline rappresenta la sequenza dei processi applicati a un'immagine. Uno step può generare una maschera, uno step successivo 
-può usare quella maschera per rimuovere un oggetto, e un ulteriore step può generare contenuto tramite prompt. Ogni step mantiene 
-input, output, tipo di processo, modello scelto, impostazioni aggiuntive e stato.
 
 \section{Scelte tecnologiche}
+Le tecnologie utilizzate sono state scelte al fine di ottenere il massimo possibile in termini di probabilità, affidabilità ed aderenza al problema.
+\begin{itemize}
+  \item \emph{React e Vite (frontend):} consentono un rapido sviluppo di interfacce interattive e una buona organizzazione della UI.
+  \item \emph{FastAPI (backend):} da una chiara definizione di endpoint, validazione dei dati tramite schemi e una tipizzazione e integrazione naturale con il linguaggio Python.
+  \item \emph{PostgreSQL/Supabase (persistenza):} adatto alla gestione e al salvataggio di utenti, progetti, immagini e pipeline.
+  \item \emph{Fal.ai (Provider AI esterno):} evita costi infrastrutturali elevati per hosting dei modelli e ne consente l'accesso continuo.
+  \item \emph{Vercel:} per il deploy automatico della web app ad ogni push su un branch git di release.
+\end{itemize}
 
-React e Vite sono stati scelti per costruire un'interfaccia reattiva e modulare. FastAPI è stato adottato per la chiarezza nella 
-definizione delle API, la validazione tramite schemi e la facilità di integrazione con servizi Python. Supabase Postgres fornisce 
-un database remoto adatto alla persistenza dei dati applicativi, mentre lo storage immagini permette di mantenere file sorgente e 
-risultati accessibili dal frontend e dai provider AI.
+\section{Trade-off dell'approccio}
+L'approccio utilizzato presenta sia vantaggi che svantaggi.
 
-\chapter{Implementazione}
+\subsubsection{Vantaggi}
+\begin{itemize}
+  \item Elevata modularità;
+  \item Facilità di estensione con nuovi modelli e processi;
+  \item Flusso di lavoro molto chiaro grazie a una pipeline esplicita;
+\end{itemize}
 
-L'implementazione segue una separazione netta tra frontend, backend, persistenza e integrazione AI. Questa organizzazione 
-permette di modificare una parte del sistema senza compromettere le altre e rende più semplice aggiungere nuovi processi.
+\subsubsection{Limiti}
+\begin{itemize}
+  \item Dipendenza da un provider AI esterno;
+  \item latenza variabile delle richieste;
+  \item qualità del risultato non sempre perfetta, sopratutto su scene complesse.
+\end{itemize}
+L'ultimo di questi limiti è in forte dipendenza dalla prima, in quanto la qualità della generazione delle immagini
+è dovuta proprio alle performance servite dal provider esterno.
 
-\section{Struttura del sistema}
 
-Il progetto è diviso principalmente in \texttt{frontend/} e \texttt{backend/}. Il frontend contiene pagine, componenti, hook, 
-tipi TypeScript e client API. Il backend contiene router, servizi, repository, modelli, schemi, processi, registry dei modelli e 
-utility per la gestione delle maschere.
 
-\section{Frontend}
 
-Le pagine di login e signup gestiscono l'accesso dell'utente. La home permette di creare progetti, caricare immagini, 
-visualizzare anteprime e aprire il laboratorio. La gallery offre una visione organizzata degli asset. La pagina laboratory 
-consente di costruire e applicare pipeline di editing. La pagina pipelines permette di consultare elaborazioni salvate, mentre 
-la pagina profile raccoglie le informazioni dell'utente.
 
-\section{Backend e API}
 
-Gli endpoint principali sono organizzati nei router \texttt{projects}, \texttt{images}, \texttt{profile}, \texttt{processes} e 
-\texttt{laboratory\_pipelines}. Le richieste vengono validate tramite schemi, elaborate dai servizi applicativi e persistite 
-tramite repository. Questa separazione riduce l'accoppiamento tra API, logica di business e accesso al database.
+\chapter{Risultati}
 
-\section{Gestione immagini e progetti}
+\section{Risultati funzionali}
+Il sistema realizzato compre l'intero flusso esecutivo previsto:
+\begin{itemize}
+  \item autenticazione utente e profilo;
+  \item creazione e gestione di progetti;
+  \item upload e rimozione di immagini;
+  \item apertura del laboratorio di editing;
+  \item esecuzione di progetti AI con parametri configurabili;
+  \item salvataggio, consultazione e modifica di pipeline;
+\end{itemize}
+La soluzione non è stata pensata per limitarsi esclusivamente all'elaborazione di un'immagine, ma
+integra una gestione dell'intero contesto del progetto e una storicizzazione delle operazioni. Queste
+due parti fondamentali hanno lo scopo di trasformare l'intero progetto da un semplice tool di modifica
+a un vero e proprio strumento di ricerca, integrabile ed utilizzabile in moltissimi ambiti lavorativi.
 
-I progetti raggruppano le immagini caricate e le pipeline associate. L'upload salva il file nello storage e registra nel database 
-le informazioni necessarie a recuperarlo. Le immagini possono essere usate come input per il laboratorio e gli output prodotti dai 
-modelli possono essere salvati nello stesso contesto progettuale.
+\section{Risultati tecnici}
+Dal punto di vista ingegnerisrico, il progetto ha raggiunto i seguenti risultati:
+\begin{itemize}
+  \item backend organizzato per livelli con responsabilità distinte;
+  \item frontend suddiviso in pagine, componenti e hook riutilizzabili;
+  \item catalogo di processi e modelli centralizzato;
+  \item integrazione AI incapsulata tramite adapter;
+  \item presenza di test unitari e di integrazione su parti critiche;
+\end{itemize}
+Questa struttura rende il codice leggibile e riduce il rischio di peggioramenti durante l'evoluzione
+del sistema.
 
-\section{Pipeline AI}
+\section{Validazione qualitativa}
+La validazione è stata effettuata osservando casi d'uso con diversa complessità visiva:
+\begin{itemize}
+  \item \emph{scene semplici} (sfondi uniformi e oggetto isolato): risultato convinvente con ricostruzione coerente con lo sfondo (come da esempio sottostante a figura 5.1).
+  \item \emph{scene intermedie} (texture ripetute, bordi marcati): risultato sempre convincente ma con una qualità leggermente minore, a volte intaccata da piccoli artefatti.
+  \item \emph{scene complesse} (occlusioni, dettagli molto fini e geometrie non regolari): qualità variabile, dovuta spesso alla precisione della maschera e del prompt utilizzati.
+  Nel caso della figura 5.2 mostrata qui sotto, la qualità dell'inpainting è comunque soddisfacente proprio a causa di una corretta segmentazione.
+\end{itemize}
 
-\subsection{Segmentazione}
 
-Il processo \texttt{segment\_from\_prompt} riceve un'immagine e un prompt che descrive l'oggetto o l'area da individuare. Il risultato 
-è una maschera utilizzabile negli step successivi.
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.38\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{person_removed_before.png}
+        \caption{Immagine originale}
+        \label{fig:person-before}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.38\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{person_removed_after.png}
+        \caption{Risultato dopo la pipeline}
+        \label{fig:person-after}
+    \end{subfigure}
+    \hfill
+    \caption{Confronto prima/dopo per un immagine ritenuta semplice.}
+    \label{fig:person-before-after}
+\end{figure}
 
-\subsection{Rimozione}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.28\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{mountain_before.jpg}
+        \caption{Immagine originale}
+        \label{fig:mountain-before}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.28\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{mountain_mask.png}
+        \caption{Maschera di segmentazione}
+        \label{fig:mountain-mask}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.28\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{mountain_after.jpg}
+        \caption{Risultato dopo la pipeline}
+        \label{fig:mountain-after}
+    \end{subfigure}
+    \caption{Confronto prima/dopo per un immagine di complessità maggiore.}
+    \label{fig:mountain-before-after}
+\end{figure}
 
-Il processo \texttt{remove\_with\_mask} riceve immagine e maschera. Il modello elimina l'area selezionata e ricostruisce il contenuto 
-circostante in modo coerente.
+In generale possiamo dire che la qualità finale dell'immagine è decisa da:
+\begin{itemize}
+  \item accuratezza della segmentazione;
+  \item coerenza del prompt;
+  \item capacità del modello di ricostruire contesto e texture locali;
+\end{itemize}
 
-\subsection{Generazione}
+\section{Discussione critica}
+I risultati finali ottenuti tramite l'architettura e le dipendenza utilizzate offrono in conclusione un buon servizio. \newline
+Il prototipo svolge un buon lavoro nel rendere operazioni complesse facilmente accessibili e interpretabili. Tuttavia, la dipendenza
+da un servizio esterno sempre in via di sviluppo come \emph{fal}, non da garanzie assolute in termini di tempistiche e qualità,
+rendendo necessario un ulteriore lavoro su controlli, valutazioni e robustezza.
 
-Il processo \texttt{generate\_from\_prompt} permette di riempire una regione mascherata seguendo un prompt testuale. Questo consente 
-non solo di cancellare contenuti, ma anche di sostituirli con elementi generati.
-
-\section{Organizzazione del codice}
-
-Il backend separa router API, servizi, repository, processi e registry dei modelli. Il frontend separa pagine, componenti 
-riutilizzabili, hook e client HTTP. Questa struttura rende esplicite le responsabilità: l'interfaccia gestisce l'interazione utente, 
-il backend coordina il workflow, i repository gestiscono la persistenza e gli adapter comunicano con i provider AI.
-
-\chapter{Risultati e Validazione}
-
-La validazione considera sia le funzionalità implementate sia la capacità del sistema di rispondere ai requisiti individuati. 
-L'obiettivo è verificare che il prototipo permetta effettivamente di svolgere il workflow previsto: organizzare immagini, 
-applicare processi AI e salvare risultati.
-
-\section{Funzionalità implementate}
-
-Il sistema implementa autenticazione, gestione del profilo, creazione e modifica di progetti, upload di immagini, consultazione 
-della gallery, laboratorio di editing, catalogo dei processi AI, esecuzione di step, anteprima di maschere convex hull e salvataggio 
-delle pipeline. Le funzionalità sono integrate in un flusso utente coerente, dalla selezione dell'immagine fino alla consultazione dei 
-risultati.
-
-\section{Test}
-
-Il backend include test unitari e di integrazione per servizi, dipendenze di autenticazione e API principali. Il frontend include 
-test su client API, hook, pagine e componenti del laboratorio. I test verificano casi come gestione delle risposte HTTP, progetti, 
-profilo, pipeline, selezione di immagini e rendering dei componenti principali.
-
-\section{Validazione}
-
-Rispetto ai bisogni iniziali, la soluzione soddisfa i requisiti di semplicità, automazione e organizzazione. L'utente può eseguire 
-operazioni complesse senza intervenire manualmente sui pixel, mentre il sistema conserva le informazioni necessarie a comprendere 
-la sequenza di elaborazione applicata.
-
-\section{Risultati}
-
-I risultati attesi sono immagini prima/dopo in cui l'oggetto selezionato viene rimosso o sostituito. La qualità dipende da tre 
-fattori principali: precisione della maschera, coerenza del modello generativo e complessità dello sfondo. Su sfondi uniformi il 
-risultato tende a essere più stabile, mentre scene complesse, oggetti parzialmente occlusi o prompt ambigui possono produrre imprecisioni.
 
 \chapter{Conclusioni}
 
-Il progetto ha portato alla realizzazione di una piattaforma web capace di integrare gestione delle immagini e workflow AI per 
-l'editing generativo. Magic Eraser dimostra come segmentazione, maschere e inpainting possano essere combinati in un ambiente 
-accessibile e organizzato.
+\section{Sintesi}
+Il progetto risponde al problema iniziale attraverso una piattaforma che ha lo scopo di unire semplicità d'uso e struttura tecnica, utile soprattutto
+in fase di ricerca. L'utente può gestire immagini e processi AI in modo guidato senza dover interagire direttamente
+a livello pixel e senza necessità di conoscenze specifiche, il tutto mantenendo sempre un'ampio controllo sulle esecuzioni.
 
-\section{Valutazione del lavoro}
+\section{Lavoro effettuato}
+Il principale lavoro effettuato è consistito nell'integrare segmentazione, rimozione e generazione in un unico ambiente orientato alla ricerca,
+con pipeline esplicite e salvabili. \newline
+Questo approccio ha aumentato la riproducibilità e l'utilità rispetto a strumenti che mostrano solo l'output finale. Poter rivedere, modificare e ampliare sessioni
+di lavoro su immagini aumenta notevolmente le possibilità di analisi e integrazione con progetti esterni.
 
-Rispetto al problema iniziale, il sistema riduce la complessità dell'editing e rende disponibili operazioni avanzate attraverso 
-un'interfaccia guidata. La scelta di salvare pipeline e step permette inoltre di analizzare il processo, non soltanto il risultato finale.
-
-\section{Limiti della soluzione}
-
-I principali limiti riguardano la dipendenza da provider AI esterni, la latenza delle richieste, i costi potenziali delle API e 
-la variabilità dei risultati generativi. La qualità finale non è sempre prevedibile e può richiedere più tentativi, soprattutto 
-quando la maschera non delimita correttamente l'area da modificare.
-
-\section{Contributo}
-
-Il contributo del progetto consiste nell'integrazione di funzionalità di editing AI in una piattaforma strutturata per progetti e 
-pipeline. A differenza di strumenti più chiusi, Magic Eraser rende espliciti gli step e crea una base utile per sperimentare modelli, 
-parametri e combinazioni di processi.
+\section{Utilità e limiti}
+La soluzione è particolarmente adatta per ambienti di lavoro dove l'analisi di immagini e le relative modifiche
+consistono in una parte importante delle task quotidiane. I limiti invece riguardano:
+\begin{itemize}
+  \item dipendenza da API esterne;
+  \item latenza e costi variabili;
+  \item qualità non sempre prevedibile in scene complesse;
+\end{itemize}
+Questi ultimi 2 limiti in particolare riguardano principalmente le API fornite dal provider \emph{fal}, il quale offre i suoi  modelli con una
+discreta qualità (non sempre ottimale) ad un costo di pochi centesimi a chiamata.
 
 \section{Sviluppi futuri}
+Nonostante l'applicazione sia già di notevole utilità, ulteriori evoluzioni sono previste, come:
+\begin{itemize}
+  \item integrazione di un sistema di riconoscimento entità;
+  \item confronto automatico multi-modello sullo stesso input;
+  \item riconoscimento automatico di entità ed oggetti non rilevanti all'interno dell'immagine;
+\end{itemize}
 
-Gli sviluppi futuri includono un editor manuale delle maschere, confronto tra più modelli, funzionalità di undo e redo, esportazione 
-delle pipeline, metriche quantitative sulla qualità, elaborazione batch, supporto a modelli locali, collaborazione multiutente, 
-versionamento dei risultati e dashboard per monitorare tempi e costi di elaborazione.
-
+\section{Conclusione}
+Il lavoro in conclusione dimostra che una piattaforma web modulare può rendere l'editing AI di immagini più
+accessibile, semplice e tracciabile, mantenendo comunque un'architettura estendibile. \newline
+I risultati raggiunti danno credito all'impostzione del progetto e permettono ulteriori integrazioni e robustezza.
 
 %------------------Bibliografia-----------------
 
@@ -769,19 +860,19 @@ Supabase Documentation. Piattaforma backend basata su PostgreSQL, autenticazione
 L'utente accede tramite la pagina di login. In assenza di un account può utilizzare la pagina di signup per creare un nuovo profilo.
 
 \section{Creare un progetto}
-Nella home l'utente inserisce il nome del progetto e lo crea. Il progetto diventa il contenitore delle immagini caricate e delle 
+Nella home l'utente inserisce il nome del progetto e lo crea. Il progetto diventa il contenitore delle immagini caricate e delle
 pipeline generate.
 
 \section{Caricare un'immagine}
-L'utente seleziona uno o più file, sceglie il progetto di destinazione e avvia l'upload. Le immagini vengono mostrate come 
+L'utente seleziona uno o più file, sceglie il progetto di destinazione e avvia l'upload. Le immagini vengono mostrate come
 anteprime e possono essere aperte nel laboratorio.
 
 \section{Usare il laboratorio}
-Nel laboratorio l'utente sceglie il processo da applicare, seleziona il modello, imposta eventuali prompt o parametri e avvia 
+Nel laboratorio l'utente sceglie il processo da applicare, seleziona il modello, imposta eventuali prompt o parametri e avvia
 l'elaborazione. Gli output intermedi possono diventare input degli step successivi.
 
 \section{Salvare una pipeline}
-Una pipeline può essere salvata con nome, immagine iniziale, immagine finale e lista degli step eseguiti. In questo modo il lavoro 
+Una pipeline può essere salvata con nome, immagine iniziale, immagine finale e lista degli step eseguiti. In questo modo il lavoro
 rimane consultabile nella sezione pipelines.
 
 \chapter{API principali}
@@ -814,7 +905,18 @@ Il backend richiede le variabili ambiente principali elencate di seguito:
 La configurazione verifica che il database punti a Supabase Postgres durante l'esecuzione ordinaria.
 
 \section{Avvio frontend e backend}
-Il frontend si avvia dalla cartella \texttt{frontend/} con i comandi del progetto Vite. Il backend si avvia dalla cartella 
+Il frontend si avvia dalla cartella \texttt{frontend/} con i comandi del progetto Vite. Il backend si avvia dalla cartella
 \texttt{backend/} tramite il server FastAPI/Uvicorn, dopo aver installato le dipendenze e configurato il file ambiente.
+
+\section{Deployement}
+
+\subsection{Deployement su vercel}
+Il deploy non riguarda solo il frontend: pubblichiamo tutta la soluzione in modo coordinato.
+
+Usiamo un unico progetto su Vercel condiviso dal gruppo.
+Le chiavi e le variabili ambiente sono salvate su Vercel, così non vengono messe nel codice.
+
+Quando uno dei membri del gruppo fa push sul branch di release, il deploy parte in automatico.
+In questo modo tutti usiamo lo stesso processo e la versione online resta aggiornata.
 
 \end{document}

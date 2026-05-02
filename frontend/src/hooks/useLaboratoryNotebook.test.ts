@@ -867,7 +867,7 @@ describe("useLaboratoryNotebook", () => {
       status: "done",
       final_image_url: "/uploads/mask.png",
     });
-    expect(result.current.saveMessageByCell[firstCell.id]).toBe("Saved to project #3");
+    expect(result.current.saveMessageByCell[firstCell.id]).toBe("Saved to project");
     expect(result.current.saveErrorByCell[firstCell.id]).toBe("");
     expect(result.current.savingCellId).toBe("");
   });

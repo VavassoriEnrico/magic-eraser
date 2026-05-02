@@ -27,63 +27,74 @@
 \citation{sam}
 \citation{sam}
 \@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces Esempio di segmentazione tramite prompt. L'immagine è tratta direttamente dal paper \textit  {Segment Anything} (SAM) \cite  {sam}.}}{6}{}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{fig:segmentation-example-horse}{{3.1}{6}{Segmentazione e maschere}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces Architettura generale del Segment Anything Model: image encoder, prompt encoder e mask decoder. L'immagine è tratta direttamente dal paper \textit  {Segment Anything} (SAM) \cite  {sam}.}}{7}{}\protected@file@percent }
-\newlabel{fig:sam-structure}{{3.2}{7}{Segmentazione e maschere}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces Architettura generale del Segment Anything Model: image encoder, prompt encoder e mask decoder. L'immagine è tratta direttamente dal paper \textit  {Segment Anything} (SAM) \cite  {sam}.}}{6}{}\protected@file@percent }
+\newlabel{fig:sam-structure}{{3.2}{6}{Segmentazione e maschere}{}{}}
+\citation{bertalmio-inpainting}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.3}{\ignorespaces Confronto tra immagine originale, maschera segmentata e convex hull della maschera.}}{7}{}\protected@file@percent }
+\newlabel{fig:mask-convex-hull}{{3.3}{7}{Segmentazione e maschere}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}Convex hull delle maschere}{7}{}\protected@file@percent }
 \citation{bertalmio-inpainting}
 \citation{bertalmio-inpainting}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.3}{\ignorespaces Confronto tra immagine originale, maschera segmentata e convex hull della maschera.}}{8}{}\protected@file@percent }
-\newlabel{fig:mask-convex-hull}{{3.3}{8}{Segmentazione e maschere}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3.2}Image Inpainting}{8}{}\protected@file@percent }
-\citation{bertalmio-inpainting}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.4}{\ignorespaces Esempio di image inpainting: immagine originale, maschera del tamburello e risultato dopo la rimozione.}}{9}{}\protected@file@percent }
-\newlabel{fig:image-inpainting-liam}{{3.4}{9}{Image Inpainting}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.5}{\ignorespaces Esempio di limite dell'image inpainting su una regione testurizzata: la ripetizione delle mattonelle rende più difficile produrre un risultato coerente.}}{9}{}\protected@file@percent }
-\newlabel{fig:image-inpainting-texture-limit}{{3.5}{9}{Image Inpainting}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.4}{\ignorespaces Esempio di image inpainting: immagine originale, maschera del tamburello e risultato dopo la rimozione.}}{8}{}\protected@file@percent }
+\newlabel{fig:image-inpainting-liam}{{3.4}{8}{Image Inpainting}{}{}}
 \citation{latent-diffusion}
 \citation{bentoml-generative-models}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.5}{\ignorespaces Esempio di limite dell'image inpainting su una regione testurizzata: la ripetizione delle mattonelle rende più difficile produrre un risultato coerente.}}{9}{}\protected@file@percent }
+\newlabel{fig:image-inpainting-texture-limit}{{3.5}{9}{Image Inpainting}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}Modelli generativi}{9}{}\protected@file@percent }
 \citation{bentoml-generative-models}
-\@writefile{toc}{\contentsline {section}{\numberline {3.3}Modelli generativi}{10}{}\protected@file@percent }
 \citation{bentoml-generative-models}
-\@writefile{toc}{\contentsline {section}{\numberline {3.4}Confronto con strumenti esistenti}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {4}Approccio alla Soluzione}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}Confronto con strumenti esistenti}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Approccio al problema}{12}{}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {4.1}Descrizione generale}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.2}Architettura del sistema}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}Frontend}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}Backend}{13}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.3}Database}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.4}AI provider}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.3}Pipeline di elaborazione}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.4}Scelte tecnologiche}{14}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {5}Implementazione}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}Impostazione generale}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Strategia architetturale}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}Pattern e scelte progetturali}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.1}Separation of Concerns}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.2}Strategy pattern}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}Registry Pattern}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.4}Adapter pattern}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.5}Vantaggi principali}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Pipeline di elaborazione}{14}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces Pipeline di esecuzione}}{14}{}\protected@file@percent }
+\newlabel{fig:architettura}{{4.1}{14}{Pipeline di elaborazione}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.5}Scelte tecnologiche}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.6}Trade-off dell'approccio}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.0.1}Vantaggi}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.0.2}Limiti}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}Risultati}{16}{}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {5.1}Struttura del sistema}{15}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.2}Frontend}{15}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.3}Backend e API}{15}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.4}Gestione immagini e progetti}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.5}Pipeline AI}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}Segmentazione}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}Rimozione}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.3}Generazione}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.6}Organizzazione del codice}{16}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {6}Risultati e Validazione}{17}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Risultati funzionali}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Risultati tecnici}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}Validazione qualitativa}{17}{}\protected@file@percent }
+\newlabel{fig:person-before}{{5.1a}{17}{Validazione qualitativa}{}{}}
+\newlabel{sub@fig:person-before}{{a}{17}{Validazione qualitativa}{}{}}
+\newlabel{fig:person-after}{{5.1b}{17}{Validazione qualitativa}{}{}}
+\newlabel{sub@fig:person-after}{{b}{17}{Validazione qualitativa}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces Confronto prima/dopo per un immagine ritenuta semplice.}}{17}{}\protected@file@percent }
+\newlabel{fig:person-before-after}{{5.1}{17}{Validazione qualitativa}{}{}}
+\newlabel{fig:mountain-before}{{5.2a}{18}{Validazione qualitativa}{}{}}
+\newlabel{sub@fig:mountain-before}{{a}{18}{Validazione qualitativa}{}{}}
+\newlabel{fig:mountain-mask}{{5.2b}{18}{Validazione qualitativa}{}{}}
+\newlabel{sub@fig:mountain-mask}{{b}{18}{Validazione qualitativa}{}{}}
+\newlabel{fig:mountain-after}{{5.2c}{18}{Validazione qualitativa}{}{}}
+\newlabel{sub@fig:mountain-after}{{c}{18}{Validazione qualitativa}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Confronto prima/dopo per un immagine di complessità maggiore.}}{18}{}\protected@file@percent }
+\newlabel{fig:mountain-before-after}{{5.2}{18}{Validazione qualitativa}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Discussione critica}{18}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Conclusioni}{19}{}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}Funzionalità implementate}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}Test}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}Validazione}{17}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.4}Risultati}{18}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {7}Conclusioni}{19}{}\protected@file@percent }
-\@writefile{lof}{\addvspace {10\p@ }}
-\@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {7.1}Valutazione del lavoro}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.2}Limiti della soluzione}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.3}Contributo}{19}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.4}Sviluppi futuri}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Sintesi}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Lavoro effettuato}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Utilità e limiti}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}Sviluppi futuri}{20}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.5}Conclusione}{20}{}\protected@file@percent }
 \bibcite{sam}{1}
 \bibcite{latent-diffusion}{2}
 \bibcite{bertalmio-inpainting}{3}
@@ -110,7 +121,9 @@
 \@writefile{toc}{\contentsline {section}{\numberline {C.1}Docker Compose}{24}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {C.2}Variabili ambiente}{24}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {C.3}Avvio frontend e backend}{24}{}\protected@file@percent }
-\newlabel{LastPage}{{C.3}{24}{Avvio frontend e backend}{}{}}
-\gdef\lastpage@lastpage{24}
+\@writefile{toc}{\contentsline {section}{\numberline {C.4}Deployement}{24}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.4.1}Deployement su vercel}{24}{}\protected@file@percent }
+\newlabel{LastPage}{{C.4.1}{25}{Deployement su vercel}{}{}}
+\gdef\lastpage@lastpage{25}
 \gdef\lastpage@lastpageHy{}
-\gdef \@abspage@last{30}
+\gdef \@abspage@last{31}
