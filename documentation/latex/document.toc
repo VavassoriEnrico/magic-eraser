@@ -33,23 +33,24 @@
 \contentsline {section}{\numberline {5.2}Risultati tecnici}{16}{}%
 \contentsline {section}{\numberline {5.3}Validazione qualitativa}{17}{}%
 \contentsline {section}{\numberline {5.4}Discussione critica}{18}{}%
-\contentsline {chapter}{\numberline {6}Conclusioni}{19}{}%
-\contentsline {section}{\numberline {6.1}Sintesi}{19}{}%
-\contentsline {section}{\numberline {6.2}Lavoro effettuato}{19}{}%
-\contentsline {section}{\numberline {6.3}Utilità e limiti}{19}{}%
-\contentsline {section}{\numberline {6.4}Sviluppi futuri}{20}{}%
-\contentsline {section}{\numberline {6.5}Conclusione}{20}{}%
-\contentsline {chapter}{\numberline {A}Manuale Utente}{22}{}%
-\contentsline {section}{\numberline {A.1}Login}{22}{}%
-\contentsline {section}{\numberline {A.2}Creare un progetto}{22}{}%
-\contentsline {section}{\numberline {A.3}Caricare un'immagine}{22}{}%
-\contentsline {section}{\numberline {A.4}Usare il laboratorio}{22}{}%
-\contentsline {section}{\numberline {A.5}Salvare una pipeline}{22}{}%
-\contentsline {chapter}{\numberline {B}API principali}{23}{}%
-\contentsline {section}{\numberline {B.1}Elenco endpoint}{23}{}%
-\contentsline {chapter}{\numberline {C}Configurazione e Avvio}{24}{}%
-\contentsline {section}{\numberline {C.1}Docker Compose}{24}{}%
-\contentsline {section}{\numberline {C.2}Variabili ambiente}{24}{}%
-\contentsline {section}{\numberline {C.3}Avvio frontend e backend}{24}{}%
-\contentsline {section}{\numberline {C.4}Deployement}{24}{}%
-\contentsline {subsection}{\numberline {C.4.1}Deployement su vercel}{24}{}%
+\contentsline {subsection}{\numberline {5.4.1}Confronto tra modelli presenti}{18}{}%
+\contentsline {chapter}{\numberline {6}Conclusioni}{20}{}%
+\contentsline {section}{\numberline {6.1}Sintesi}{20}{}%
+\contentsline {section}{\numberline {6.2}Lavoro effettuato}{20}{}%
+\contentsline {section}{\numberline {6.3}Utilità e limiti}{20}{}%
+\contentsline {section}{\numberline {6.4}Sviluppi futuri}{21}{}%
+\contentsline {section}{\numberline {6.5}Conclusione finale}{21}{}%
+\contentsline {chapter}{\numberline {A}Manuale Utente}{23}{}%
+\contentsline {section}{\numberline {A.1}Login}{23}{}%
+\contentsline {section}{\numberline {A.2}Creare un progetto}{23}{}%
+\contentsline {section}{\numberline {A.3}Caricare un'immagine}{23}{}%
+\contentsline {section}{\numberline {A.4}Usare il laboratorio}{23}{}%
+\contentsline {section}{\numberline {A.5}Salvare una pipeline}{23}{}%
+\contentsline {chapter}{\numberline {B}API principali}{24}{}%
+\contentsline {section}{\numberline {B.1}Elenco endpoint}{24}{}%
+\contentsline {chapter}{\numberline {C}Configurazione e Avvio}{25}{}%
+\contentsline {section}{\numberline {C.1}Docker Compose}{25}{}%
+\contentsline {section}{\numberline {C.2}Variabili ambiente}{25}{}%
+\contentsline {section}{\numberline {C.3}Avvio frontend e backend}{25}{}%
+\contentsline {section}{\numberline {C.4}Deployement}{25}{}%
+\contentsline {subsection}{\numberline {C.4.1}Deployement su vercel}{25}{}%

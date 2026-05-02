@@ -594,7 +594,7 @@ La piattaforma è stata progettata come un'applicazione web con una netta separa
   \item \emph{Integrazione} con provider AI esterno per l'esecuzione dei modelli.
 \end{itemize}
 Questa scelta consente di evolvere i singoli moduli senza dover ritoccare completamente il sistema. In particolare,
-la separazione tra logica di business e integrazione ai permette la sostituzione o l'aggiunta di modelli mantenendo
+la separazione tra logica di business e integrazione AI permette la sostituzione o l'aggiunta di modelli mantenendo
 stabile la relazione delle API con il frontend.
 
 \section{Pattern e scelte progetturali}
@@ -615,7 +615,7 @@ indipendente, senza andare ad intaccare le funzionalità degli altri.
 
 \subsection{Registry Pattern}
 I diversi modelli disponibili sono descritti in un catalogo centralizzato con metadati e parametri supportati. Il valore aggiunto
-dall'utilizzo di questa tecnica è quella di permettere un'aggiunta di ulteriori modelli tramite modifiche localizzate e non diffuse.
+dall'utilizzo di questa tecnica è quella di permettere l'integrazione di ulteriori modelli tramite modifiche localizzate e non diffuse.
 
 \subsection{Adapter pattern}
 L'interfaccia interna del sistema viene tradotta nel formato richiesto dal provider AI esterno.
@@ -640,10 +640,9 @@ Nel caso della rimozione oggetti, la pipeline prevede:
   \item uno di rimozione guidata dalla maschera;
   \item un eventuale step di generazione per sostituire la zona modificata con un nuovo contenuto coerente con il resto dell'immagine.
 \end{itemize}
-% Immagine singola
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{pipeline.png}
+    \includegraphics[width=0.8\textwidth]{assets/lab.png}
     \caption{Pipeline di esecuzione}
     \label{fig:architettura}
 \end{figure}
@@ -655,7 +654,7 @@ Le tecnologie utilizzate sono state scelte al fine di ottenere il massimo possib
   \item \emph{React e Vite (frontend):} consentono un rapido sviluppo di interfacce interattive e una buona organizzazione della UI.
   \item \emph{FastAPI (backend):} da una chiara definizione di endpoint, validazione dei dati tramite schemi e una tipizzazione e integrazione naturale con il linguaggio Python.
   \item \emph{PostgreSQL/Supabase (persistenza):} adatto alla gestione e al salvataggio di utenti, progetti, immagini e pipeline.
-  \item \emph{Fal.ai (Provider AI esterno):} evita costi infrastrutturali elevati per hosting dei modelli e ne consente l'accesso continuo.
+  \item \emph{Fal.ai (Provider AI esterno):} evita costi infrastrutturali elevati per hosting dei modelli e ne consente l'accesso continuo a pochi centesimi a chiamata.
   \item \emph{Vercel:} per il deploy automatico della web app ad ogni push su un branch git di release.
 \end{itemize}
 
@@ -726,14 +725,14 @@ La validazione è stata effettuata osservando casi d'uso con diversa complessit�
     \centering
     \begin{subfigure}[t]{0.38\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{person_removed_before.png}
+        \includegraphics[width=\textwidth]{assets/person_removed_before.png}
         \caption{Immagine originale}
         \label{fig:person-before}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.38\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{person_removed_after.png}
+        \includegraphics[width=\textwidth]{assets/person_removed_after.png}
         \caption{Risultato dopo la pipeline}
         \label{fig:person-after}
     \end{subfigure}
@@ -746,21 +745,21 @@ La validazione è stata effettuata osservando casi d'uso con diversa complessit�
     \centering
     \begin{subfigure}[t]{0.28\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{mountain_before.jpg}
+        \includegraphics[width=\textwidth]{assets/mountain_before.jpg}
         \caption{Immagine originale}
         \label{fig:mountain-before}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.28\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{mountain_mask.png}
+        \includegraphics[width=\textwidth]{assets/mountain_mask.png}
         \caption{Maschera di segmentazione}
         \label{fig:mountain-mask}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.28\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{mountain_after.jpg}
+        \includegraphics[width=\textwidth]{assets/mountain_after.jpg}
         \caption{Risultato dopo la pipeline}
         \label{fig:mountain-after}
     \end{subfigure}
@@ -780,6 +779,56 @@ I risultati finali ottenuti tramite l'architettura e le dipendenza utilizzate of
 Il prototipo svolge un buon lavoro nel rendere operazioni complesse facilmente accessibili e interpretabili. Tuttavia, la dipendenza
 da un servizio esterno sempre in via di sviluppo come \emph{fal}, non da garanzie assolute in termini di tempistiche e qualità,
 rendendo necessario un ulteriore lavoro su controlli, valutazioni e robustezza.
+
+\subsection{Confronto tra modelli presenti}
+La possibilità di aggiunta di diversi modelli utilizzabili per i diversi processi ci permette di visualizzare le differenze che essi hanno 
+nelle varie operazioni sulle immagini. 
+\begin{itemize}
+  \item Come visualizzabile in figura 5.3, si vede come le due segmentazioni effettuate sullo stesso oggetto (in particolare un casco) su un'immagine in input
+  diano risultati simili ma leggermente diversi. 
+  \item In figura 5.4 invece visualizziamo come lo stesso prompt ("\emph{bandana}") dia due risultati alquanto diversi, dovuto alle configurazioni interne dei diversi modelli
+  che operano su basi simili ma differenti.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/segmantation_sam3.png}
+        \caption{Maschera di segmentazione tramite modello Sam3}
+        \label{fig:mountain-mask}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/segmentation_moondream3.png}
+        \caption{Maschera di segmentazione tramite modello Moondream3}
+        \label{fig:mountain-after}
+    \end{subfigure}
+    \caption{Confronto tra operazioni di segmentazione tra i due modelli usati}
+    \label{fig:mountain-before-after}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/generate_fluxfill.png}
+        \caption{Risultato di generazione tramite modello FluxFill}
+        \label{fig:mountain-mask}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/generate_briagenfill.png}
+        \caption{Risultato di generazione tramite modello Bria Gen Fill}
+        \label{fig:mountain-after}
+    \end{subfigure}
+    \caption{Confronto tra operazioni di generazione tra i due modelli usati}
+    \label{fig:mountain-before-after}
+\end{figure}
+
+
 
 
 \chapter{Conclusioni}
@@ -814,10 +863,19 @@ Nonostante l'applicazione sia già di notevole utilità, ulteriori evoluzioni so
   \item riconoscimento automatico di entità ed oggetti non rilevanti all'interno dell'immagine;
 \end{itemize}
 
-\section{Conclusione}
-Il lavoro in conclusione dimostra che una piattaforma web modulare può rendere l'editing AI di immagini più
-accessibile, semplice e tracciabile, mantenendo comunque un'architettura estendibile. \newline
-I risultati raggiunti danno credito all'impostzione del progetto e permettono ulteriori integrazioni e robustezza.
+\section{Conclusione finale}
+
+Il lavoro svolto ha mostrato che è possibile rendere l’editing di immagini assistito da AI più accessibile e strutturato attraverso un approccio a pipeline. 
+Rispetto al problema iniziale, la soluzione proposta consente all’utente di gestire in modo ordinato progetti, immagini e processi, mantenendo visibili i passaggi principali (segmentazione, rimozione con maschera e generazione). 
+In questo senso, l’obiettivo di ridurre la complessità operativa per utenti non esperti può considerarsi raggiunto in modo concreto.
+
+Dal punto di vista ingegneristico, il contributo principale è l’architettura modulare adottata: frontend e backend separati, persistenza centralizzata su Supabase e integrazione dei modelli tramite provider esterno (FAL) con logica estendibile. 
+Questa impostazione rende il sistema manutenibile e adatto a evoluzioni successive, ad esempio aggiungendo nuovi modelli senza dover riscrivere l’intero flusso applicativo.
+
+Restano comunque alcuni limiti: la qualità del risultato dipende dalla precisione della maschera, dalla complessità della scena e in particolare dal modello usato, mentre tempi e costi sono influenzati dalla dipendenza da servizi AI esterni. 
+Per questo motivo, gli sviluppi futuri più rilevanti riguardano il miglioramento del controllo utente (editor manuale delle maschere), il confronto sistematico tra modelli e l’introduzione di metriche quantitative per valutare in modo più oggettivo la qualità dei risultati.
+
+In conclusione, Magic Eraser rappresenta una base solida e realistica per un workflow di image editing generativo: non solo produce output utili, ma soprattutto rende il processo ripetibile, tracciabile ed estendibile.
 
 %------------------Bibliografia-----------------
 
